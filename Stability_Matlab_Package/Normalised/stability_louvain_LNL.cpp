@@ -107,43 +107,6 @@ usage(char *prog_name, char *more) {
   exit(0);
 }
 
-/*void
-parse_args(int argc, char **argv) {
-  if (argc<2)
-    usage(argv[0], "Bad arguments number\n");
-
-  for (int i = 1; i < argc; i++) {
-    if(argv[i][0] == '-') {
-      switch(argv[i][1]) {
-      case 'w':
-	type = WEIGHTED;
-        filename_w = argv[i+1];
-	i++;
-	break;
-      case 'q':
-	precision = atof(argv[i+1]);
-	i++;
-	break;
-      case 'l':
-	display_level = atoi(argv[i+1]);
-	i++;
-	break;
-      case 'k':
-	k1 = atoi(argv[i+1]);
-	i++;
-	break;
-      default:
-	usage(argv[0], "Unknown option\n");
-      }
-    } else {
-      if (filename==NULL)
-        filename = argv[i];
-      else
-        usage(argv[0], "More than one filename\n");
-    }
-  }
-}*/
-
 bool parse_arg(int nrhs, const mxArray *prhs[]){
     
 	if(nrhs>0){
@@ -213,29 +176,12 @@ gettimeofday(&tv,NULL);
   //parse arguments
   if(parse_arg(nrhs, prhs) && nlhs <4){
     
- /* printf("\nTime=%f",timet);
-  printf("\nprecision=%f",precision);
-
-  if(type==UNWEIGHTED)
-    printf("\ntype=no");
-  else
-      printf("\ntype=yes");*/
-
-  /*printf("\narguments parsed\n");
-
-mxArray** a;
-mxArray** b;
-  mexCallMATLAB(0,a,0,b,"pause");*/
-    
   // Vector containing the hierarchy of the partitioning    
   vector<vector<int> > output;
 
   // Creation of the Community object 
   Community *c = new Community(data, length_data, -1, precision, timet, type);
   
-
- /* printf("\nCommunity created\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
   // Initial number of nodes
   int numberinitial=(*c).g.nb_nodes;
 
@@ -248,54 +194,23 @@ mxArray** b;
   // First partitioning
   bool improvement = (*c).one_level();
 
-
-/*printf("\nOne level done\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
   // Calculation of its modularity
   double new_mod = (*c).modularity();
 
-  //display_time("communities computed");
-  //cerr << "modularity increased from " << mod << " to " << new_mod << endl;
-
-  //if (display_level==-1)
-    //(*c).display_partition();
-
-  //output.push_back((*c).n2c); 
   output = (*c).display_partition2(output);
-
-/*printf("\nbefore graph2\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
-  
 
   Graph g = (*c).partition2graph_binary();
 
-  /*printf("\nGraph2 created\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
-
-//if (display_level==0)
-  //  g.display();
-
-  //display_time("network of communities computed");
-	int numberofcommunities=(*c).g.nb_nodes;
+  int numberofcommunities=(*c).g.nb_nodes;
   int level=0;
   while(improvement) {
-    //pointdegrees.pushback((*c).g.degrees);
-    //pointlinks.pushback((*c).g.links);
-    //pointweights.pushback((*c).g.weights);
-    mod=new_mod;
-    //free((*c).g.links);
-    //free((*c).g.degrees);
-    //free((*c).g.weights);
 
-	delete c;
+    mod=new_mod;
+
+    delete c;
     c = new Community(g, -1, precision, timet);
 
-	numberofcommunities=(*c).g.nb_nodes;
-
-    /*cerr << "\nnetwork : "
-	 << (*c).g.nb_nodes << " nodes, " 
-	 << (*c).g.nb_links << " links, "
-	 << (*c).g.total_weight << " weight." << endl;*/
+    numberofcommunities=(*c).g.nb_nodes;
 
     improvement = (*c).one_level();
     if ((*c).nb_pass!=-10)
@@ -303,21 +218,11 @@ mxArray** b;
     else
         new_mod =0;
     
-    /*display_time("communities computed");
-    cerr << "modularity increased from " << mod << " to " << new_mod << endl;
-    */
-    //if (display_level==-1)
-      //(*c).display_partition();
     output = (*c).display_partition2(output);
     
     g = (*c).partition2graph_binary();
     level++;
     
-   // if (level==display_level)
-     // g.display();
-    
-
-    //display_time("network of communities computed");
   }
 
   numberofcommunities=(*c).g.nb_nodes;
@@ -326,33 +231,6 @@ mxArray** b;
   free(g.links);
   free(g.degrees);
 
-    /*pointdegrees.pushback((*c).g.degrees);
-    pointlinks.pushback((*c).g.links);
-    pointweights.pushback((*c).g.weights);
-
-	for(int i=0;i<pointdegrees.size();i++){
-	if(pointdegrees[i]!=NULL)
-		free(pointdegrees[i]);
-	}
-	for(int i=0;i<pointlinks.size();i++){
-	if(pointlinks[i]!=NULL)
-		free(pointlinks[i]);
-	}
-	for(int i=0;i<pointweights.size();i++){
-	if(pointweights[i]!=NULL)
-		free(pointweights[i]);
-	}*/
-  //time(&time_end);
-
-  //cerr << 0 << " " << numberinitial << " " << new_mod << " "<< numberofcommunities << " " << (time_end-time_begin) << endl;
-//	cout << "" << endl;
-  //cerr << precision << " " << new_mod << " " << (time_end-time_begin) << endl;
-
-	//Allocate memory and assign output pointer
-  
-  //free((*c).g.links);
-  //free((*c).g.weights);
-  //free((*c).g.degrees);
 	plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);  //mxReal is our data-type
 
 	//Get a pointer to the data space in our newly allocated memory

@@ -208,24 +208,24 @@ Community::display_partition(char* outfilename) {
 vector<vector<int> >
 Community::display_partition2(vector<vector<int> > output) {
     
-	//ofstream foutput(outfilename, ios::out | ios::app);
-
+  // renumber nodes
+  // first mark communities
   vector<int> renumber(size, -1);
   for (int node=0 ; node<size ; node++) {
     renumber[n2c[node]]++;
   }
-
+  // then renumber communities
   int final=0;
   for (int i=0 ; i<size ; i++)
     if (renumber[i]!=-1)
       renumber[i]=final++;
 
   vector<int> temp(size, 0);
-  
+  // assign new labels
   for (int i=0 ; i<size ; i++){
-	  //foutput << i << " " << renumber[n2c[i]] << endl;
       temp[i] = renumber[n2c[i]];
   }
+  // push to vector
   output.push_back(temp);
   
   return output;
@@ -237,8 +237,6 @@ Community::display_partition2(vector<vector<int> > output) {
 Graph
 Community::partition2graph_binary() {
 
-/*mxArray** a;
-mxArray** b;*/
   // Renumber communities
   vector<int> renumber(size, -1);
   for (int node=0 ; node<size ; node++) {
@@ -266,8 +264,6 @@ mxArray** b;*/
   // ligne moidifiee par Antoine : 4 bytes au lieu de 8
   g2.weights  = (float *)malloc((long)g.nb_links*sizeof(float));
 
-/*printf("\nbefore neighbours\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
 
   long where = 0;
   int comm_deg = comm_nodes.size();
@@ -305,10 +301,6 @@ mxArray** b;*/
 //    cout << comm << " " << g2.weighted_degrees[comm] << endl;
   }
 
-/*printf("\nafter\n");
-  mexCallMATLAB(0,a,0,b,"pause");*/
-
-//  cout << g2.nb_links << endl;
 
   // ligne moidifiee par Antoine : 4 bytes au lieu de 8
   g2.links = (unsigned int*)realloc(g2.links, (long)g2.nb_links*sizeof(int));
@@ -358,8 +350,6 @@ Community::one_level() {
     // for each node: remove the node from its community and insert it in the best community
     for (int node_tmp=0 ; node_tmp<size ; node_tmp++) {
       int node = random_order[node_tmp];
-//      int node = random_order[node_tmp];
-      //if (node%1000000==0) {cerr << "."; fflush(stderr);}
       int node_comm     = n2c[node];
       double w_degree = g.weighted_degree(node);
 
@@ -374,7 +364,6 @@ Community::one_level() {
       double best_nblinks  = 0.;
       double best_increase = 0.;
       for (unsigned int i=0 ; i<neigh_last ; i++) {
-//	double increase = (neigh_weight[neigh_pos[i]] - tot[neigh_pos[i]]*g.weighted_degree(node)/g.total_weight) ;
         double increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
         if (increase>best_increase) {
           best_comm     = neigh_pos[i];
@@ -399,9 +388,6 @@ Community::one_level() {
     }
 
     new_mod = modularity();
-    /*cerr << "pass number " << nb_pass_done
-         << " : " << cur_mod << " -> " << new_mod << " (" << nb_moves << " moves)" << endl;
-    cerr << total_tot << " " << total_in << endl;*/
 
     if (nb_moves>0)
       improvement=true;
