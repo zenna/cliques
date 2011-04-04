@@ -1,0 +1,40 @@
+title               =  [insert_name_here]_PRMD
+cpp                 =  /usr/bin/cpp
+constraints         =  all-bonds
+integrator          =  md
+dt                  =  0.002	; ps !
+nsteps              =  5000	; total 10.0 ps.
+comm_mode           =  Linear  ; remove center of mass translation & rotation
+nstcomm             =  10	; [steps] frequency for center of mass motion removal
+nstxout             =  1000	; [steps] frequency to write coordinates to output trajectory file
+nstvout             =  10000	; [steps] frequency to write velocities to output trajectory
+nstfout             =  10000	; [steps] frequency to write forces to output trajectory
+nstlog              =  10000	; [steps] frequency to write energies to log file
+nstenergy           =  1000	; [steps] frequency to write energies to energy file
+nstlist             =  10	; neighbour searching
+ns_type             =  grid
+rlist               =  1.0
+coulombtype	    =  PME
+rcoulomb            =  1.0
+vdwtype		    =  Cut-off
+rvdw                =  1.0
+DispCorr       = no
+
+; Berendsen temperature coupling is on in two groups
+Tcoupl              =  berendsen
+tau_t               =  0.1      	0.1
+tc-grps		    =  Protein  	Non-Protein
+ref_t               =  300      	300
+; Energy monitoring
+energygrps          =  Protein 		SOL
+; Pressure coupling is now on
+Pcoupl              =  berendsen
+; Pcoupltype	    =  isotropic
+tau_p               =  0.5
+compressibility     =  4.5e-5	; [1/bar] compressibility of water
+ref_p               =  1.0	; [bar] reference pressure for coupling
+; Generate velocites is on at 300 K.
+gen_vel             =  yes
+gen_temp            =  300.0
+gen_seed            =  173529
+

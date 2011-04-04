@@ -1,0 +1,16 @@
+title               =  [insert_name_here]_EMcg
+cpp                 =  /usr/bin/cpp
+define              =  -DFLEXIBLE
+constraints         =  none
+integrator          =  cg
+nsteps              =  1500
+nstlist             =  50
+ns_type             =  grid
+rlist               =  1.0
+rcoulomb            =  1.0
+rvdw                =  1.0
+;
+;       Energy minimizing stuff
+;
+emtol               =  1.0
+emstep              =  0.005

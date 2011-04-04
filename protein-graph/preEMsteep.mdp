@@ -1,0 +1,16 @@
+title               =  [insert_name_here]_EMsteep
+cpp                 =  /usr/bin/cpp
+define              =  -DFLEXIBLE
+constraints         =  none
+integrator          =  steep
+nsteps              =  1000
+nstlist             =  20
+ns_type             =  grid
+rlist               =  1.0
+rcoulomb            =  1.0
+rvdw                =  1.0
+;
+;       Energy minimizing stuff
+;
+emtol               =  1.0
+emstep              =  0.01
