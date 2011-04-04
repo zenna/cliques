@@ -7,8 +7,6 @@ link_directories(/usr/lib/graphviz/)
 
 set(CMAKE_CXX_FLAGS "-g -O3 -pg -Wall -DUSE_BOOST")
 
-add_executable(sandbox sandbox.cpp)
-
 add_executable(draw_all_partitions draw_all_partitions.cpp)
 target_link_libraries(draw_all_partitions gvc)
 target_link_libraries(draw_all_partitions graph)
