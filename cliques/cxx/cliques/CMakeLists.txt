@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+include_directories (.)
+add_subdirectory (scripts)
+add_subdirectory (tests)
+add_subdirectory (algorithms)
+add_subdirectory (structures)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")

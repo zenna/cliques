@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper,oneside]{scrbook}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{program}
+\usepackage{subfig}
+\usepackage{afterpage}
+
+\graphicspath{{../plots/}}
+
+%------------------ General Size Parameters ---------------
+
+\setlength{\textheight}     {24.6cm}
+\setlength{\oddsidemargin}  {0.5cm}
+\setlength{\evensidemargin} {0.5cm}
+\setlength{\textwidth}      {15.0cm}
+\setlength{\topmargin}      {-1.5cm}
+\setlength{\headheight}     {28pt}
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+
+\vspace*{4.0cm}
+\author{Zenna Tavares}
+\huge{Exploring Hierarchical Structure In Complex Brain Networks}\\[1.5cm]
+\large
+\vspace{0.5cm}
+\textsc{Zenna Tavares}\\[1cm]
+
+\textsc{Supervised by Dr. Mauricio Barahona }\\[10.5cm]
+\rule{\linewidth}{0.5pt}\\
+
+Submitted in partial fulfilment of the requirements for the award of MSc in Biomedical Engineering and the Diploma of the Imperial College
+
+
+
+
+
+\end{center}
+
+\end{titlepage}
+
+
+
+    %%\pagenumbering{alph}
+    %%\maketitle
+    \pagenumbering{roman}
+    \clearpage
+    \cleardoublepage
+%------------------ Abstract Page -------------------------
+\section*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Many systems can be considered from a network perspective.  Here we uncover all partitions of a graph to form the partition landscape.  We apply techniques from molecular sciences and optimisation strategies to uncover what properties of the landscape can tell us about the underlying system in describes.  We extend these techniques to analysing the effect of psychosis on the connectivity and structure of brain networks, and introduce the hierarchical stability graph to characterise this.  We explore the hypothesis of decreasing hierarchical structure in those with child onset schizophrenia, and find encouraging results supporting its validity.
+
+\newpage
+
+\section*{Acknowledgements}
+I would like to thank my supervisor Dr. Mauricio Barahona, and Dr. Renaud Lambiotte for their tremendous help with this project.  I am grateful to Antoine Delmotte for his insight help with code.  I would also like to thank the contributers to open source software, upon which much of the implementations described in this thesis were made.  Oh and happy people, let's thank them too for making the world a better place.
+
+    \tableofcontents
+    %\listoftables
+    \pagenumbering{arabic}
+    \include{introduction}
+
+   	\include{landscape_background}
+   	\include{connected_partitions}
+    \include{landscapes}
+
+ 	\include{brain_hierarchy}
+  	\include{discussion}
+    
+    \bibliographystyle{plain}
+	\bibliography{library}
+\end{document}	

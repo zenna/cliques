@@ -1,0 +1,39 @@
+\chapter{Partitions of a Graph}
+\label{sec:partitionsOfaGraph}
+
+The study of complex networks owes much of its origins to graph theory, which abstracts away the intricacies of a problem and provides a  common set of analytical tools to be applied to its analysis.  Graph theory, which in turn originates largely from set theory, in its simplest sense represents objects as \textit{nodes}, or \textit{vertices}; with interconnecting \textit{edges} which denote some kind of relationship.  Many real world systems involve some kind of network dynamic, and as a result can often be unravelled through with the tools and concepts graph theory has come to amass.  One such concept is that of the \textit{partition}, which while strongly related to the idea of community as discussed in \ref{chap:landscapes}, has a much more straightforward definition.  A partition, which divides a graph into distinct groups or induced subgraphs, can be thought of existing in a combinatorial space.  If exploring this space can reveal hidden features of the underlying system, a \textit{complete} exploration seems a worthwhile objective.
+
+Here we formalise the problem of discovering the complete enumaration of connected partitions of a graph.  Given a graph $G=(V,E)$ where $V$ denotes the set of vertices and $E$ the set of edges, a graph partition $\mathcal{P}$ is a set of disjoint subsets of $V$ whose union is $V$.  The all connected partitions problem is to find the complete set of possible partitions whilst adhering to constraint of partition connectivity.  Partition connectivity requires that for all groups $\forall \mathcal{G}=(\bar{V},\bar{E})\subseteq \mathcal{P}$, all pairs of vertices $v_1,v_2 \in \mathcal{G}$, must be mutually accessible by edges within $\bar{E}$.  Informally, this ensures that any pair of vertices belonging to the same group within a partition are connected through edges without leaving the group.  The rationale behind this constraint is discussed in terms of community structure in chapter \ref{chap:landscapes}, but from a purely computational perspective, it significantly constrains the complexity of the problem and allows us to investigate graphs of non trivial size.
+
+Here, we give a brief outline of the method used to uncover all partitions of the graph.  The algorithm performs a recursive search, at each step adding the nodes it crosses to the current partition.  Once the entire graph has been uncovered, the first partition is complete, and the recursion unwinds.  At each step backwards through the unwinding of the recursive search, essentially a subgraph and new partition are created from edges removed from the previous partition, and the process is repeated within this subgraph.  When the search through the new subgraph is complete, a new partition is made, the second recursion unwinds and the process repeats.  Connectedness of partitions is ensured, as they are only formed from traversal of the graph.
+
+\subsection*{Complexity}
+The total number of partitions is of particular relevance as it limits the graphs that can be analysed using reasonable computational resources, in terms of both memory and time.  The actual value is dependent on the number of nodes, the number of edges as well as
+the particular configuration of the graph. Figure \ref{fig:ababa} shows how the number of partitions increases with $n$, the number of nodes; and its convexity on a logarithmic scale gives some grasp of the scale of the problem.  The lower bound is found when the graph is minimally connected, i.e. the number of edges $m = \vert E \vert = n - 1$ and of value $2^{n-1}$.  As $m$ is increased towards that of maximum value $n(n-1)$, the number of partitions approaches the Bell number $B_n$: the number of possible ways $n$ elements can be partitioned into non empty subsets.
+\[ 
+B_n = \sum_{k=0}^n S(n,k),
+ \]
+where the Sterling number $S(n,k)$ is the number of ways to partition a set of cardinality $n$ into exactly $k$ nonempty subsets.
+
+\begin{figure}[h]
+  \centering
+  \label{fig:nodesVsparts} \includegraphics[width=15cm]{NvsNump.pdf}
+  \caption[Complexity as a function of $N$]%
+  {The size of the partition landscape of random (Erd\~os-R\'{e}nyi) graphs was found.
+  An average degree of 3 was maintained where possible and graph connectivity was ensured.  }\label{fig:ababa} 
+\end{figure}
+
+In order to estimate the upper bounds in terms of size and edge density we could apply this algorithm to, regression was used to fit polynomials to the $\log$ of the data to approximate the hyper exponential behaviour.  For a graph of interest we calculated the average degree, and generated random graphs of size increasing from two to 17 nodes, while maintaining the original degree distribution as closely as possible.  As a validation for this method we used a large set of Bell numbers, which can be computed to exactness or high accuracy in reasonable time.  While a rigorous investigation into the partition space's dependence on graph parameters would be an interesting pursuit, for our intents it was sufficient to clarify that the problem rapidly becomes intractable as graphs (with average degree five), approach thirty nodes in scale.  In light of the massiveness of the partition space for even small networks, one can dismiss parallelisation or other computational techniques as a means to progressing to significantly more complex networks.  As touched upon further in our discussion, we suggest therefore it is more worthwhile to uncover what properties of small graphs can be applied to larger ones, and how well sampling methods approximate the complete enumeration data set.
+
+\clearpage
+\subsection{Time Complexity}
+The algorithm itself scales linearly in the number of partitions as shown in figure \ref{fig:timecomplx}.  The initial wall reveals a constant running time, which indicates for small graphs the actual finding of partitions is insignificant in comparison to the overheads of allocating memory, reading data from disk and so on.  Linear time complexity is expected as the algorithm in its essence performs several depth first searches in succession, which are themselves linear time algorithms.
+
+\begin{figure}[h]
+  \centering
+  \subfloat{\label{fig:timecomplx} \includegraphics[width=7cm]{timeVsNump.pdf} }
+  \subfloat{\label{edgesVsparts} \includegraphics[width=7cm]{edgesVsNumps.pdf} }
+  \caption[Complexity as a function of $m$]%
+  {(left) Time to compute vs number of partitons.  (right) Complexity as a function of $m$, limited by the Bell number. For each number of edges,
+  100 random sample graphs were created and values averaged}
+\end{figure}
