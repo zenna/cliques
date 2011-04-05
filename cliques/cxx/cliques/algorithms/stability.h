@@ -152,9 +152,9 @@ struct stability_gain {
 		return (time * w_node_to_comm - tot_w_comm*w_deg_node / two_m);
 	}
 
-}
+};
 
-struct find_combinatorial_stability {
+/*struct find_combinatorial_stability {
 	std::vector<float> &markov_times_;
 
 	find_combinatorial_stability(std::vector<float> &markov_times) :
@@ -196,7 +196,7 @@ struct find_combinatorial_stability {
 			stabilities.push_back(R);
 		}
 	}
-};
+};*/
 
 }
 

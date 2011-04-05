@@ -5,6 +5,7 @@
 #include <limits>
 #include <vector>
 #include <lemon/concepts/graph.h>
+#include <lemon/maps.h>
 
 #include <cliques/structures/partition.h>
 #include <cliques/structures/common.h>
@@ -13,8 +14,7 @@ namespace cliques {
 
 namespace _luv {
 
-
-inline void insert_node_bookkeeping(int node, int comm, double){
+inline void insert_node_bookkeeping(int node, int comm, double) {
 
 }
 
@@ -23,25 +23,23 @@ inline void insert_node_bookkeeping(int node, int comm, double){
 
 }
 /**
-@brief  Louvain method - greedy algorithm to find community structure of a network.
+ @brief  Louvain method - greedy algorithm to find community structure of a network.
 
-This is a fast algorithm to find communities within a network
-ref: Fast Unfolding Of Communities in large networks, Blondel et al. 2008
+ This is a fast algorithm to find communities within a network
+ ref: Fast Unfolding Of Communities in large networks, Blondel et al. 2008
 
-@param[in]  graph     graph to find partition of
-@param[in]  compute_quality     partition quality function object
-@param[out]  std::vector<partitions>     optimal partitions, last in vector is overall best
-*/
-template <typename P, typename M, typename G, typename QF>
-P find_optimal_partition_louvain(G &graph,
-								QF compute_quality,
-								M &weights,
-								P &optimal_partitions)
-{
+ @param[in]  graph     graph to find partition of
+ @param[in]  compute_quality     partition quality function object
+ @param[out]  std::vector<partitions>     optimal partitions, last in vector is overall best
+ */
+template<typename P, typename M, typename G, typename QF>
+P find_optimal_partition_louvain(G &graph, M &weights, QF compute_quality,
+		std::vector<P> &optimal_partitions) {
+
 	bool did_quality_increase = false;
 	// Create singleton partition from graph
 	P partition;
-	for (typename G::NodeIt n(graph); n!= lemon::INVALID; ++n) {
+	for (typename G::NodeIt n(graph); n != lemon::INVALID; ++n) {
 		partition.add_element(graph.id(n));
 	}
 
@@ -49,8 +47,8 @@ P find_optimal_partition_louvain(G &graph,
 		int best_set = 0;
 		float best_stability = -std::numeric_limits<float>::max();
 
-		for (typename G::IncEdgeIt e(graph,n1); e != lemon::INVALID; ++e) {
-			typename G::Node n2 = graph.oppositeNode (n1, e);
+		for (typename G::IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+			typename G::Node n2 = graph.oppositeNode(n1, e);
 			if (n1 != n2) {
 				//std::cout << "trying " << graph.id(n1) << " " << graph.id(n2) << std::endl;
 
@@ -68,7 +66,7 @@ P find_optimal_partition_louvain(G &graph,
 			}
 		}
 		std::vector<float> old_stability;
-		compute_quality(graph, partition, old_stability);
+		compute_quality(graph, partition, weights, old_stability);
 		//std::cout << "original stab "<< old_stability[0] << std::endl;
 		if (best_stability > old_stability[0]) {
 			std::cout << "joining " << graph.id(n1) << " " << best_set
@@ -88,7 +86,7 @@ P find_optimal_partition_louvain(G &graph,
 	// it is then possible to reapply the first phase of the algorithm
 	// to the resulting weighted network and to iterate.
 	if (did_quality_increase == true) {
-		M reduced_weight_map;
+		M reduced_weight_map(graph);
 		// Compile P and graph back into normal partition
 		// Pushback P into list of partitions
 		G reduced_graph;
@@ -106,14 +104,15 @@ P find_optimal_partition_louvain(G &graph,
 
 			if (comm_of_node_u != comm_of_node_v) {
 				float weight = weights[edge];
-				typename G::Edge edge_in_reduced_graph = lemon::findEdge(reduced_graph, graph.nodeFromId(comm_of_node_u),
+				typename G::Edge edge_in_reduced_graph = lemon::findEdge(
+						reduced_graph, graph.nodeFromId(comm_of_node_u),
 						graph.nodeFromId(comm_of_node_u));
 				reduced_weight_map[edge_in_reduced_graph] += weight;
 			}
 		}
 
-		return cliques::find_optimal_partition_louvain<P>(graph, reduced_weight_map,
-				compute_quality, optimal_partitions);
+		return cliques::find_optimal_partition_louvain<P>(graph,
+				reduced_weight_map, compute_quality, optimal_partitions);
 	}
 
 	return partition;
@@ -124,8 +123,8 @@ P find_optimal_partition_louvain(G &graph,
  */
 
 template<typename P, typename T, typename W, typename QF, typename QFDIFF>
-P find_optimal_partition_louvain(T &graph, W &weights, QF quality_function,
-		QFDIFF quality_function_diff) {
+P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
+		QF quality_function, QFDIFF quality_function_diff) {
 
 	// Start: Create singleton partition from graph
 	P partition;
@@ -135,20 +134,24 @@ P find_optimal_partition_louvain(T &graph, W &weights, QF quality_function,
 
 	// some bookkeeping	to keep matters simple
 	// total weight of the links
-	two_m = find_total_weight(&graph, &weights);
+	double two_m = find_total_weight(&graph, &weights);
 	// number_of_nodes
-	number_of nodes = lemon::countNodes(graph);
+	int number_of_nodes = lemon::countNodes(graph);
 	// mapping form node to node weight
-	node_to_w = lemon::rangeMap(number_of_nodes);
+	lemon::RangeMap<double> node_to_w =
+			lemon::RangeMap<double>(number_of_nodes);
 	// mapping from node number to community number
-	node_to_comm = lemon::RangeMap<int>(number_of_nodes, 0);
+	lemon::RangeMap<int> node_to_comm =
+			lemon::RangeMap<int>(number_of_nodes, 0);
 	// mapping #community to total weight of community
-	comm_w_tot = lemon::RangeMap<int>(number_of_nodes, 0);
+	lemon::RangeMap<double> comm_w_tot = lemon::RangeMap<double>(
+			number_of_nodes, 0);
 	// mapping #community to weight within community
-	comm_w_in = lemon::RangeMap<int>(number_of_nodes, 0);
+	lemon::RangeMap<double> comm_w_in = lemon::RangeMap<double>(
+			number_of_nodes, 0);
 
 	for (int i = 0; i < number_of_nodes; i++) {
-		temp_node = graph.nodeFromId(i);
+		typename T::Node temp_node = graph.nodeFromId(i);
 		comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
 				temp_node);
 		node_to_comm[i] = i;
