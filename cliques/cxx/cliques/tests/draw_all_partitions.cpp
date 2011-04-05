@@ -11,7 +11,6 @@
 #include <cliques/algorithms/partitions.h>
 #include <cliques/structures/common.h>
 
-
 int main() {
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<int> weights(orange_graph);

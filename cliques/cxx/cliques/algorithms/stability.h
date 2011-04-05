@@ -1,3 +1,4 @@
+/* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010-2011 */
 #ifndef CLIQUES_STABILITY_H
 #define CLIQUES_STABILITY_H
 
@@ -92,22 +93,18 @@ struct find_linearised_stability {
 };
 
 /**
- @brief  Functor for finding stability of weighted graph
- */
-template<typename W>
+@brief  Functor for finding stability of weighted graph
+*/
 struct find_weighted_linearised_stability {
 	std::vector<float> &markov_times_;
-	W &weights;
 
-	find_weighted_linearised_stability(std::vector<float> &markov_times,
-			W &weights) :
-		markov_times_(markov_times), weights(weights) {
-	}
+	find_weighted_linearised_stability(std::vector<float> &markov_times) : markov_times_(markov_times)
+	{}
 
-	template<typename G, typename T2>
-	void operator ()(G &graph, T2 &my_partition,
-			std::vector<float> &stabilities) {
-		std::cout << "USING DA ORIGINAL";
+	template <typename G, typename T2, typename W>
+	void operator () (G &graph, T2 &my_partition, W &weights,
+				 std::vector<float> &stabilities)
+	{
 		float two_m = 2.0 * cliques::find_total_weight(graph, weights);
 		float first_term = 0.0;
 		float second_term = 0.0;

@@ -1,3 +1,4 @@
+/* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010-2011 */
 #ifndef CLIQUES_MODULARITY_H
 #define CLIQUES_MODULARITY_H
 

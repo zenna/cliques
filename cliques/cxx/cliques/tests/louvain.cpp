@@ -26,19 +26,22 @@
 //TODO
 //REMOVE NEIGHBOURS TO SELF
 int main() {
+    typedef cliques::DisjointSetForest<int> DjPartition;
     lemon::SmartGraph orange_graph;
-    cliques::read_edgelist(orange_graph, "/home/zenna/repos/uniproj/data/celegans.edj");
+    lemon::SmartGraph::EdgeMap<int> weights(orange_graph);
+
+    cliques::read_edgelist_weighted("/home/zenna/repos/uniproj/data/celegansweighted.edj", orange_graph, weights);
 
     std::vector<float> current_markov_time;
     current_markov_time.push_back(1.0);
-    std::cout << lemon::connected(orange_graph) << std::endl;
-    std::cout << lemon::countNodes(orange_graph) << std::endl;
-    std::cout << lemon::countEdges(orange_graph) << std::endl;
 
-    cliques::DisjointSetForest<int> best_partition = cliques::find_optimal_partition_louvain<cliques::DisjointSetForest<int> >(orange_graph, cliques::find_linearised_stability(current_markov_time));
-    cliques::print_partition(best_partition);
+    std::vector<DjPartition> optimal_partitions;
+    DjPartition best_partition = cliques::find_optimal_partition_louvain<DjPartition>
+    	(orange_graph, weights, cliques::find_linearised_stability(current_markov_time), optimal_partitions);
 
+    cliques::print_partition(optimal_partitions.back());
 
+    //Drawing
     float start = -10;
     std::vector<float> energies;
     for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
