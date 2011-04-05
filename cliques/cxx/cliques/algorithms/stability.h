@@ -74,18 +74,6 @@ struct find_linearised_stability {
 			}
 		}
 
-		/*for (typename cliques::DisjointSetForest<int>::PartIterator pitr = partition.begin(); pitr != partition.end(); ++pitr) {
-			for (typename cliques::DisjointSetForest<int>::NodeIterator n1itr = pitr.begin(); n1itr != pitr.end(); ++n1itr) {
-				for (typename cliques::DisjointSetForest<int>::NodeIterator n2itr = pitr.begin(); n2itr != pitr.end(); ++n2itr) {
-					//std::cout << "n1: " << *n1itr << " n2: " << *n2itr << std::endl;
-					int k1 = lemon::countIncEdges(graph, graph.nodeFromId(*n1itr));
-					int k2 = lemon::countIncEdges(graph, graph.nodeFromId(*n2itr));
-					float A = cliques::A(graph, *n1itr, *n2itr);
-					first_term = first_term + float(k1*k2);
-					second_term = second_term + A;
-				}
-			}
-		}*/
 		first_term = first_term/(two_m*two_m);
 		second_term = second_term/two_m;
 
@@ -189,44 +177,6 @@ struct find_combinatorial_stability {
 	}
 };
 
-/*void find_combinatorial_stability(std::map<int,int> &partition_map, std::vector<float> markov_times, std::vector<double> &stabilities)
-{
-	std::vector<std::vector<int > > p = map_to_vector(partition_map);
-	double one_over_N = 1.0/(g->n);
-	double one_over_N_squared = one_over_N * one_over_N;
-	double mean_k = 0.0;
-
-	for (int i =0; i<g->n; ++i)
-	{
-		mean_k = mean_k + g->degrees[i];
-	}
-	mean_k = mean_k / g->n;
-	int time = 0;
-
-	//calc once m = "sum of all weights"
-	//degrees some of all rows or columns
-	//Q = Q + A(p[s][i],p[s][j]) - float(g->degrees[p[s][i]]*g->degrees[p[s][j]])/(float(2*g->m));
-
-	for (std::vector<float>::iterator t = markov_times.begin(); t != markov_times.end(); ++t)
-	{
-		double R = 0.0;
-		for (unsigned int s = 0;  s < p.size(); ++s)
-		{
-			for (unsigned int i = 0; i< p[s].size(); ++i)
-			{
-				for (unsigned int j = 0; j < p[s].size(); ++j)
-				{
-					R += expmats[time][p[s][i]*g->n + p[s][j]] - one_over_N_squared;
-				}
-			}
-		}
-		//if (*t < 0.00801 ){
-		//cout << *t << ": " << R << endl;
-		//}
-		stabilities.push_back(R);
-		time++;
-	}
-}*/
 }
 
 #endif
