@@ -68,8 +68,6 @@ Graph::Graph(char *filename, char *filename_w, int type) {
 	// Read links: 4 bytes for each link (each link is counted twice)
 	nb_links = degrees[nb_nodes - 1];
 
-	// Ligne modifiee par Antoine : il faut mettre l'affichage apres la redefinition de nb_links
-	//cerr << "total : " << nb_nodes << " " << nb_links << endl;
 
 
 	links = (unsigned int *) malloc((long) nb_links * sizeof(int));
@@ -86,9 +84,7 @@ Graph::Graph(char *filename, char *filename_w, int type) {
 
 		weights = (float *) malloc((long) nb_links * sizeof(float));
 		finput_w.read((char *) weights, (long) nb_links * sizeof(float));
-		//    assert(finput_w.rdstate() == ios::goodbit);
 
-		//    assert(check_symmetry());
 	}
 
 	// Compute total weight
@@ -96,24 +92,13 @@ Graph::Graph(char *filename, char *filename_w, int type) {
 		total_weight += (double) weighted_degree(i);
 	}
 
-	//cerr << "total : " << nb_nodes << " " << nb_links << endl;
-
 }
 
 Graph::Graph(double * data, int length_data, int type) {
 
 	//Print the integer avg of each col to matlab console
 
-	/*mxArray *result;
-	 mxArray *arguments;
-	 printf("In Graph constructor.");
-
-	 mexCallMATLAB(0,&result,0,&arguments,"pause");*/
-
 	nb_nodes = int(data[length_data - 1]) + 1;
-	//  printf("nb_nodes = %d", nb_nodes);
-
-	//mexCallMATLAB(0,&result,0,&arguments,"pause");
 
 	degrees = (unsigned long *) malloc((long) nb_nodes * sizeof(long));//new unsigned long[nb_nodes];
 
@@ -130,19 +115,12 @@ Graph::Graph(double * data, int length_data, int type) {
 		}
 	}
 
-	// printf("degrees[0] = %d", degrees[0]);
-
-	// mexCallMATLAB(0,&result,0,&arguments,"pause");
 
 	nb_links = degrees[nb_nodes - 1];
 	links = (unsigned int *) malloc((long) nb_links * sizeof(int));//new unsigned int[nb_links];
 	for (int i = 0; i < length_data; i++) {
 		links[i] = int(data[length_data + i]);
 	}
-
-	/* printf("links[1] = %d", links[1]);
-	 printf("links[length_data] = %d", links[length_data-1]);
-	 mexCallMATLAB(0,&result,0,&arguments,"pause");*/
 
 	// IF WEIGHTED : read weights: 4 bytes for each link (each link is counted twice)
 	weights = NULL;
@@ -155,10 +133,6 @@ Graph::Graph(double * data, int length_data, int type) {
 			total_weight += (double) weights[i];
 		}
 	}
-
-	/*printf("\n\nfunction data[1,2] = %f, data[1,3] = %f", links[0], weights[0]);
-	 printf("\n\nfunction data[1,2] = %f, data[1,3] = %f", links[length_data-1], weights[length_data-1]);
-	 mexCallMATLAB(0,&result,0,&arguments,"pause");*/
 
 }
 
