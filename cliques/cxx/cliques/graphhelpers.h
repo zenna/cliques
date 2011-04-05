@@ -30,6 +30,15 @@ float find_weighted_degree(G &graph, M &weights, NO node) {
 	return degree;
 };
 
+template <typename G,typename M, typename NO>
+double find_weight_selfloops(G &graph, M &weights, NO node){
+	edge = lemon::findEdge(graph, node, node);
+	if(edge != lemon::INVALID)
+		return 0;
+	else
+		return double(weights[edge]);
+}
+
 template <typename G, typename M>
 float find_total_weight(G &graph, M &weights) {
 	float total_weight = 0.0;

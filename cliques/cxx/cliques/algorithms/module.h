@@ -13,7 +13,10 @@ namespace cliques {
 
 namespace _luv {
 
-inline void insert_node_bookkeeping(int node, int comm, double)
+
+inline void insert_node_bookkeeping(int node, int comm, double){
+
+}
 
 // TODO insert node, remove node functions...
 
@@ -149,7 +152,7 @@ P find_optimal_partition_louvain(T &graph, W &weights, QF quality_function,
 		comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
 				temp_node);
 		node_to_comm[i] = i;
-		comm_w_in[i] = find_
+		comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
 	}
 
 	for (typename T::NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
