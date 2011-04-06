@@ -301,13 +301,19 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
 
-			if (comm_of_node_u != comm_of_node_v) {
-				float weight = weights[edge];
-				typename T::Edge edge_in_reduced_graph = lemon::findEdge(
-						reduced_graph, graph.nodeFromId(comm_of_node_u),
-						graph.nodeFromId(comm_of_node_u));
-				reduced_weight_map[edge_in_reduced_graph] += weight;
+			float weight = weights[edge];
+
+			typename T::Node node_of_comm_u = reduced_graph.nodeFromId(comm_of_node_u);
+			typename T::Node node_of_comm_v = reduced_graph.nodeFromId(comm_of_node_v);
+
+			typename T::Edge edge_in_reduced_graph = lemon::findEdge(
+					reduced_graph, comm_of_node_u, comm_of_node_v);
+
+			if (edge_in_reduced_graph == lemon::INVALID) {
+				reduced_graph.addEdge(node_of_comm_u);
+				reduced_graph.addEdge(node_of_comm_v);
 			}
+			reduced_weight_map[edge_in_reduced_graph] += weight;
 		}
 
 		cliques::find_optimal_partition_louvain<P>(graph, reduced_weight_map,
