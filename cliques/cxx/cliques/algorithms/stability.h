@@ -146,10 +146,10 @@ struct find_weighted_linearised_stability {
  @brief  Functor for finding stability gain for weighted graph
  */
 
-struct stability_gain_louvain {
+struct linearised_stability_gain_louvain {
 	double markov_time;
 
-	stability_gain_louvain() :
+	linearised_stability_gain_louvain() :
 		markov_time(markov_time) {
 	}
 
@@ -160,11 +160,11 @@ struct stability_gain_louvain {
 
 };
 
-struct stability_louvain {
+struct linearised_stability_louvain {
 
 	double markov_time;
 
-	stability_louvain() :
+	linearised_stability_louvain() :
 		markov_time(markov_time) {
 	}
 

@@ -113,7 +113,7 @@ P find_optimal_partition_louvain(G &graph, M &weights, QF compute_quality,
  */
 
 template<typename P, typename T, typename W, typename QF, typename QFDIFF>
-P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
+void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		QF quality_function, QFDIFF quality_function_diff,
 		std::vector<P> &optimal_partitions) {
 
@@ -258,14 +258,41 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	// it is then possible to reapply the first phase of the algorithm
 	// to the resulting weighted network and to iterate.
 	if (one_level_end == true) {
-		W reduced_weight_map(graph);
-		// Compile P and graph back into normal partition
-		// Pushback P into list of partitions
-		T reduced_graph;
+		// Compile P into original partition size
+		short hierarchy = optimal_partitions.size();
+		if (hierarchy == 0) {
+			optimal_partitions.push_back(partition);
+		} else {
+			// get size of partition one level below, i.e. number of nodes in original graph
+			unsigned int original_number_of_nodes =
+					optimal_partitions[hierarchy - 1].element_count();
+			// create new empty partition of this size
+			P partition_original_nodes;// = P(original_number_of_nodes);
 
-		for (typename T::NodeIt node(graph); node != lemon::INVALID; ++node) {
+			// loop over nodes one level below
+			int old_comm, new_comm;
+			for (int id = 0; id < original_number_of_nodes; id++) {
+				// get the communities for each node one level below
+				old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+				// use this as node_id in the current partition as old community id
+				//is equivalent to new node id and read out new community id
+				new_comm = partition.find_set(old_comm);
+				// include pair (node, new community) id in the newly created partition
+				//partition_original_nodes
+			}
+			optimal_partitions.push_back(partition_original_nodes);
+		}
+
+		// get number of communities
+		int num_comm = partition.set_count();
+
+		// Create graph from partition
+		T reduced_graph;
+		for (int i = 0; i < num_comm; i++) {
 			reduced_graph.addNode();
 		}
+		W reduced_weight_map(reduced_graph);
+
 		//Need a map set_id > node_in_reduced_graph_
 
 		// Find between community total weights by checking
@@ -283,15 +310,38 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			}
 		}
 
-		return cliques::find_optimal_partition_louvain<P>(graph,
-				reduced_weight_map, quality_function, quality_function_diff,
-				optimal_partitions);
+		cliques::find_optimal_partition_louvain<P>(graph, reduced_weight_map,
+				quality_function, quality_function_diff, optimal_partitions);
+
 	}
 
-	return partition;
+	// Compile P into original partition size
+	short hierarchy = optimal_partitions.size();
+	if (hierarchy == 0) {
+		optimal_partitions.push_back(partition);
+	} else {
+		// get size of partition one level below, i.e. number of nodes in original graph
+		unsigned int original_number_of_nodes = optimal_partitions[hierarchy
+				- 1].element_count();
+		// create new empty partition of this size
+		P partition_original_nodes;// = P(original_number_of_nodes);
+
+		// loop over nodes one level below
+		int old_comm, new_comm;
+		for (int id = 0; id < original_number_of_nodes; id++) {
+			// get the communities for each node one level below
+			old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+			// use this as node_id in the current partition as old community id
+			//is equivalent to new node id and read out new community id
+			new_comm = partition.find_set(old_comm);
+			// include pair (node, new community) id in the newly created partition
+			//partition_original_nodes
+		}
+		optimal_partitions.push_back(partition_original_nodes);
+	}
 
 }
 
-}
+}// end namespace cliques
 
 #endif
