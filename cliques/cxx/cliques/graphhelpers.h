@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <lemon/maps.h>
 
 namespace cliques {
 
@@ -50,20 +51,20 @@ float find_total_weight(G &graph, M &weights) {
 	return total_weight;
 }
 
-/*template<typename G, typename P, typename W, typename NO>
+template<typename G, typename P, typename W, typename NO>
 lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, W &weights,
 		NO node) {
-	int num_communites = partition.set_count();
+	int num_communities = partition.set_count();
 	lemon::RangeMap<double> community_to_weight(num_communities, 0);
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
-		double edge_weight = weights[edge];
+		double edge_weight = weights[e];
 		NO opposite_node = graph.oppositeNode(node,e);
 		int comm_node = partition.find_set(opposite_node);
 		community_to_weight[comm_node] += edge_weight;
 	}
 
 	return community_to_weight;
-}*/
+}
 
 template<typename G>
 void read_edgelist(G &graph, std::string filename) {

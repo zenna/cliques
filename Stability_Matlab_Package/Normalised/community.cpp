@@ -368,13 +368,16 @@ bool Community::one_level() {
 				nb_moves++;
 
 		}
-
+        
+        ///////////////////////////////////
+        // What is this loop good for? --M
 		double total_tot = 0;
 		double total_in = 0;
 		for (unsigned int i = 0; i < tot.size(); i++) {
 			total_tot += tot[i];
 			total_in += in[i];
 		}
+        ///////////////////////////////////
 
 		new_mod = modularity();
 
