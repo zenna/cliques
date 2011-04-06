@@ -146,25 +146,38 @@ struct find_weighted_linearised_stability {
  @brief  Functor for finding stability gain for weighted graph
  */
 
-struct stability_gain_luvain {
+struct stability_gain_louvain {
+	double markov_time;
 
-	double operator ()(double time, double tot_w_comm, double w_node_to_comm,
-			double two_m, double w_deg_node) {
-		return (time * w_node_to_comm - tot_w_comm * w_deg_node / two_m);
+	stability_gain_louvain() :
+		markov_time(markov_time) {
+	}
+
+	double operator ()(double tot_w_comm, double w_node_to_comm, double two_m,
+			double w_deg_node) {
+		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node / two_m);
 	}
 
 };
 
-struct stability_luvain {
+struct stability_louvain {
 
-	double operator ()(double time, lemon::RangeMap<double> comm_w_tot,
+	double markov_time;
+
+	stability_louvain() :
+		markov_time(markov_time) {
+	}
+
+	double operator ()(lemon::RangeMap<double> comm_w_tot,
 			lemon::RangeMap<double> comm_w_in, double two_m) {
-		double q = 1.0 - time;
+		double q = 1.0 - markov_time;
 		int size = comm_w_tot.size();
 
 		for (int i = 0; i < size; i++) {
-			if(comm_w_in[i]>0)
-				q += time* double(comm_w_in[i])/two_m - ( ( double(comm_w_tot[i])/ two_m)  * (double(comm_w_tot[i])/ two_m ) );
+			if (comm_w_in[i] > 0)
+				q += markov_time * double(comm_w_in[i]) / two_m
+						- ((double(comm_w_tot[i]) / two_m)
+								* (double(comm_w_tot[i]) / two_m));
 		}
 
 		return q;

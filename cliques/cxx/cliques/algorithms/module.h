@@ -114,7 +114,8 @@ P find_optimal_partition_louvain(G &graph, M &weights, QF compute_quality,
 
 template<typename P, typename T, typename W, typename QF, typename QFDIFF>
 P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
-		QF quality_function, QFDIFF quality_function_diff) {
+		QF quality_function, QFDIFF quality_function_diff,
+		std::vector<P> &optimal_partitions) {
 
 	// Start: Create singleton partition from graph
 	P partition;
@@ -151,8 +152,7 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
 	}
 
-	double current_quality = quality_function(time, comm_w_tot, comm_w_in,
-			two_m);
+	double current_quality = quality_function(comm_w_tot, comm_w_in, two_m);
 
 	//TODO: Randomise the looping over nodes
 
@@ -163,7 +163,7 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	do {
 		// initialise number of moves, get current quality
 		number_of_moves = 0;
-		old_quality=current_quality;
+		old_quality = current_quality;
 
 		// Loop over all nodes
 		for (typename T::NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
@@ -181,8 +181,8 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			//TODO: make inline function for this
 			// -----------------------------------------
 			// remove node from partition/bookkeeping
-			comm_w_tot[node_id] -= node_to_w[node_id];
-			comm_w_in[node_id] -= 2 * node_weight_to_communities[node_id]
+			comm_w_tot[comm_id] -= node_to_w[node_id];
+			comm_w_in[comm_id] -= 2 * node_weight_to_communities[comm_id]
 					+ find_weight_selfloops(graph, weights, n1);
 			// TODO this has to be done with real partition
 			node_to_comm[node_id] = -1;
@@ -191,35 +191,62 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 			//default option for re-inclusion of node
 			unsigned int best_comm = comm_id;
+			double best_gain = 0;
 
+			// TODO check if better to loop over all neighbouring  communities,
 			// find all neighbouring communities
-			//TODO: loop over all neighbouring communities
+
+			// loop over all neighbouring nodes
 			for (typename T::IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
 				typename T::Node n2 = graph.oppositeNode(n1, e);
 				if (n1 != n2) {
+					// get neighbour node id and neighbour community id
+					unsigned int node_id_neighbour = graph.id(n2);
+					unsigned int comm_id_neighbour =
+							node_to_comm[node_id_neighbour];
+					double gain = quality_function_diff(
+							comm_w_tot[comm_id_neighbour],
+							node_weight_to_communities[comm_id_neighbour],
+							two_m, node_to_w[node_id]);
+					if (gain > best_gain) {
+						best_comm = comm_id_neighbour;
+						best_gain = gain;
+						// avoid not necessary movements, place node in old community if possible
+					} else if (gain == best_gain && comm_id
+							== comm_id_neighbour) {
+						best_comm = comm_id;
 
-					// compute gain
-					// if gain > best gain
-					// best comm = this comm
-
+					}
 
 				}
 			}
 
-			//insert_node into best comm
-			//if best_comm != old_comm
-			// nb_moves ++
+			//TODO: make inline function for this
+			// -----------------------------------------
+			// insert node to partition/bookkeeping
+			comm_w_tot[best_comm] += node_to_w[node_id];
+			comm_w_in[best_comm] += 2 * node_weight_to_communities[best_comm]
+					+ find_weight_selfloops(graph, weights, n1);
+			// TODO this has to be done with real partition
+			node_to_comm[node_id] = best_comm;
+			// ------------------------------------------
+			if (best_comm != comm_id) {
+				number_of_moves++;
+			}
 
 		}
 
 		if (number_of_moves > 0) {
 			// compute new quality
-			current_quality = quality_function(time, comm_w_tot, comm_w_in,
-					two_m);
+			current_quality = quality_function(comm_w_tot, comm_w_in, two_m);
 			one_level_end = true;
 		}
 		// If there was a movement of the nodes AND quality increases make another run
-	} while (number_of_moves > 0 && (current_quality - old_quality) > minimum_improve);
+	} while (number_of_moves > 0 && (current_quality - old_quality)
+			> minimum_improve);
+
+	// temp. TODO change this
+	// create partition from node_to_comm_vector
 
 	// The second phase of the algorithm consists in building a new network
 	// whose nodes are now the communities found during the first phase.
@@ -257,7 +284,8 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		}
 
 		return cliques::find_optimal_partition_louvain<P>(graph,
-				reduced_weight_map, quality_function, quality_function_diff);
+				reduced_weight_map, quality_function, quality_function_diff,
+				optimal_partitions);
 	}
 
 	return partition;
