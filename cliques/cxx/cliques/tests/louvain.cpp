@@ -58,4 +58,5 @@ int main() {
 	canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
 	canvas.draw("test_louvain_out");
 	return 0;
-};
+}
+;

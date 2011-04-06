@@ -50,7 +50,7 @@ float find_total_weight(G &graph, M &weights) {
 	return total_weight;
 }
 
-template<typename G, typename P, typename W, typename NO>
+/*template<typename G, typename P, typename W, typename NO>
 lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, W &weights,
 		NO node) {
 	int num_communites = partition.set_count();
@@ -63,7 +63,7 @@ lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, 
 	}
 
 	return community_to_weight;
-}
+}*/
 
 template<typename G>
 void read_edgelist(G &graph, std::string filename) {

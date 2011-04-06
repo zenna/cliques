@@ -12,16 +12,6 @@
 
 namespace cliques {
 
-namespace _luv {
-
-inline void insert_node_bookkeeping(int node, int comm, double) {
-
-}
-
-// TODO insert node, remove node functions...
-
-
-}
 /**
  @brief  Louvain method - greedy algorithm to find community structure of a network.
 
@@ -150,6 +140,8 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	lemon::RangeMap<double> comm_w_in = lemon::RangeMap<double>(
 			number_of_nodes, 0);
 
+
+	// initialise bookkeeping variables..
 	for (int i = 0; i < number_of_nodes; i++) {
 		typename T::Node temp_node = graph.nodeFromId(i);
 		comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
@@ -158,11 +150,12 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
 	}
 
-	float best_stability = -std::numeric_limits<float>::max();
+	double current_quality = quality_function(time, comm_w_tot,
+			comm_w_in, two_m);
 
 	for (typename T::NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 		int best_set = 0;
-
+		double best_stability = 0;
 		// remove node
 		// default option
 		// best comm = old comm
@@ -176,8 +169,6 @@ P find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				// best comm = this comm
 
 				std::vector<float> new_stability;
-
-
 
 				//std::cout << "new stab "<< new_stability[0] << "best stab: " << best_stability << std::endl;
 				if (new_stability[0] > best_stability) {
