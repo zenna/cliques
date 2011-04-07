@@ -5,7 +5,7 @@ include_directories(../../)
 include_directories(/usr/include/graphviz/)
 link_directories(/usr/lib/graphviz/)
 
-set(CMAKE_CXX_FLAGS "-g -O3 -pg -Wall -DUSE_BOOST")
+set(CMAKE_CXX_FLAGS "-g -pg -Wall -DUSE_BOOST")
 
 add_executable(test_louvain louvain.cpp)	
 target_link_libraries(test_louvain gvc)

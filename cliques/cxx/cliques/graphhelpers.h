@@ -24,7 +24,7 @@ float A(G &graph, int node1_id, int node2_id) {
 ;
 
 template<typename G, typename M, typename NO>
-float find_weighted_degree(G &graph, M &weights, NO node) {
+float find_weighted_degree(G &graph, M &weights, NO &node) {
 	float degree = 0.0;
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		degree = degree + weights[e];
@@ -34,7 +34,7 @@ float find_weighted_degree(G &graph, M &weights, NO node) {
 ;
 
 template<typename G, typename M, typename NO>
-double find_weight_selfloops(G &graph, M &weights, NO node) {
+double find_weight_selfloops(G &graph, M &weights, NO &node) {
 	typename G::Edge edge = lemon::findEdge(graph, node, node);
 	if (edge != lemon::INVALID)
 		return 0;
@@ -53,7 +53,7 @@ float find_total_weight(G &graph, M &weights) {
 
 template<typename G, typename P, typename W, typename NO>
 lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, W &weights,
-		NO node) {
+		NO &node) {
 	int num_communities = partition.set_count();
 	lemon::RangeMap<double> community_to_weight(num_communities, 0);
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
@@ -112,48 +112,48 @@ maxima_file.close();
 
 template<typename G, typename E>
 void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
-std::ifstream maxima_file(filename.c_str());
-std::string line;
-std::string maxima;
+	std::ifstream maxima_file(filename.c_str());
+	std::string line;
+	std::string maxima;
 
-if (!maxima_file.is_open()) {
-	std::cout << "couldn't open file" << std::endl;
-	exit(1);
-}
-
-typedef typename G::Node Node;
-std::map<int, Node> id_to_node;
-while (std::getline(maxima_file, line)) {
-	std::stringstream lineStream(line);
-	std::set<int> current_maxima;
-
-	std::getline(lineStream, maxima, '\t');
-	int node1_id = atoi(maxima.c_str());
-	std::getline(lineStream, maxima, '\t');
-	int node2_id = atoi(maxima.c_str());
-	std::getline(lineStream, maxima, '\t');
-	int weight = atoi(maxima.c_str());
-
-	typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
-	Node node1, node2;
-
-	if (itr == id_to_node.end()) {
-		node1 = graph.addNode();
-		id_to_node[node1_id] = node1;
-	} else {
-		node1 = itr->second;
+	if (!maxima_file.is_open()) {
+		std::cout << "couldn't open file" << std::endl;
+		exit(1);
 	}
-	itr = id_to_node.find(node2_id);
-	if (itr == id_to_node.end()) {
-		node2 = graph.addNode();
-		id_to_node[node2_id] = node2;
-	} else {
-		node2 = itr->second;
+
+	typedef typename G::Node Node;
+	std::map<int, Node> id_to_node;
+	while (std::getline(maxima_file, line)) {
+		std::stringstream lineStream(line);
+		std::set<int> current_maxima;
+
+		std::getline(lineStream, maxima, ' ');
+		int node1_id = atoi(maxima.c_str());
+		std::getline(lineStream, maxima, ' ');
+		int node2_id = atoi(maxima.c_str());
+		std::getline(lineStream, maxima, ' ');
+		float weight = atof(maxima.c_str());
+
+		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
+		Node node1, node2;
+
+		if (itr == id_to_node.end()) {
+			node1 = graph.addNode();
+			id_to_node[node1_id] = node1;
+		} else {
+			node1 = itr->second;
+		}
+		itr = id_to_node.find(node2_id);
+		if (itr == id_to_node.end()) {
+			node2 = graph.addNode();
+			id_to_node[node2_id] = node2;
+		} else {
+			node2 = itr->second;
+		}
+		typename G::Edge edge = graph.addEdge(node1, node2);
+		weights.set(edge, weight);
 	}
-	typename G::Edge edge = graph.addEdge(node1, node2);
-	weights.set(edge, weight);
-}
-maxima_file.close();
+	maxima_file.close();
 }
 
 }

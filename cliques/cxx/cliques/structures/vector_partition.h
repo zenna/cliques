@@ -34,8 +34,6 @@ public:
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 				!= partition_vector.end(); ++itr) {
 			*itr = itr - partition_vector.begin();
-
-			double test = *itr;
 		}
 	}
 

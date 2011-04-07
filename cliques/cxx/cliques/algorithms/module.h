@@ -196,8 +196,6 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				// get neighbour node id and neighbour community id
 				unsigned int node_id_neighbour = graph.id(n2);
 				if (node_id != node_id_neighbour) {
-					//TODO remove check
-					std::cout << "checkpoint";
 
 					unsigned int comm_id_neighbour = partition.find_set(
 							node_id_neighbour);
@@ -206,8 +204,6 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 							node_weight_to_communities[comm_id_neighbour],
 							two_m, node_to_w[node_id]);
 					if (gain > best_gain) {
-						//TODO remove check
-						std::cout << gain;
 						best_comm = comm_id_neighbour;
 						best_gain = gain;
 						// avoid not necessary movements, place node in old community if possible
@@ -223,6 +219,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			//TODO: make inline function for this
 			// -----------------------------------------
 			// insert node to partition/bookkeeping
+			std::cout << best_comm << std::endl;
 			comm_w_tot[best_comm] += node_to_w[node_id];
 			comm_w_in[best_comm] += 2 * node_weight_to_communities[best_comm]
 					+ find_weight_selfloops(graph, weights, n1);
@@ -245,7 +242,6 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	} while (number_of_moves > 0 && (current_quality - old_quality)
 			> minimum_improve);
 
-	// TODO this does not work!!
 	partition.normalise_ids();
 
 	// The second phase of the algorithm consists in building a new network
