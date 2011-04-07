@@ -13,7 +13,7 @@ namespace cliques {
  and removal of a node from a set
  */
 class VectorPartition {
-private:
+public:
 	int num_nodes;
 	std::vector<int> partition_vector;
 
@@ -53,13 +53,12 @@ public:
 
 	void normalise_ids() {
 		int start_num = 0;
-		std::map<int, int> set_to_node;
 		std::map<int, int> set_old_to_new;
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 				!= partition_vector.end(); ++itr) {
 
 			std::map<int, int>::iterator old_set = set_old_to_new.find(*itr);
-			if (old_set == set_to_node.end()) {
+			if (old_set == set_old_to_new.end()) {
 				set_old_to_new[*itr] = start_num;
 				*itr = start_num;
 				start_num++;
