@@ -31,8 +31,8 @@ int main() {
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
-	cliques::read_edgelist_weighted("/home/mts09/celegansweighted.edj", orange_graph,
-			weights);
+	cliques::read_edgelist_weighted("/home/mts09/celegansweighted.edj",
+			orange_graph, weights);
 
 	double current_markov_time = 0.8;
 
@@ -43,9 +43,9 @@ int main() {
 			cliques::linearised_stability_gain_louvain(current_markov_time),
 			optimal_partitions);
 
-/*	partition best_partition = optimal_partitions.back();
+	partition best_partition = optimal_partitions.back();
 	int length = best_partition.element_count();
-	for(int i = 0; i< length; i++){
+	for (int i = 0; i < length; i++) {
 		std::cout << i << " " << best_partition.find_set(i) << "\n";
 	}
 
@@ -64,7 +64,8 @@ int main() {
 	 canvas.add_node_map(cliques::make_partition_colour_map<
 	 cliques::DisjointSetForest<int> >(best_partition));
 	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
-	 canvas.draw("test_louvain_out");*/
+	 canvas.draw("test_louvain_out");
+	 */
 	return 0;
 }
 ;

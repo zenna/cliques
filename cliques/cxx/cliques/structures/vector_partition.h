@@ -29,11 +29,13 @@ public:
 	explicit VectorPartition(std::vector<int> partition) :
 		partition_vector(partition) {
 	}
-
+	// what is that for a horribly over complicated syntax?? --M
 	void initialise_as_singletons() {
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 				!= partition_vector.end(); ++itr) {
 			*itr = itr - partition_vector.begin();
+
+			double test = *itr;
 		}
 	}
 
@@ -54,9 +56,10 @@ public:
 	void normalise_ids() {
 		int start_num = 0;
 		std::map<int, int> set_to_node;
+		std::map<int, int> set_old_to_new;
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 				!= partition_vector.end(); ++itr) {
-			std::map<int, int> set_old_to_new;
+
 			std::map<int, int>::iterator old_set = set_old_to_new.find(*itr);
 			if (old_set == set_to_node.end()) {
 				set_old_to_new[*itr] = start_num;
@@ -84,7 +87,7 @@ public:
 		}
 		int count = 0;
 		for (std::vector<int>::iterator itr = count_vector.begin(); itr
-						!= count_vector.end(); ++itr) {
+				!= count_vector.end(); ++itr) {
 			count += *itr;
 		}
 		return count;

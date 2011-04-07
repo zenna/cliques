@@ -192,7 +192,6 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 			// loop over all neighbouring nodes
 			for (typename T::IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
-
 				typename T::Node n2 = graph.oppositeNode(n1, e);
 				// get neighbour node id and neighbour community id
 				unsigned int node_id_neighbour = graph.id(n2);
@@ -337,7 +336,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 		// loop over nodes one level below
 		int old_comm, new_comm;
-		for (int id = 0; id < original_number_of_nodes; id++) {
+		for (unsigned int id = 0; id < original_number_of_nodes; id++) {
 			// get the communities for each node one level below
 			old_comm = optimal_partitions[hierarchy - 1].find_set(id);
 			// use this as node_id in the current partition as old community id
