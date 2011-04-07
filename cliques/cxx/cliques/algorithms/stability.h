@@ -149,8 +149,8 @@ struct find_weighted_linearised_stability {
 struct linearised_stability_gain_louvain {
 	double markov_time;
 
-	linearised_stability_gain_louvain() :
-		markov_time(markov_time) {
+	linearised_stability_gain_louvain(double mtime) :
+		markov_time(mtime) {
 	}
 
 	double operator ()(double tot_w_comm, double w_node_to_comm, double two_m,
@@ -164,8 +164,8 @@ struct linearised_stability_louvain {
 
 	double markov_time;
 
-	linearised_stability_louvain() :
-		markov_time(markov_time) {
+	linearised_stability_louvain(double mtime) :
+		markov_time(mtime) {
 	}
 
 	double operator ()(lemon::RangeMap<double> comm_w_tot,

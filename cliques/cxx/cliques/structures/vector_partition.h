@@ -53,20 +53,41 @@ public:
 
 	void normalise_ids() {
 		int start_num = 0;
-		std::map<int,int> set_to_node;
+		std::map<int, int> set_to_node;
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
-						!= partition_vector.end(); ++itr) {
-			std::map<int,int> set_old_to_new;
-			std::map<int,int>::iterator old_set = set_old_to_new.find(*itr);
+				!= partition_vector.end(); ++itr) {
+			std::map<int, int> set_old_to_new;
+			std::map<int, int>::iterator old_set = set_old_to_new.find(*itr);
 			if (old_set == set_to_node.end()) {
 				set_old_to_new[*itr] = start_num;
 				*itr = start_num;
 				start_num++;
-			}
-			else {
+			} else {
 				*itr = old_set->second;
 			}
 		}
+	}
+
+	int element_count() {
+		return partition_vector.size();
+	}
+
+	int set_count() {
+		std::vector<int> count_vector(num_nodes, 0);
+		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
+				!= partition_vector.end(); ++itr) {
+			if (*itr == -1)
+				// TODO warning: there are unassigned nodes
+				return -1;
+			else
+				count_vector[*itr] = 1;
+		}
+		int count = 0;
+		for (std::vector<int>::iterator itr = count_vector.begin(); itr
+						!= count_vector.end(); ++itr) {
+			count += *itr;
+		}
+		return count;
 	}
 
 	//#################### ITERATORS ####################

@@ -9,7 +9,10 @@
 #include <drawing/colour_maps.h>
 
 #include <algorithms/module.h>
+//TODO get rid of this
 #include <structures/disjointset.h>
+
+#include <cliques/structures/vector_partition.h>
 
 #include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
@@ -24,39 +27,39 @@
 //TODO
 //REMOVE NEIGHBOURS TO SELF
 int main() {
-	typedef cliques::DisjointSetForest<int> DjPartition;
+	typedef cliques::VectorPartition partition;
 	lemon::SmartGraph orange_graph;
-	lemon::SmartGraph::EdgeMap<int> weights(orange_graph);
+	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
-	cliques::read_edgelist_weighted(
-			"/home/zenna/repos/uniproj/data/celegansweighted.edj",
-			orange_graph, weights);
+	cliques::read_edgelist_weighted("/home/mts09/celegansweighted.edj", orange_graph,
+			weights);
 
-	std::vector<float> current_markov_time;
-	current_markov_time.push_back(1.0);
+	double current_markov_time = 0.8;
 
-	std::vector<DjPartition> optimal_partitions;
-	DjPartition best_partition = cliques::find_optimal_partition_louvain<
-			DjPartition>(orange_graph, weights,
-			cliques::find_weighted_linearised_stability(current_markov_time),
+	std::vector<partition> optimal_partitions;
+	cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
+			weights,
+			cliques::linearised_stability_louvain(current_markov_time),
+			cliques::linearised_stability_gain_louvain(current_markov_time),
 			optimal_partitions);
 
-	cliques::print_partition(optimal_partitions.back());
 
-	//Drawing
-	float start = -10;
-	std::vector<float> energies;
-	for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-		energies.push_back(start);
-		start += 12.0;
-		std::cout << orange_graph.id(e) << std::endl;
-	}
+	/*	cliques::print_partition(optimal_partitions.back());
 
-	cliques::draw_graph canvas(orange_graph);
-	canvas.add_node_map(cliques::make_partition_colour_map<
-			cliques::DisjointSetForest<int> >(best_partition));
-	canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
-	canvas.draw("test_louvain_out");
+	 //Drawing
+	 float start = -10;
+	 std::vector<float> energies;
+	 for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
+	 energies.push_back(start);
+	 start += 12.0;
+	 std::cout << orange_graph.id(e) << std::endl;
+	 }
+
+	 cliques::draw_graph canvas(orange_graph);
+	 canvas.add_node_map(cliques::make_partition_colour_map<
+	 cliques::DisjointSetForest<int> >(best_partition));
+	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
+	 canvas.draw("test_louvain_out");*/
 	return 0;
 }
 ;

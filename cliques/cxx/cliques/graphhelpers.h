@@ -59,7 +59,7 @@ lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, 
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		double edge_weight = weights[e];
 		NO opposite_node = graph.oppositeNode(node,e);
-		int comm_node = partition.find_set(opposite_node);
+		int comm_node = partition.find_set(graph.id(opposite_node));
 		community_to_weight[comm_node] += edge_weight;
 	}
 
