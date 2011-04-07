@@ -9,6 +9,7 @@
 
 #include <cliques/structures/partition.h>
 #include <cliques/structures/common.h>
+#include <iostream>
 
 namespace cliques {
 
@@ -165,12 +166,12 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			// get node id and comm id
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
-			typename T::Node node =n1;
+			typename T::Node node = n1;
 
 			// get weights from node to each community
 			lemon::RangeMap<double> node_weight_to_communities =
 					cliques::find_weight_node_to_communities(graph, partition,
-							weights,node);
+							weights, node);
 
 			//TODO: make inline function for this
 			// -----------------------------------------
@@ -191,10 +192,14 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 			// loop over all neighbouring nodes
 			for (typename T::IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+
 				typename T::Node n2 = graph.oppositeNode(n1, e);
-				if (n1 != n2) {
-					// get neighbour node id and neighbour community id
-					unsigned int node_id_neighbour = graph.id(n2);
+				// get neighbour node id and neighbour community id
+				unsigned int node_id_neighbour = graph.id(n2);
+				if (node_id != node_id_neighbour) {
+					//TODO remove check
+					std::cout << "checkpoint";
+
 					unsigned int comm_id_neighbour = partition.find_set(
 							node_id_neighbour);
 					double gain = quality_function_diff(
@@ -202,6 +207,8 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 							node_weight_to_communities[comm_id_neighbour],
 							two_m, node_to_w[node_id]);
 					if (gain > best_gain) {
+						//TODO remove check
+						std::cout << gain;
 						best_comm = comm_id_neighbour;
 						best_gain = gain;
 						// avoid not necessary movements, place node in old community if possible
@@ -229,6 +236,8 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		}
 
 		if (number_of_moves > 0) {
+			//TODO remove check
+			std::cout << "nodes moved!";
 			// compute new quality
 			current_quality = quality_function(comm_w_tot, comm_w_in, two_m);
 			one_level_end = true;
@@ -237,6 +246,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	} while (number_of_moves > 0 && (current_quality - old_quality)
 			> minimum_improve);
 
+	// TODO this does not work!!
 	partition.normalise_ids();
 
 	// The second phase of the algorithm consists in building a new network
@@ -269,8 +279,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				//is equivalent to new node id and read out new community id
 				new_comm = partition.find_set(old_comm);
 				// include pair (node, new community) id in the newly created partition
-				//TODO
-				//partition_original_nodes
+				partition_original_nodes.add_node_to_set(id, new_comm);
 			}
 			optimal_partitions.push_back(partition_original_nodes);
 		}
@@ -309,8 +318,9 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			reduced_weight_map[edge_in_reduced_graph] += weight;
 		}
 
-		cliques::find_optimal_partition_louvain_with_gain<P>(graph, reduced_weight_map,
-				quality_function, quality_function_diff, optimal_partitions);
+		cliques::find_optimal_partition_louvain_with_gain<P>(graph,
+				reduced_weight_map, quality_function, quality_function_diff,
+				optimal_partitions);
 
 	}
 
@@ -334,9 +344,9 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			//is equivalent to new node id and read out new community id
 			new_comm = partition.find_set(old_comm);
 			// include pair (node, new community) id in the newly created partition
-			//partition_original_nodes
+			partition_original_nodes.add_node_to_set(id, new_comm);
 		}
-		optimal_partitions.push_back(partition_original_nodes);
+
 	}
 
 }

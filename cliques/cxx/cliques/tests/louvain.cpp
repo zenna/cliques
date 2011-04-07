@@ -43,6 +43,11 @@ int main() {
 			cliques::linearised_stability_gain_louvain(current_markov_time),
 			optimal_partitions);
 
+/*	partition best_partition = optimal_partitions.back();
+	int length = best_partition.element_count();
+	for(int i = 0; i< length; i++){
+		std::cout << i << " " << best_partition.find_set(i) << "\n";
+	}
 
 	/*	cliques::print_partition(optimal_partitions.back());
 
