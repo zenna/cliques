@@ -132,7 +132,7 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	while (std::getline(maxima_file, line)) {
 
 		std::stringstream lineStream(line);
-
+		//readout node id and weights
 		std::getline(lineStream, maxima, ' ');
 		int node1_id = atoi(maxima.c_str());
 		std::getline(lineStream, maxima, ' ');
@@ -152,7 +152,7 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 			node1 = itr->second;
 		}
 
-
+		// same for node 2
 		itr = id_to_node.find(node2_id);
 		if (itr == id_to_node.end()) {
 			node2 = graph.addNode();
@@ -160,7 +160,8 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 		} else {
 			node2 = itr->second;
 		}
-		std::cout << "adding " << graph.id(node1) << " - " << graph.id(node2) << std::endl;
+
+		//std::cout << "adding " << graph.id(node1) << " - " << graph.id(node2) << std::endl;
 		typename G::Edge edge = graph.addEdge(node1, node2);
 		weights.set(edge, weight);
 	}

@@ -31,10 +31,10 @@ int main() {
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
-	cliques::read_edgelist_weighted("/home/mts09/celegansweighted.edj",
+	cliques::read_edgelist_weighted("/home/mts09/triangletest.edj",
 			orange_graph, weights);
 
-	double current_markov_time = 0.8;
+	double current_markov_time = 100;
 
 	std::vector<partition> optimal_partitions;
 	cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,

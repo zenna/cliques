@@ -303,8 +303,8 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		for (int i = 0; i < num_comm; i++) {
 			reduced_graph.addNode();
 		}
-		W reduced_weight_map(reduced_graph);
 
+		std::map<typename T::Edge,double> temp_weight_map;
 		//Need a map set_id > node_in_reduced_graph_
 
 		// Find between community total weights by checking
@@ -325,12 +325,17 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 			if (edge_in_reduced_graph == lemon::INVALID) {
 				reduced_graph.addEdge(node_of_comm_u, node_of_comm_v);
-				reduced_weight_map.set(edge_in_reduced_graph, weight);
+				temp_weight_map[edge_in_reduced_graph] = weight;
 			} else
-				reduced_weight_map[edge_in_reduced_graph] += weight;
+				temp_weight_map[edge_in_reduced_graph] += weight;
 		}
 
-		cliques::find_optimal_partition_louvain_with_gain<P>(graph,
+		W reduced_weight_map(reduced_graph);
+		for (typename T::EdgeIt edge(reduced_graph); edge != lemon::INVALID; ++edge){
+			reduced_weight_map[edge] = temp_weight_map[edge];
+		}
+
+		cliques::find_optimal_partition_louvain_with_gain<P>(reduced_graph,
 				reduced_weight_map, quality_function, quality_function_diff,
 				optimal_partitions);
 
