@@ -118,6 +118,8 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		QF quality_function, QFDIFF quality_function_diff,
 		std::vector<P> &optimal_partitions) {
 
+	std::cout << "starting first round" << std::endl;
+
 	// Start: Create singleton partition from graph
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
@@ -126,7 +128,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	// minimum improvement
 	double minimum_improve = 0.000001; //0;
 	// total weight of the links
-	double two_m = find_total_weight(graph, weights);
+	double two_m = 2*find_total_weight(graph, weights);
 	// number_of_nodes
 	unsigned int number_of_nodes = lemon::countNodes(graph);
 	// mapping form node to node weight
@@ -144,7 +146,9 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		typename T::Node temp_node = graph.nodeFromId(i);
 		comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
 				temp_node);
+//		std::cout << i << "   "<< comm_w_tot[i] << std::endl;
 		comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
+//		std::cout << i << "   "<< comm_w_in[i] << std::endl;
 	}
 
 	double current_quality = quality_function(comm_w_tot, comm_w_in, two_m);
@@ -163,13 +167,21 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		// Loop over all nodes
 		for (typename T::NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 
+//			for (typename T::NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
+//				// get node id and comm id
+//				unsigned int node_id = graph.id(n1);
+//				std::cout << "test 1   " << node_id << std::endl;
+//			}
+
 			// get node id and comm id
 			unsigned int node_id = graph.id(n1);
+//			std::cout << node_id << std::endl;
 			unsigned int comm_id = partition.find_set(node_id);
+//			std::cout << comm_id << std::endl;
 			typename T::Node node = n1;
 
 			// get weights from node to each community
-			lemon::RangeMap<double> node_weight_to_communities =
+			std::map<int,double> node_weight_to_communities =
 					cliques::find_weight_node_to_communities(graph, partition,
 							weights, node);
 
@@ -191,7 +203,7 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			// find all neighbouring communities
 
 			// loop over all neighbouring nodes
-			for (typename T::IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+			for (typename T::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 				typename T::Node n2 = graph.oppositeNode(n1, e);
 				// get neighbour node id and neighbour community id
 				unsigned int node_id_neighbour = graph.id(n2);
@@ -219,10 +231,13 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			//TODO: make inline function for this
 			// -----------------------------------------
 			// insert node to partition/bookkeeping
-			std::cout << best_comm << std::endl;
+//			std::cout << node_id << comm_id << best_comm << std::endl;
 			comm_w_tot[best_comm] += node_to_w[node_id];
+//			std::cout << comm_w_tot[best_comm] << std::endl;
 			comm_w_in[best_comm] += 2 * node_weight_to_communities[best_comm]
 					+ find_weight_selfloops(graph, weights, n1);
+//			std::cout << comm_w_in[best_comm] << std::endl;
+//			std::cout << "was here" << std::endl;
 			partition.add_node_to_set(node_id, best_comm);
 			// ------------------------------------------
 			if (best_comm != comm_id) {
@@ -233,11 +248,12 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 		if (number_of_moves > 0) {
 			//TODO remove check
-			std::cout << "nodes moved!";
+			std::cout << "nodes moved!"<< std::endl;
 			// compute new quality
 			current_quality = quality_function(comm_w_tot, comm_w_in, two_m);
 			one_level_end = true;
 		}
+
 		// If there was a movement of the nodes AND quality increases make another run
 	} while (number_of_moves > 0 && (current_quality - old_quality)
 			> minimum_improve);

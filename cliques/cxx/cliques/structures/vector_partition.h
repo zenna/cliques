@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <map>
+#include <iostream>
 
 namespace cliques {
 /**
@@ -73,21 +74,32 @@ public:
 	}
 
 	int set_count() {
+		std::set<int> seen_nodes;
+		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
+						!= partition_vector.end(); ++itr) {
+			if (*itr != -1) {
+				seen_nodes.insert(*itr);
+			}
+		}
+		return seen_nodes.size();
+		/*
+
 		std::vector<int> count_vector(num_nodes, 0);
 		for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 				!= partition_vector.end(); ++itr) {
-			if (*itr == -1)
+			if (*itr == -1) {
 				// TODO warning: there are unassigned nodes
-				return -1;
-			else
+				std::cout << "The element has no set assigned" << std::endl;
+				return 0;
+			} else
 				count_vector[*itr] = 1;
 		}
 		int count = 0;
 		for (std::vector<int>::iterator itr = count_vector.begin(); itr
 				!= count_vector.end(); ++itr) {
 			count += *itr;
-		}
-		return count;
+		}*/
+		//return count;
 	}
 
 	//#################### ITERATORS ####################

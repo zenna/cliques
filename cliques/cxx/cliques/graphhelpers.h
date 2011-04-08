@@ -21,30 +21,31 @@ float A(G &graph, int node1_id, int node2_id) {
 	}
 	return 0.0;
 }
-;
+
 
 template<typename G, typename M, typename NO>
 float find_weighted_degree(G &graph, M &weights, NO &node) {
-	float degree = 0.0;
+	double degree = 0.0;
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
+		// TODO check if this is consistent with self loop counting
 		degree = degree + weights[e];
 	}
 	return degree;
 }
-;
+
 
 template<typename G, typename M, typename NO>
 double find_weight_selfloops(G &graph, M &weights, NO &node) {
 	typename G::Edge edge = lemon::findEdge(graph, node, node);
-	if (edge != lemon::INVALID)
-		return 0;
+	if (edge == lemon::INVALID)
+		return 0.0;
 	else
 		return double(weights[edge]);
 }
 
 template<typename G, typename M>
 float find_total_weight(G &graph, M &weights) {
-	float total_weight = 0.0;
+	double total_weight = 0.0;
 	for (typename G::EdgeIt e(graph); e != lemon::INVALID; ++e) {
 		total_weight = total_weight + weights[e];
 	}
@@ -52,10 +53,10 @@ float find_total_weight(G &graph, M &weights) {
 }
 
 template<typename G, typename P, typename W, typename NO>
-lemon::RangeMap<double> find_weight_node_to_communities(G &graph, P &partition, W &weights,
-		NO &node) {
-	int num_communities = partition.set_count();
-	lemon::RangeMap<double> community_to_weight(num_communities, 0);
+std::map<int,double> find_weight_node_to_communities(G &graph, P &partition, W &weights,
+		NO node) {
+	std::map<int,double> community_to_weight;
+
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		double edge_weight = weights[e];
 		NO opposite_node = graph.oppositeNode(node,e);
