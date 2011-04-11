@@ -129,6 +129,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		mexErrMsgTxt('Error parsing arguments');
 	}
 	//create new graph and weight map
+
 	lemon::SmartGraph mygraph;
 	lemon::SmartGraph::EdgeMap<float> myweights(mygraph);
 
@@ -136,6 +137,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			myweights)) {
 		mexErrMsgTxt('Error creating graph from data');
 	}
+
+	// typedef for convenience
+	typedef cliques::VectorPartition partition;
+
+	std::vector<partition> optimal_partitions;
+	cliques::find_optimal_partition_louvain_with_gain<partition>(mygraph,
+			myweights, cliques::linearised_stability_louvain(time),
+			cliques::linearised_stability_gain_louvain(time),
+			optimal_partitions);
+	partition best_partition = optimal_partitions.back();
 
 	// now run louvain method
 	// write data back to matlab
