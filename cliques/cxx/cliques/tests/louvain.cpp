@@ -42,8 +42,7 @@ int main() {
 	std::vector<partition> optimal_partitions;
 	cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
 			weights,
-			//cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_louvain(current_markov_time),
+			cliques::find_weighted_linearised_stability(markov_times),
 			cliques::linearised_stability_gain_louvain(current_markov_time),
 			optimal_partitions);
 

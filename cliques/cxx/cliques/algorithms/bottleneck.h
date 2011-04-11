@@ -1,6 +1,6 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
-#ifndef CLIQUES_COMPLEXITY_H
-#define CLIQUES_COMPLEXITY_H
+#ifndef CLIQUES_BOTTLENECK_H
+#define CLIQUES_BOTTLENECK_H
 
 #include <lemon/connectivity.h>
 #include <map>
