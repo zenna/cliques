@@ -35,7 +35,7 @@ end
 N= max([G(1,:) G(2,:)]);
 
 % allocate and fill in adjacency matrix
-A= sparse(G(1,ii),G(2,ii),G(3,ii),N,N);
+A= sparse(G(1,:),G(2,:),G(3,:),N,N);
 
 % undirected pajek graphs are "one way"/nonsymmetric, hence symmetrize
 A = A+A';
