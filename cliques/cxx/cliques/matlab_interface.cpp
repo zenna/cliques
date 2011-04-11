@@ -6,6 +6,7 @@
  */
 
 #include "mex.h"
+#include <lemon/smart_graph.h>
 
 namespace matlab_interface {
 
@@ -68,6 +69,52 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 template<typename G, typename E>
 bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		G &graph, E &weights) {
+
+	// Find number of nodes; relies on correct ordering of nodes,
+	// column first ordering MATLAB, node numbering starting from 0
+	int num_nodes = int(data[num_l_dim - 1]) + 1;
+
+	// reserve memory space for number of nodes
+	graph.reserveNode(num_nodes);
+
+	// define Node class for convenience
+	typedef typename G::Node Node;
+	// mapping from id to node
+	std::map<int, Node> id_to_node;
+
+	// loop over complete list
+	for (int i = 0; i < num_l_dim; ++i) {
+
+		// get nodes and weights
+		// column major ordering from MATLAB
+		int node1_id = graph_data[i];
+		int node2_id = graph_data[num_l_dim + i];
+		float weight = graph_data[2 * num_l_dim + i];
+
+		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
+		Node node1, node2;
+
+		// If the node is not in the map
+		// then create node and add to map
+		if (itr == id_to_node.end()) {
+			node1 = graph.addNode();
+			id_to_node[node1_id] = node1;
+		} else {
+			node1 = itr->second;
+		}
+
+		// same for node 2
+		itr = id_to_node.find(node2_id);
+		if (itr == id_to_node.end()) {
+			node2 = graph.addNode();
+			id_to_node[node2_id] = node2;
+		} else {
+			node2 = itr->second;
+		}
+
+		typename G::Edge edge = graph.addEdge(node1, node2);
+		weights.set(edge, weight);
+	}
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
@@ -82,6 +129,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		mexErrMsgTxt('Error parsing arguments');
 	}
 	//create new graph and weight map
+	lemon::SmartGraph mygraph;
+	lemon::SmartGraph::EdgeMap<float> myweights(mygraph);
+
 	if (!read_edgelist_weighted_from_data(data, num_largest_dim, mygraph,
 			myweights)) {
 		mexErrMsgTxt('Error creating graph from data');
