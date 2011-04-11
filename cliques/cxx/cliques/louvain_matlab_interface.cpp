@@ -141,6 +141,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// typedef for convenience
 	typedef cliques::VectorPartition partition;
 
+	// now run louvain method
 	std::vector<partition> optimal_partitions;
 	cliques::find_optimal_partition_louvain_with_gain<partition>(mygraph,
 			myweights, cliques::linearised_stability_louvain(time),
@@ -148,7 +149,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			optimal_partitions);
 	partition best_partition = optimal_partitions.back();
 
-	// now run louvain method
 	// write data back to matlab
 
 }
