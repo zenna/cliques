@@ -115,10 +115,9 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		timet = ((double) mxGetScalar(prhs[1]));
 	}
 	if (nrhs > 2) {
+		precision = ((double) mxGetScalar(prhs[2]));
 		if (precision > 1)
 			return false;
-		precision = ((double) mxGetScalar(prhs[2]));
-		//precision=tempo;
 	}
 	if (nrhs > 3) {
 		double p = (double) mxGetScalar(prhs[3]);
