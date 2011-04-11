@@ -587,6 +587,11 @@ function Graph = check(Graph, verbose)
             Graph=sparse(Graph(:,1)+1,Graph(:,2)+1,ones(length(Graph(:,1)),1));
         end
     end
+
+    % Check for NaN's
+    if any(any(isnan(Graph)))
+	error('The graph provided contains elements which are not numbers (NaN). Please check your graph, and try again.');
+    end
         
     % Check symmetry of the adjacency matrix
     if any(any(Graph~=Graph'))
@@ -603,7 +608,7 @@ function Graph = check(Graph, verbose)
         warning('There are isolated nodes in the graph');
     end
     
-    % Check for disconnected compontents
+    % Check for disconnected components
     if exist('graphconncomp','file') == 2
         nbcomp=graphconncomp(sparse(Graph));
         if nbcomp>1
