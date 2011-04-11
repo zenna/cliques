@@ -118,9 +118,9 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		QF quality_function, QFDIFF quality_function_diff,
 		std::vector<P> &optimal_partitions) {
 
-	std::cout << "starting first round" << std::endl;
+	typedef typename T::Node Node;
+	typedef typename T::Edge Edge;
 
-	// Start: Create singleton partition from graph
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
 
