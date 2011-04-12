@@ -31,7 +31,8 @@ int main() {
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
-	cliques::read_edgelist_weighted("/home/zenna/repos/graph-codes/cliques/data/celegansweighted.edj",
+	double stability = 0;
+	cliques::read_edgelist_weighted("/home/mts09/triangletest_oneway.edj",
 			orange_graph, weights);
 
 	double current_markov_time = 1.0;
@@ -40,9 +41,8 @@ int main() {
 	markov_times.push_back(current_markov_time);
 
 	std::vector<partition> optimal_partitions;
-	cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
-			weights,
-			cliques::find_weighted_linearised_stability(markov_times),
+	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
+			weights, cliques::find_weighted_linearised_stability(markov_times),
 			cliques::linearised_stability_gain_louvain(current_markov_time),
 			optimal_partitions);
 
@@ -51,7 +51,7 @@ int main() {
 	for (int i = 0; i < length; i++) {
 		std::cout << i << " " << best_partition.find_set(i) << "\n";
 	}
-
+	std::cout << stability << std::endl;
 	/*	cliques::print_partition(optimal_partitions.back());
 
 	 //Drawing

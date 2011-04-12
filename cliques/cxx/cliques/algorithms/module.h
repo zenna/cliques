@@ -7,8 +7,9 @@
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
-#include <structures/partition.h>
-#include <structures/common.h>
+#include <cliques/graphhelpers.h>
+#include <cliques/structures/partition.h>
+#include <cliques/structures/common.h>
 #include <iostream>
 
 namespace cliques {
@@ -162,11 +163,13 @@ struct Internals {
 				comm_w_tot(range_map(num_nodes, 0)), comm_w_in(range_map(
 						num_nodes, 0)) {
 		two_m = 2 * find_total_weight(graph, weights);
+		double test;
 		for (unsigned int i = 0; i < num_nodes; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
 			comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
 					temp_node);
 			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
+			test = comm_w_in[i];
 		}
 	}
 };
@@ -312,10 +315,12 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 					node_of_comm_u, node_of_comm_v);
 
 			if (edge_in_reduced_graph == lemon::INVALID) {
-				reduced_graph.addEdge(node_of_comm_u, node_of_comm_v);
+				edge_in_reduced_graph = reduced_graph.addEdge(node_of_comm_u,
+						node_of_comm_v);
 				temp_weight_map[edge_in_reduced_graph] = weight;
-			} else
+			} else {
 				temp_weight_map[edge_in_reduced_graph] += weight;
+			}
 		}
 
 		W reduced_weight_map(reduced_graph);
@@ -323,9 +328,9 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			reduced_weight_map[edge] = temp_weight_map[edge];
 		}
 
-		return cliques::find_optimal_partition_louvain_with_gain<P>(reduced_graph,
-				reduced_weight_map, compute_quality, compute_quality_diff,
-				optimal_partitions);
+		return cliques::find_optimal_partition_louvain_with_gain<P>(
+				reduced_graph, reduced_weight_map, compute_quality,
+				compute_quality_diff, optimal_partitions);
 	}
 
 	return current_quality;

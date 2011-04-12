@@ -3,7 +3,7 @@
 
 #include <bitset>
 #include <set>
-#include <structures/partition.h>
+#include <cliques/structures/partition.h>
 
 #if defined USE_BOOST
     #include <boost/functional/hash.hpp>

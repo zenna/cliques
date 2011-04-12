@@ -3,7 +3,7 @@
 
 #include <bitset>
 #include <set>
-#include <structures/graph.h>
+#include <cliques/structures/graph.h>
 
 namespace cliques {
     enum new_partition_type {

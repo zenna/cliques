@@ -141,17 +141,21 @@ struct find_weighted_linearised_stability {
 		}
 	}
 
-	template <typename I>
+	template<typename I>
 	double operator ()(I &internals) {
 		double markov_time = markov_times_[0];
 		double q = 1.0 - markov_time;
 		int size = internals.comm_w_tot.size();
 
 		for (int i = 0; i < size; i++) {
-			if (internals.comm_w_in[i] > 0)
-				q += markov_time * double(internals.comm_w_in[i]) / internals.two_m
-						- ((double(internals.comm_w_tot[i]) / internals.two_m)
-								* (double(internals.comm_w_tot[i]) / internals.two_m));
+			if (internals.comm_w_tot[i] > 0)
+				std::cout << "n= " << size << " node " << i
+						<< " internal degree " << internals.comm_w_in[i] << internals.two_m
+						<< std::endl;
+			q += markov_time * double(internals.comm_w_in[i] / internals.two_m)
+					- ((double(internals.comm_w_tot[i]) / internals.two_m)
+							* (double(internals.comm_w_tot[i])
+									/ internals.two_m));
 		}
 
 		return q;
@@ -173,12 +177,14 @@ struct linearised_stability_gain_louvain {
 		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node / two_m);
 	}
 
-	template <typename I>
+	template<typename I>
 	double operator ()(I &internals, int comm_id_neighbour, int node_id) {
 		double tot_w_comm = internals.comm_w_tot[comm_id_neighbour];
-		double w_node_to_comm = internals.node_weight_to_communities[comm_id_neighbour];
+		double w_node_to_comm =
+				internals.node_weight_to_communities[comm_id_neighbour];
 		double w_deg_node = internals.node_to_w[node_id];
-		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node / internals.two_m);
+		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node
+				/ internals.two_m);
 	}
 };
 
@@ -189,13 +195,13 @@ struct linearised_stability_louvain {
 		markov_time(mtime) {
 	}
 
-	double operator ()(lemon::RangeMap<double> comm_w_tot,
-			lemon::RangeMap<double> comm_w_in, double two_m) {
+	double operator ()(lemon::RangeMap<double> comm_w_tot, lemon::RangeMap<
+			double> comm_w_in, double two_m) {
 		double q = 1.0 - markov_time;
 		int size = comm_w_tot.size();
 
 		for (int i = 0; i < size; i++) {
-			if (comm_w_in[i] > 0)
+			if (comm_w_tot[i] > 0)
 				q += markov_time * double(comm_w_in[i]) / two_m
 						- ((double(comm_w_tot[i]) / two_m)
 								* (double(comm_w_tot[i]) / two_m));

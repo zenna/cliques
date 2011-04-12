@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <set>
 #include <lemon/maps.h>
 #include <lemon/core.h>
 
@@ -28,13 +29,13 @@ float find_weighted_degree(G &graph, M &weights, NO node) {
 	double degree = 0.0;
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		// TODO check if this is consistent with self loop counting
-		degree = degree + weights[e];
+		degree += weights[e];
 	}
 	// Cancel out double counting of self-loops
-	typename G::Edge self_loop_edge = lemon::findEdge(graph, node, node);
-	if (self_loop_edge != lemon::INVALID) {
-		weights[self_loop_edge] = weights[self_loop_edge] / 2.0;
-	}
+//	typename G::Edge self_loop_edge = lemon::findEdge(graph, node, node);
+//	if (self_loop_edge != lemon::INVALID) {
+//		degree -= weights[self_loop_edge];
+//	}
 
 	return degree;
 }
@@ -45,7 +46,7 @@ double find_weight_selfloops(G &graph, M &weights, NO node) {
 	if (edge == lemon::INVALID)
 		return 0.0;
 	else
-		return double(weights[edge]);
+		return 2*double(weights[edge]);
 }
 
 template<typename G, typename M>

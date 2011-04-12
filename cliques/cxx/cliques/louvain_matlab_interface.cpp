@@ -8,16 +8,17 @@
 #include "mex.h"
 #include <lemon/smart_graph.h>
 #include <map>
-#include "algorithms/module.h"
+#include "cliques/algorithms/module.h"
+#include "cliques/algorithms/stability.h"
 #include "cliques/structures/vector_partition.h"
+#include <vector>
 
-namespace matlab_interface {
 
 double *data = NULL;
 double precision = 0.000001;
 
 // TODO enable passing time vectors..
-double time = 1;
+double m_time = 1;
 
 int display_level = -1;
 int num_largest_dim = -1;
@@ -40,7 +41,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 
 	//SECOND ARGUMENT: time
 	if (nrhs > 1) {
-		time = ((double) mxGetScalar(prhs[1]));
+		m_time = ((double) mxGetScalar(prhs[1]));
 	}
 
 	//THIRD ARGUMENT: precision
@@ -140,12 +141,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// create empty partition vector
 	std::vector<partition> optimal_partitions;
 
+    std::vector<double> markov_times;
+    markov_times.push_back(m_time);
+    
 	double stability = 0;
 
 	// now run Louvain method
 	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(
-			mygraph, myweights, cliques::linearised_stability_louvain(time),
-			cliques::linearised_stability_gain_louvain(time),
+			mygraph, myweights, cliques::find_weighted_linearised_stability(markov_times),
+			cliques::linearised_stability_gain_louvain(m_time),
 			optimal_partitions);
 	partition best_partition = optimal_partitions.back();
 
@@ -188,6 +192,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 		}
 	}
-}
+
 
 }// end namespace matlab_interface
