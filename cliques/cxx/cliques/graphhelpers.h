@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <lemon/maps.h>
+#include <lemon/core.h>
 
 namespace cliques {
 
@@ -29,6 +30,12 @@ float find_weighted_degree(G &graph, M &weights, NO node) {
 		// TODO check if this is consistent with self loop counting
 		degree = degree + weights[e];
 	}
+	// Cancel out double counting of self-loops
+	typename G::Edge self_loop_edge = lemon::findEdge(graph, node, node);
+	if (self_loop_edge != lemon::INVALID) {
+		weights[self_loop_edge] = weights[self_loop_edge] / 2.0;
+	}
+
 	return degree;
 }
 

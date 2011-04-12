@@ -34,10 +34,10 @@ int main() {
 	cliques::read_edgelist_weighted("/home/zenna/repos/graph-codes/cliques/data/celegansweighted.edj",
 			orange_graph, weights);
 
-	double current_markov_time = 0.8;
+	double current_markov_time = 1.0;
 
 	std::vector<double> markov_times;
-	markov_times.push_back(0.8);
+	markov_times.push_back(current_markov_time);
 
 	std::vector<partition> optimal_partitions;
 	cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,

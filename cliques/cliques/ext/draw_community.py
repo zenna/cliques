@@ -1,16 +1,17 @@
 import community
 import networkx as nx
-import matplotlib.pyplot as plt
+import pylab as plt
 
 #better with karate_graph() as defined in networkx example.
 #erdos renyi don't have true community structure
-G = nx.erdos_renyi_graph(30, 0.05)
-
+#G = nx.erdos_renyi_graph(30, 0.05)
+G = nx.read_edgelist('/home/zenna/repos/graph-codes/cliques/data/celegans.edj')
 #first compute the best partition
 partition = community.best_partition(G)
 
 #drawing
 size = float(len(set(partition.values())))
+print size
 pos = nx.spring_layout(G)
 count = 0.
 for com in set(partition.values()) :

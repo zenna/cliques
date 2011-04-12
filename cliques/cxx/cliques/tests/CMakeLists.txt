@@ -11,3 +11,4 @@ add_executable(test_louvain louvain.cpp)
 target_link_libraries(test_louvain gvc)
 target_link_libraries(test_louvain graph)
 
+add_library(louvain_lib SHARED louvain.cpp)
