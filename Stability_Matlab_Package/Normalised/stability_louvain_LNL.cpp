@@ -262,7 +262,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			for (unsigned int i = 0; i < numberinitial; i++)
 				n2c[i] = i;
 
-			// needless looping ?? -- M
 			for (int l = 0; l < output.size(); l++) {
 				for (unsigned int node = 0; node < numberinitial; node++) {
 					n2c[node] = output[l][n2c[node]];

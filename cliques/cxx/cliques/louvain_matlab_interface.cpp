@@ -7,6 +7,9 @@
 
 #include "mex.h"
 #include <lemon/smart_graph.h>
+#include <map>
+#include "algorithms/module.h"
+#include "cliques/structures/vector_partition.h"
 
 namespace matlab_interface {
 
@@ -48,14 +51,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 	}
 	//FOURTH ARGUMENT: hierarchical output
 	if (nrhs > 3) { //TODO adapt this
-		double p = (double) mxGetScalar(prhs[4]);
-		if (p == 104) {
-			hierarchy = true;
-		} else if (p == 110) {
-			hierarchy = false;
-		} else {
-			return false;
-		}
+
 	}
 
 	// SANITY CHECK for number of arguments
@@ -126,7 +122,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			plhs[1] = mxCreateDoubleMatrix(0, 0, mxREAL);
 		if (nlhs > 2)
 			plhs[2] = mxCreateDoubleMatrix(0, 0, mxREAL);
-		mexErrMsgTxt('Error parsing arguments');
+		mexErrMsgTxt("Error parsing arguments");
 	}
 	//create new graph and weight map
 
@@ -135,7 +131,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	if (!read_edgelist_weighted_from_data(data, num_largest_dim, mygraph,
 			myweights)) {
-		mexErrMsgTxt('Error creating graph from data');
+		mexErrMsgTxt("Error creating graph from data");
 	}
 
 	// typedef for convenience

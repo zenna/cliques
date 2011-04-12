@@ -7,8 +7,8 @@
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
-#include <cliques/structures/partition.h>
-#include <cliques/structures/common.h>
+#include <structures/partition.h>
+#include <structures/common.h>
 #include <iostream>
 
 namespace cliques {
