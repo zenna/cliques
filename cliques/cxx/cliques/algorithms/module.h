@@ -184,7 +184,7 @@ struct Internals {
  * still need to select gain function
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF>
-void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
+double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		QF compute_quality, QFDIFF compute_quality_diff,
 		std::vector<P> &optimal_partitions) {
 
@@ -323,10 +323,12 @@ void find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			reduced_weight_map[edge] = temp_weight_map[edge];
 		}
 
-		cliques::find_optimal_partition_louvain_with_gain<P>(reduced_graph,
+		return cliques::find_optimal_partition_louvain_with_gain<P>(reduced_graph,
 				reduced_weight_map, compute_quality, compute_quality_diff,
 				optimal_partitions);
 	}
+
+	return current_quality;
 }
 
 }// end namespace cliques

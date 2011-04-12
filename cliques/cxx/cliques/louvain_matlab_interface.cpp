@@ -141,16 +141,57 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// typedef for convenience
 	typedef cliques::VectorPartition partition;
 
-	// now run louvain method
+	// create empty partition vector
 	std::vector<partition> optimal_partitions;
-	cliques::find_optimal_partition_louvain_with_gain<partition>(mygraph,
-			myweights, cliques::linearised_stability_louvain(time),
+
+	double stability = 0;
+
+	// now run Louvain method
+	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(
+			mygraph, myweights, cliques::linearised_stability_louvain(time),
 			cliques::linearised_stability_gain_louvain(time),
 			optimal_partitions);
 	partition best_partition = optimal_partitions.back();
 
-	// write data back to matlab
+	// Now write data back to Matlab
 
+	/////////////////////////////////////////
+	// FIRST output: stability
+
+	// mxReal is our data-type
+	plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
+	//Get a pointer to the data space in our newly allocated memory
+	double * out1 = (double*) mxGetPr(plhs[0]);
+	out1[0] = stability;
+
+	////////////////////////////////////////
+	// SECOND output: number of communities
+	if (nlhs > 1) {
+
+		plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL); //mxReal is our data-type
+
+		//Get a pointer to the data space in our newly allocated memory
+		double * out2 = (double*) mxGetPr(plhs[1]);
+
+		out2[0] = double(best_partition.set_count());
+
+	}
+	////////////////////////////////////////
+	// THIRD output: community assignments
+	if (nlhs > 2) {
+		// get number of nodes
+		int num_nodes = best_partition.element_count();
+
+		// allocate storage
+		plhs[2] = mxCreateDoubleMatrix(num_nodes, 1, mxREAL);
+		double * output_tab = (double*) mxGetPr(plhs[2]);
+
+		// write out results
+		for (unsigned int node = 0; node < num_nodes; ++node) {
+			output_tab[node] = double(best_partition.find_set(node));
+
+		}
+	}
 }
 
 }// end namespace matlab_interface
