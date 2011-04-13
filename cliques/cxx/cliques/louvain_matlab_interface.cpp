@@ -12,7 +12,7 @@
 #include "cliques/algorithms/stability.h"
 #include "cliques/structures/vector_partition.h"
 #include <vector>
-
+#include <string>
 
 double *data = NULL;
 double precision = 0.000001;
@@ -20,7 +20,7 @@ double precision = 0.000001;
 // TODO enable passing time vectors..
 double m_time = 1;
 
-int display_level = -1;
+bool hierarchy = false;
 int num_largest_dim = -1;
 
 // parse function definition, needed by constructor
@@ -30,7 +30,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 	if (nrhs > 0) {
 		// number of rows should be 3 (n1,n2, weight)
 		if (mxGetN(prhs[0]) != 3) {
-			printf("N=%d", mxGetN(prhs[0]));
+			mexPrintf("Number of columns %d", mxGetN(prhs[0]));
 			return false;
 		}
 		// data is stored in column major ordering ordering
@@ -51,8 +51,21 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		precision = ((double) mxGetScalar(prhs[2]));
 	}
 	//FOURTH ARGUMENT: hierarchical output
-	if (nrhs > 3) { //TODO adapt this
+	if (nrhs > 3) {
+		// get buffer length and allocate buffer
+		char *buf;
+		mwSize buflen = mxGetN(prhs[3]) * sizeof(mxChar) + 1;
 
+		buf = (char*) mxMalloc(buflen);
+		if (!mxGetString(prhs[3], buf, buflen)) {
+			const std::string input(buf);
+			const std::string comparison("h");
+			if (!comparison.compare(input)) {
+				hierarchy = true;
+				mexPrintf("Hierarchical output from Louvain activated \n");
+			}
+		}
+		mxFree(buf);
 	}
 
 	// SANITY CHECK for number of arguments
@@ -141,16 +154,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// create empty partition vector
 	std::vector<partition> optimal_partitions;
 
-    std::vector<double> markov_times;
-    markov_times.push_back(m_time);
-    
+	std::vector<double> markov_times;
+	markov_times.push_back(m_time);
+
 	double stability = 0;
 
 	// now run Louvain method
 	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(
-			mygraph, myweights, cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_gain_louvain(m_time),
-			optimal_partitions);
+			mygraph, myweights, cliques::find_weighted_linearised_stability(
+					markov_times), cliques::linearised_stability_gain_louvain(
+					m_time), optimal_partitions);
 	partition best_partition = optimal_partitions.back();
 
 	// Now write data back to Matlab
@@ -192,6 +205,5 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 		}
 	}
-
 
 }// end namespace matlab_interface
