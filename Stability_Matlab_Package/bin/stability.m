@@ -594,6 +594,9 @@ function Graph = check(Graph, verbose)
     end
         
     % Check symmetry of the adjacency matrix
+    if size(Graph,1) ~= size(Graph,2)
+        error('The graph provided is a directed graph. This program only deals with undirected graphs.');
+    end
     if any(any(Graph~=Graph'))
         if nnz(triu(Graph,1))>0 && nnz(tril(Graph,-1))>0
             error('The graph provided is a directed graph. This program only deals with undirected graphs.');
