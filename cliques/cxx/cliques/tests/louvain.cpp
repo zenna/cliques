@@ -1,16 +1,16 @@
 #include <iostream>
-#include <algorithms/complexity.h>
-#include <algorithms/partitions.h>
-#include <helpers.h>
-#include <algorithms/stability.h>
-#include <algorithms/modularity.h>
+#include <cliques/algorithms/complexity.h>
+#include <cliques/algorithms/partitions.h>
+#include <cliques/helpers.h>
+#include <cliques/algorithms/stability.h>
+#include <cliques/algorithms/modularity.h>
 
-#include <drawing/draw.h>
-#include <drawing/colour_maps.h>
+#include <cliques/drawing/draw.h>
+#include <cliques/drawing/colour_maps.h>
 
-#include <algorithms/module.h>
+#include <cliques/algorithms/module.h>
 //TODO get rid of this
-#include <structures/disjointset.h>
+#include <cliques/structures/disjointset.h>
 
 #include <cliques/structures/vector_partition.h>
 
@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include <graphhelpers.h>
+#include <cliques/graphhelpers.h>
 
 //TODO
 //REMOVE NEIGHBOURS TO SELF
@@ -32,7 +32,7 @@ int main() {
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
 	double stability = 0;
-	cliques::read_edgelist_weighted("/home/mts09/triangletest_oneway.edj",
+	cliques::read_edgelist_weighted("/Users/zennatavares/repos/graph-codes/cliques/data/celegansweighted.edj",
 			orange_graph, weights);
 
 	double current_markov_time = 1.0;
@@ -52,6 +52,7 @@ int main() {
 		std::cout << i << " " << best_partition.find_set(i) << "\n";
 	}
 	std::cout << stability << std::endl;
+
 	/*	cliques::print_partition(optimal_partitions.back());
 
 	 //Drawing

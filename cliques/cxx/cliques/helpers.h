@@ -2,7 +2,7 @@
 #define CLIQUES_HELPERS_H
 
 #include <iostream>
-#include <structures/common.h>
+#include <cliques/structures/common.h>
 #include <map>
 
 #define N 128

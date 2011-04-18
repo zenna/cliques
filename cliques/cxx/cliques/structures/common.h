@@ -101,7 +101,7 @@ struct partition_hash
 	size_t operator()(P &partition) const
 	{
 		boost::hash<int> ihash;
-		return ihash(partition.set_count());
+		return ihash(partition.find_set(0));
 	}
 };
 
@@ -115,7 +115,7 @@ struct partition_equal
     bool operator()(P const& x,
         P const& y) const
     {
-        return (x.set_to_node == y.set_to_node);
+        return (x == y);
     }
 };
 

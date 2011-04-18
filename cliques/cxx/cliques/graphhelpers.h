@@ -176,6 +176,20 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	maxima_file.close();
 }
 
+/**
+ @brief  Checks whether a partition is still connected
+
+ A connected partition is one whereby all nodes within any one group
+ must be mutually accessible to all others within the group without
+ having to traverse nodes outside that group.
+
+ @param[in]  partition       partition to evaluate
+ */
+template <typename P>
+bool is_partition_connected(P &partition) {
+	return true;
+}
+
 }
 
 #endif

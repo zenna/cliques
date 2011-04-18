@@ -8,9 +8,9 @@
 namespace cliques
 {
 /**
-@brief  Louvain method - greedy algorithm to find community structure of a network.
-@param[in]  my_graph     graph to find partition of
-@param[in]  quality_function     partition quality function object
+@brief  Finds the variation of information between two partitions
+@param[in]  partition1     First partition
+@param[in]  partition2     Second Partition
 */
 template <typename P>
 float find_variation_of_information(P &partition1,P &partition2)
