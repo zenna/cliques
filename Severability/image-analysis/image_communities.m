@@ -7,8 +7,7 @@ I=imread('Isi164c.jpg');
 I2=I(:,:,1);
 [W, D] = im2mat(I2,20,20,1);
 
-push_ahead=-1;
-radius = 175;
+max_size = 175;
 time =24;
 orad=1; % Overlap radius
 
@@ -43,7 +42,7 @@ for i=1:graph_size;
     if sum(covered(coverpatch))==0
         curr_entry=curr_entry+1;
         node(curr_entry)=i;
-        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,push_ahead,radius);
+        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,max_size);
 
         % Put entries in covered
         if commsize(curr_entry)~=graph_size

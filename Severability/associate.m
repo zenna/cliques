@@ -10,7 +10,7 @@ time=2;
 start=4774;
 neighbors=find(A(start,:));
 for i=neighbors
-    [commrun commsize sev]=sev_node([start i ], A, time, -1, 75);
+    [commrun commsize sev]=sev_node([start i ], A, time, 75);
     [sev retention mixing ] = sev0(P(commrun(1:commsize),commrun(1:commsize))^time);
     disp([sev retention mixing]);
     

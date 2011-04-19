@@ -1,5 +1,5 @@
 function [ commrun node commsize sev output commrun_small separated missing overlap ...
-    foundcomm] = sev_multi_level( adj_matrix, realcomm, time, push_ahead, radius )
+    foundcomm] = sev_multi_level( adj_matrix, realcomm, time, radius )
 %SEV_MULTI_LEVEL Iterates sev_one_subcomm to optimise severability
 %   Very similar in spirit to the Louvain aggregation algorithm for
 %   modularity. Calls "sev_one_subcomm" repeatedly to get a covering of the
@@ -24,7 +24,7 @@ for i=1:graph_size;
     if covered(i)==0
         curr_entry=curr_entry+1;
         node(curr_entry)=i;
-        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,push_ahead,radius);
+        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,radius);
 
     % Put entries in covered
     if commsize(curr_entry)~=graph_size
