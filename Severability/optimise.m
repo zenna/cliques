@@ -1,14 +1,14 @@
+%inst=3;
 
-max_size = 50;
+max_size = 60;
 
-for graph_size=[500]
-for mixing=0.5
-for inst=5
-for time=[2]
-
-%	if ((mixing==0.1&&inst<5))
-%		break
-%	end
+for inst=1:5
+for graph_size=[5000]
+for mixing=[0.1:0.1:0.6]
+for time=[2:4]
+	%if ((inst==1)&&(time==2))
+	%	break
+	%end
 
 	disp({'inst:',inst,'size:',graph_size,'mixing:', mixing,'time', time})
 	% Make sure the max_size value makes sense.
@@ -24,10 +24,11 @@ for time=[2]
 	realcomm=load(realcomm_file);
 
 	[ commrun node commsize sev output commrun_small separated missing overlap ...
-	    foundcomm] = sev_multi_level( adj_matrix, realcomm, time, max_size);
+	    foundcomm] = sev_multi_level( adj_matrix, realcomm, time, max_size );
 
 	disp({'singletons:',length(missing),'overlap',length(overlap)})
 	mutualinformation = norm_mutualinfo(realcomm(:,2),foundcomm)
+	outputline={'inst:',inst,'size:',graph_size,'mixing:', mixing,'time', time,'singletons:',length(missing),'overlap',length(overlap),'mutualinformation',mutualinformation}
 	save(outputname)
 	if (length(missing)+length(overlap))==0
 		break
