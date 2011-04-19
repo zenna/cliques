@@ -72,27 +72,29 @@ while length(community)<max_size
     end
     adj_nodes = find(sum(adj_matrix(community,:),1)); % Only want the adjacent nodes
     neighbours = setdiff(adj_nodes,community);
+    complement_adj = find(sum(adj_matrix(setdiff(1:graph_size,community),:)),1); % Only want nodes adjacent to complement
+    interior_border = intersect(complement_adj,community(2:end)); % All interior border nodes except for seed node
     % KL-switch every third step
     if (mod(j,3)==0)
-        sev_2 = zeros(length(community)+length(neighbours),1);
+        sev_2 = zeros(length(interior_border)+length(neighbours),1);
         % Check the removal of all nodes but the seed node
-        parfor i=2:length(community)
+        parfor i=1:length(interior_border)
             red_comm=community;
-            red_comm(i)=[];
+            red_comm(find(red_comm==interior_border(i)))=[];
             Q=P(red_comm,red_comm);
             sev_2(i)=sev0(Q^t);
         end
         % Check the addition of all possible neighbours
-        parfor i=(length(community)+1):length(sev_2)
-            Q=P([community neighbours(i-length(community))],[community neighbours(i-length(community))]);
+        parfor i=(length(interior_border)+1):length(sev_2)
+            Q=P([community neighbours(i-length(interior_border))],[community neighbours(i-length(interior_border))]);
             sev_2(i) = sev0(Q^t);
         end
         % Choose the new community with highest severability
         max_element = find(sev_2==max(sev_2),1,'first');
-        if max_element > length(community)
-            community=[community neighbours(max_element-length(community))];
+        if max_element > length(interior_border)
+            community=[community neighbours(max_element-length(interior_border))];
         else
-            community(max_element)=[];
+            community(find(community==interior_border(max_element)))=[];
         end
     else
     % Greedy optimisation on all other steps
