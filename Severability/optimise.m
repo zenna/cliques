@@ -3,7 +3,7 @@
 max_size = 60;
 
 for inst=1:5
-for graph_size=[5000]
+for graph_size=[500,1000]
 for mixing=[0.1:0.1:0.6]
 for time=[2:4]
 	%if ((inst==1)&&(time==2))

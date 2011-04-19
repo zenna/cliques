@@ -53,7 +53,7 @@ while increase==true
     % Stops the process if the community goes beyond the max_size
     if (length(community)>max_size)
         increase = false;
-        %community =community(1);
+        community =community(1);
     elseif (length(community)==1)
         increase = false;
     end
