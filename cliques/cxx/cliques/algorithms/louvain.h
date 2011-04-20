@@ -210,23 +210,29 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	bool did_nodes_move = false;
 	//one level louvain
 
-	//TODO: Randomise the looping over nodes
-
+	// Randomise the looping over nodes
+	// initialise random number generator
+	srand(std::time(0));
+	// create vector to shuffle
+	std::vector<Node> nodes_ordered_randomly;
+	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node){
+		nodes_ordered_randomly.push_back(temp_node);
+	}
+	// actual shuffling
+	std::random_shuffle(nodes_ordered_randomly.begin(),nodes_ordered_randomly.end());
 
 	do {
 		did_nodes_move = false;
 		old_quality = current_quality;
 
-		// randomize looping order
-		NodeIt n1(graph);
-
-		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
+		// loop over all nodes in random order
+		typename std::vector<Node>::iterator n1_it;
+		for (n1_it = nodes_ordered_randomly.begin(); n1_it!=nodes_ordered_randomly.end(); ++n1_it) {
 			// get node id and comm id
+			Node n1 = *n1_it;
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
-			Node node = n1;
-
-			isolate_and_update_internals(graph, weights, node, internals,
+			isolate_and_update_internals(graph, weights, n1, internals,
 					partition, comm_id);
 			//default option for re-inclusion of node
 			unsigned int best_comm = comm_id;
@@ -339,22 +345,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	return current_quality;
 }
-
-class Random {
-public:
-
-	boost::mt19937 gen;
-	boost::uniform_int<int> dst;
-	boost::variate_generator<boost::mt19937, boost::uniform_int<int> > rand;
-	Random( int N ):gen( static_cast<unsigned long>(std::time(0)) ),
-			dst( 0, N ),
-			rand( gen, dst ) {}
-
-	std::ptrdiff_t operator()(std::ptrdiff_t arg) {
-		return static_cast<std::ptrdiff_t> (rand());
-	}
-
-};
 
 }
 

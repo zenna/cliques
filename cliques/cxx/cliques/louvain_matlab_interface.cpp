@@ -125,6 +125,8 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		typename G::Edge edge = graph.addEdge(node1, node2);
 		weights.set(edge, weight);
 	}
+    
+    return true;
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {

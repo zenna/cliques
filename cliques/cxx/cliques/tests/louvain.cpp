@@ -32,7 +32,7 @@ int main() {
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
 	double stability = 0;
-	cliques::read_edgelist_weighted("/Users/zennatavares/repos/graph-codes/cliques/data/celegansweighted.edj",
+	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
 			orange_graph, weights);
 
 	double current_markov_time = 1.0;
