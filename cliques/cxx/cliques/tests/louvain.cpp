@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cliques/algorithms/complexity.h>
-#include <cliques/algorithms/partitions.h>
+#include <cliques/algorithms/all_partitions.h>
 #include <cliques/helpers.h>
 #include <cliques/algorithms/stability.h>
 #include <cliques/algorithms/modularity.h>

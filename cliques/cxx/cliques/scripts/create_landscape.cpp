@@ -7,7 +7,7 @@
 #include <cliques/algorithms/hsg.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/drawing/draw.h>
-#include <cliques/algorithms/partitions.h>
+#include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/space.h>
 #include <cliques/structures/vector_partition.h>
 
