@@ -1,6 +1,10 @@
 /*
  * matlab_interface.cpp
  *
+ * compile from MATLAB in directory cxx:
+ * TODO add extra options for simpler name and ensure code optimization
+ *   mex  -DUSE_BOOST -I./ ./cliques/louvain_matlab_interface.cpp
+ *
  *  Created on: 11 Apr 2011
  *      Author: mts09
  */
@@ -55,16 +59,19 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		// get buffer length and allocate buffer
 		char *buf;
 		mwSize buflen = mxGetN(prhs[3]) * sizeof(mxChar) + 1;
-
 		buf = (char*) mxMalloc(buflen);
 		if (!mxGetString(prhs[3], buf, buflen)) {
+			//if reading successful string is created from matlab input
 			const std::string input(buf);
 			const std::string comparison("h");
+
+			// in case hierarchical output is activated print message
 			if (!comparison.compare(input)) {
 				hierarchy = true;
 				mexPrintf("Hierarchical output from Louvain activated \n");
 			}
 		}
+		// free read buffer
 		mxFree(buf);
 	}
 
@@ -76,12 +83,15 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 }
 
 // Template for reading in graph from weighted edgelist data as coming from Matlab
+// TODO: adapt this to make it read "two way" files as normally used by stability code without creating double edges
 template<typename G, typename E>
 bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		G &graph, E &weights) {
 
-	// Find number of nodes; relies on correct ordering of nodes,
-	// column first ordering MATLAB, node numbering starting from 0
+	// Find number of nodes
+	// TODO: relies on correct ordering of nodes,
+	// column first ordering MATLAB & node numbering starting from 0
+	// but should be called from matlab anyway so maybe not important?!
 	int num_nodes = int(data[num_l_dim - 1]) + 1;
 
 	// reserve memory space for number of nodes
@@ -99,7 +109,16 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		// column major ordering from MATLAB
 		int node1_id = graph_data[i];
 		int node2_id = graph_data[num_l_dim + i];
-		float weight = graph_data[2 * num_l_dim + i];
+		//TODO adapt for the case where unweighted graph is passed
+		double weight = graph_data[2 * num_l_dim + i];
+
+
+		// TODO maybe there is a neater solution here
+		// read in list is two-way yet undirected, but edges should only be created once
+		if(node1_id > node2_id){
+			continue;
+		}
+
 
 		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
 		Node node1, node2;
@@ -130,6 +149,7 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+
 	// Parse arguments and return 0 if there is an error
 	if (!parse_arg(nrhs, prhs)) {
 		// give back zero for all outputs
@@ -140,8 +160,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			plhs[2] = mxCreateDoubleMatrix(0, 0, mxREAL);
 		mexErrMsgTxt("Error parsing arguments");
 	}
-	//create new graph and weight map
 
+	//create new graph and weight map
 	lemon::SmartGraph mygraph;
 	lemon::SmartGraph::EdgeMap<float> myweights(mygraph);
 
@@ -153,12 +173,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// typedef for convenience
 	typedef cliques::VectorPartition partition;
 
-	// create empty partition vector
+	// create empty vector of partitions
 	std::vector<partition> optimal_partitions;
 
+	// create time vector
 	std::vector<double> markov_times;
 	markov_times.push_back(m_time);
 
+	//initialise stability
 	double stability = 0;
 
 	// now run Louvain method
@@ -166,9 +188,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			mygraph, myweights, cliques::find_weighted_linearised_stability(
 					markov_times), cliques::linearised_stability_gain_louvain(
 					m_time), optimal_partitions);
+
+	// last partition in vector == best partition
 	partition best_partition = optimal_partitions.back();
 
+	//****************************************************
+	//----------------------------------------------------
 	// Now write data back to Matlab
+	//----------------------------------------------------
 
 	/////////////////////////////////////////
 	// FIRST output: stability
