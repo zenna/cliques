@@ -33,7 +33,7 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %                       used to compute the variation of
 %                       information.    
 %
-%        laplacian      Allows to choose which type of     'combinatorial'
+%        laplacian      Allows to choose which type of     'normalized'
 %                       laplacian should be used to 
 %                       calculate the stability. It can
 %                       either be 'combinatorial', or 

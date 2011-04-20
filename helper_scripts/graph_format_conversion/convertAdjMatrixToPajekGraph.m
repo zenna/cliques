@@ -21,13 +21,19 @@ end
 
 % print edges
 fprintf(fid,'*Edges\n');
-for i=1:nr_nodes
-    for j=i:nr_nodes
-        link = A(i,j);    
-        if(link)
-            fprintf(fid,'%i %i %e \n', i, j, link);
-        end
-    end
+% This is important due to column major storage of Matlab
+A = tril(A);
+[i j link] = find(A);
+psize = length(link);
+percent = 10;
+for z= 1:psize
+            % looping over lower triangular hence swapping indices, but A=A'!
+            fprintf(fid,'%i %i %e \n', j(z), i(z), link(z));
+            
+            if z >= psize*percent/100
+                fprintf('%i percent done\n',percent)
+                percent = percent+10;
+            end
 end
 
 fclose('all');

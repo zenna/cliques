@@ -14,6 +14,7 @@
 	    ${graphviz_INCLUDE_DIRS}
 	    /usr/local/include
 	    /usr/include
+	    /usr/include/graphviz
 	    /usr/local/Cellar/graphviz/2.26.3/include/graphviz
 	)
 	
@@ -26,6 +27,7 @@
 	    /usr/lib64
 	    /usr/local/lib
 	    /usr/lib
+	    /usr/lib/graphviz
 	    /usr/local/Cellar/graphviz/2.26.3/lib
 	)
 	find_library( graphviz_GVC_LIBRARY
@@ -36,6 +38,7 @@
 	    /usr/lib64
 	    /usr/local/lib
 	    /usr/lib
+        /usr/lib/graphviz
 	)
 	find_library( graphviz_CDT_LIBRARY
 	  NAMES cdt

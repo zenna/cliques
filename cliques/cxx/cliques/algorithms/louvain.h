@@ -11,6 +11,8 @@
 #include <cliques/structures/partition.h>
 #include <cliques/structures/common.h>
 #include <iostream>
+#include <ctime>
+#include <boost/random.hpp>
 
 namespace cliques {
 
@@ -206,10 +208,17 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	bool one_level_end = false;
 	double old_quality = current_quality;
 	bool did_nodes_move = false;
-	//one level louvain //TODO: Randomise the looping over nodes
+	//one level louvain
+
+	//TODO: Randomise the looping over nodes
+
+
 	do {
 		did_nodes_move = false;
 		old_quality = current_quality;
+
+		// randomize looping order
+		NodeIt n1(graph);
 
 		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 			// get node id and comm id
@@ -297,7 +306,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			reduced_graph.addNode();
 		}
 
-
 		//Need a map set_id > node_in_reduced_graph_
 		W reduced_weight_map(reduced_graph);
 
@@ -324,7 +332,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			}
 		}
 
-
 		return cliques::find_optimal_partition_louvain_with_gain<P>(
 				reduced_graph, reduced_weight_map, compute_quality,
 				compute_quality_diff, optimal_partitions);
@@ -332,6 +339,22 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	return current_quality;
 }
+
+class Random {
+public:
+
+	boost::mt19937 gen;
+	boost::uniform_int<int> dst;
+	boost::variate_generator<boost::mt19937, boost::uniform_int<int> > rand;
+	Random( int N ):gen( static_cast<unsigned long>(std::time(0)) ),
+			dst( 0, N ),
+			rand( gen, dst ) {}
+
+	std::ptrdiff_t operator()(std::ptrdiff_t arg) {
+		return static_cast<std::ptrdiff_t> (rand());
+	}
+
+};
 
 }
 
