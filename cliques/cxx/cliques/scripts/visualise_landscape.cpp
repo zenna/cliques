@@ -3,7 +3,7 @@
 #include <algorithms/partitions.h>
 #include <helpers.h>
 #include <algorithms/stability.h>
-#include <algorithms/module.h>
+#include <algorithms/louvain.h>
 #include <structures/disjointset.h>
 
 #include <lemon/list_graph.h>

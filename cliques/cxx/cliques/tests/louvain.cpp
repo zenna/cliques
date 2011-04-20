@@ -8,7 +8,7 @@
 #include <cliques/drawing/draw.h>
 #include <cliques/drawing/colour_maps.h>
 
-#include <cliques/algorithms/module.h>
+#include <cliques/algorithms/louvain.h>
 //TODO get rid of this
 #include <cliques/structures/disjointset.h>
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <cliques/algorithms/module.h>
+#include <cliques/algorithms/louvain.h>
 #include <cliques/algorithms/stability.h>
 #include <cliques/structures/disjointset.h>
 

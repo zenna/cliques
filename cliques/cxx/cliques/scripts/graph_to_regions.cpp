@@ -1,17 +1,17 @@
 #include <iostream>
-#include <algorithms/complexity.h>
-#include <algorithms/partitions.h>
-#include <helpers.h>
-#include <algorithms/stability.h>
-#include <algorithms/module.h>
-#include <structures/disjointset.h>
+#include <vector>
 
 #include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
 #include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 
-#include <vector>
+#include <cliques/algorithms/complexity.h>
+#include <cliques/algorithms/partitions.h>
+#include <cliques/helpers.h>
+#include <cliques/algorithms/stability.h>
+#include <cliques/algorithms/louvain.h>
+#include <cliques/structures/disjointset.h>
 
 int main() {
 

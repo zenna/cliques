@@ -8,7 +8,7 @@
 #include "mex.h"
 #include <lemon/smart_graph.h>
 #include <map>
-#include "cliques/algorithms/module.h"
+#include "cliques/algorithms/louvain.h"
 #include "cliques/algorithms/stability.h"
 #include "cliques/structures/vector_partition.h"
 #include <vector>

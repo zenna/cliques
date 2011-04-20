@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cliques/algorithms/bottleneck.h>
 #include <cliques/helpers.h>
-#include <cliques/algorithms/module.h>
+#include <cliques/algorithms/louvain.h>
 #include <cliques/structures/disjointset.h>
 #include <lemon/maps.h>
 

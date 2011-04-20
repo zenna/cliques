@@ -1,6 +1,6 @@
 /* Copyright (c) Modified by Zenna Tavares-zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_PARTITIONS_H
-#define CLIQUES_PARTITIONS_H
+#ifndef CLIQUES_ALLPARTITIONS_H
+#define CLIQUES_ALLPARTITIONS_H
 #include <assert.h>
 #include <cstdlib>
 #include <iostream>

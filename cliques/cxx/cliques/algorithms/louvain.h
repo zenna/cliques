@@ -1,6 +1,6 @@
 /* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_MODULE_H
-#define CLIQUES_MODULE_H
+#ifndef CLIQUES_LOUVAIN_H
+#define CLIQUES_LOUVAIN_H
 
 #include <limits>
 #include <vector>
@@ -333,6 +333,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	return current_quality;
 }
 
-}// end namespace cliques
+}
 
 #endif
