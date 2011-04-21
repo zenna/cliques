@@ -159,20 +159,31 @@ struct Internals {
 	range_map comm_w_in;
 	std::map<int, double> node_weight_to_communities;
 
-	template<typename G, typename W>
-	Internals(G &graph, W &weights) :
+	template<typename G, typename M>
+	Internals(G &graph, M &weights) :
 		num_nodes(lemon::countNodes(graph)), node_to_w(range_map(num_nodes)),
 				comm_w_tot(range_map(num_nodes, 0)), comm_w_in(range_map(
 						num_nodes, 0)) {
 		two_m = 2 * find_total_weight(graph, weights);
-		double test;
 		for (unsigned int i = 0; i < num_nodes; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
 			comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
 					temp_node);
 			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
-			test = comm_w_in[i];
 		}
+	}
+
+	template <typename G, typename M, typnemae P>
+	Internals(G &graph, M &weights, P &partition) :
+		num_nodes(lemon::countNodes(graph)),
+		node_to_w(range_map(num_nodes)),
+		comm_w_tot(range_map(num_nodes, 0)),
+		comm_w_in(range_map(
+		num_nodes, 0))
+	{
+		two_m = 2 * find_total_weight(graph, weights);
+
+
 	}
 };
 /**
