@@ -45,47 +45,46 @@ template<typename P, typename T, typename W, typename QF, typename QFDIFF>
 double refine_partition_kernighan_lin(
 		T &graph, W &weights, QF compute_quality,
 		QFDIFF compute_quality_diff,
-		P input_partition, P output_partition) {
+		P &input_partition, P &output_partition) {
 	typedef typename T::Node Node;
 	typedef typename T::NodeIt NodeIt;
-	typedef lemon::RangeMap<double> range_map;
 
-	Internals internals(graph, weights);
 	int num_nodes = lemon::countNodes(graph);
 	P partition = input_partition;
 	P buffer_partition = partition;
-
+	Internals internals(graph, weights, partition);
 	double minimum_improve = 0.000001;
-	double best_quality = current_quality = compute_quality(internals);
-	std::set<node> moved_nodes; //TODO change to unordered_set
-
-	//TODO: Share internals across algorithms
-	//TODO: Compute internals from a partition
-	//TODO: Compute quality from a partition
+	double original_quality, best_quality, current_quality;
+	original_quality = best_quality = current_quality = compute_quality(internals);
+	std::set<Node> moved_nodes; //TODO change to unordered_set
 
 	for (int i=0; i<num_nodes; ++i) {
 		double best_gain = -std::numeric_limits<float>::max();
 		Node node_to_move;
-		unsigned int comm_to_move_to = n2_comm_id;
+		unsigned int comm_to_move_to;
+		double absolute_gain;
 
 		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 			// Don't move already moved nodes
 			if (moved_nodes.find(n1) == moved_nodes.end()) {
 				continue;
 			}
+
+			int n1_id = graph.id(n1);
+			int n1_comm_id = partition.find_set(n1_id);
 			for (NodeIt n2(graph); n2 != lemon::INVALID; ++n2) {
-				int n1_comm_id = partition.find_set(n1);
-				int n2_comm_id = partition.find_set(n2);
+				int n2_id = graph.id(n2);
+				int n2_comm_id = partition.find_set(n2_id);
 				if (n1_comm_id == n2_comm_id) {
 					continue;
 				}
-				isolate_and_update_internals(graph, weights, node, internals,
-						partition, comm_id);
+				isolate_and_update_internals(graph, weights, n1, internals,
+						partition);
 				double isolation_loss = compute_quality_diff(internals,
-						n1_comm_id, node_id);
+						n1_comm_id, n1_id);
 				double gain = compute_quality_diff(internals,
-						n2_comm_id, node_id);
-				double absolute_gain = gain - isolation_loss;
+						n2_comm_id, n1_id);
+				absolute_gain = gain - isolation_loss;
 				// Put node back - we don't want to move yet
 				insert_and_update_internals(graph, weights, n1, internals,
 						partition, n1_comm_id);
@@ -98,7 +97,7 @@ double refine_partition_kernighan_lin(
 		}
 
 		isolate_and_update_internals(graph, weights, node_to_move, internals,
-				partition, node_to_move_comm);
+				partition);
 		insert_and_update_internals(graph, weights, node_to_move, internals,
 				partition, comm_to_move_to);
 		moved_nodes.insert(node_to_move);
@@ -111,11 +110,19 @@ double refine_partition_kernighan_lin(
 		}
 	}
 
-	if (best_quality > 0) {
-		return refine_partition_kernighan_lin();
+	double total_quality_improvement = best_quality - original_quality;
+	if (total_quality_improvement > minimum_improve) {
+		return total_quality_improvement + refine_partition_kernighan_lin(
+				graph,
+				weights,
+				compute_quality,
+				compute_quality_diff,
+				buffer_partition,
+				output_partition);
 	}
 	else {
-		return partition;
+		output_partition = buffer_partition;
+		return total_quality_improvement;
 	}
 }
 

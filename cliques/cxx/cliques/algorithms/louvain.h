@@ -118,8 +118,9 @@ P find_optimal_partition_louvain(G &graph, M &weights, QF compute_quality,
  */
 template<typename G, typename M, typename I, typename P>
 void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
-		I &internals, P &partition, int comm_id) {
+		I &internals, P &partition) {
 	int node_id = graph.id(node);
+	int comm_id = partition.find_set(node_id);
 	// get weights from node to each community
 	internals.node_weight_to_communities
 			= cliques::find_weight_node_to_communities(graph, partition,
@@ -173,7 +174,7 @@ struct Internals {
 		}
 	}
 
-	template <typename G, typename M, typnemae P>
+	template <typename G, typename M, typename P>
 	Internals(G &graph, M &weights, P &partition) :
 		num_nodes(lemon::countNodes(graph)),
 		node_to_w(range_map(num_nodes)),
@@ -182,8 +183,6 @@ struct Internals {
 		num_nodes, 0))
 	{
 		two_m = 2 * find_total_weight(graph, weights);
-
-
 	}
 };
 /**
@@ -244,7 +243,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
 			isolate_and_update_internals(graph, weights, n1, internals,
-					partition, comm_id);
+					partition);
 			//default option for re-inclusion of node
 			unsigned int best_comm = comm_id;
 			double best_gain = 0;
@@ -356,6 +355,8 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	return current_quality;
 }
+
+
 
 }
 

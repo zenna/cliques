@@ -8,3 +8,6 @@ set(CMAKE_CXX_FLAGS "-g -pg -Wall -DUSE_BOOST")
 
 add_executable(test_louvain louvain.cpp)	
 target_link_libraries(test_louvain ${graphviz_LIBRARIES})
+
+add_executable(test_kernighanlin kernighanlin.cpp)	
+target_link_libraries(test_louvain ${graphviz_LIBRARIES})
