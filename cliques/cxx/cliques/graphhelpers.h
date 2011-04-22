@@ -28,15 +28,9 @@ template<typename G, typename M, typename NO>
 float find_weighted_degree(G &graph, M &weights, NO node) {
 	double degree = 0.0;
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
-		// TODO check if this is consistent with self loop counting
+		// TODO make aware that this is counting self loops twice..
 		degree += weights[e];
 	}
-	// Cancel out double counting of self-loops
-//	typename G::Edge self_loop_edge = lemon::findEdge(graph, node, node);
-//	if (self_loop_edge != lemon::INVALID) {
-//		degree -= weights[self_loop_edge];
-//	}
-
 	return degree;
 }
 

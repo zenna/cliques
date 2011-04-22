@@ -162,9 +162,8 @@ struct Internals {
 
 	template<typename G, typename M>
 	Internals(G &graph, M &weights) :
-		num_nodes(lemon::countNodes(graph)), node_to_w(range_map(num_nodes)),
-				comm_w_tot(range_map(num_nodes, 0)), comm_w_in(range_map(
-						num_nodes, 0)) {
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes,0),
+				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
 		two_m = 2 * find_total_weight(graph, weights);
 		for (unsigned int i = 0; i < num_nodes; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
@@ -174,15 +173,21 @@ struct Internals {
 		}
 	}
 
-	template <typename G, typename M, typename P>
+	template<typename G, typename M, typename P>
 	Internals(G &graph, M &weights, P &partition) :
-		num_nodes(lemon::countNodes(graph)),
-		node_to_w(range_map(num_nodes)),
-		comm_w_tot(range_map(num_nodes, 0)),
-		comm_w_in(range_map(
-		num_nodes, 0))
-	{
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes,0),
+				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
 		two_m = 2 * find_total_weight(graph, weights);
+
+		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
+			// comm_of node u is the important one we loop over
+			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
+			// this is to distinguish within community weight with total weight
+			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
+			double weight = weights[edge];
+
+		}
+
 	}
 };
 /**
@@ -225,11 +230,12 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	srand(std::time(0));
 	// create vector to shuffle
 	std::vector<Node> nodes_ordered_randomly;
-	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node){
+	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node) {
 		nodes_ordered_randomly.push_back(temp_node);
 	}
 	// actual shuffling
-	std::random_shuffle(nodes_ordered_randomly.begin(),nodes_ordered_randomly.end());
+	std::random_shuffle(nodes_ordered_randomly.begin(),
+			nodes_ordered_randomly.end());
 
 	do {
 		did_nodes_move = false;
@@ -237,7 +243,8 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 		// loop over all nodes in random order
 		typename std::vector<Node>::iterator n1_it;
-		for (n1_it = nodes_ordered_randomly.begin(); n1_it!=nodes_ordered_randomly.end(); ++n1_it) {
+		for (n1_it = nodes_ordered_randomly.begin(); n1_it
+				!= nodes_ordered_randomly.end(); ++n1_it) {
 			// get node id and comm id
 			Node n1 = *n1_it;
 			unsigned int node_id = graph.id(n1);
@@ -355,8 +362,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	return current_quality;
 }
-
-
 
 }
 
