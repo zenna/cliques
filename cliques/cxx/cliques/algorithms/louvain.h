@@ -162,7 +162,7 @@ struct Internals {
 
 	template<typename G, typename M>
 	Internals(G &graph, M &weights) :
-		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes,0),
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
 				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
 		two_m = 2 * find_total_weight(graph, weights);
 		for (unsigned int i = 0; i < num_nodes; ++i) {
@@ -175,16 +175,30 @@ struct Internals {
 
 	template<typename G, typename M, typename P>
 	Internals(G &graph, M &weights, P &partition) :
-		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes,0),
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
 				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
 		two_m = 2 * find_total_weight(graph, weights);
 
+		// find internal statistics based on graph, weights and partitions
+		// consider all edges
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
-			// comm_of node u is the important one we loop over
-			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
+			// node_u_id and comm_of_node_u is the important thing we loop over
+			int node_u_id = graph.id(graph.u(edge));
+			int comm_of_node_u = partition.find_set(node_u_id);
+
 			// this is to distinguish within community weight with total weight
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
+			// weight of edge
 			double weight = weights[edge];
+
+			// add weight to node weight
+			node_to_w[node_u_id] += weight;
+			// add weight to total weight of community
+			comm_w_tot[comm_of_node_u] += weight;
+			if (comm_of_node_u == comm_of_node_v) {
+				// in case the weight stems from within the community add to internal weights
+				comm_w_in[comm_of_node_u] += weight;
+			}
 
 		}
 
