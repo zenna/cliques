@@ -179,6 +179,7 @@ struct Internals {
 				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
 		two_m = 2 * find_total_weight(graph, weights);
 
+		typedef typename G::EdgeIt EdgeIt;
 		// find internal statistics based on graph, weights and partitions
 		// consider all edges
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
