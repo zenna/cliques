@@ -1,0 +1,74 @@
+#include <iostream>
+#include <cliques/algorithms/complexity.h>
+#include <cliques/algorithms/all_partitions.h>
+#include <cliques/helpers.h>
+#include <cliques/algorithms/stability.h>
+#include <cliques/algorithms/modularity.h>
+
+#include <cliques/drawing/draw.h>
+#include <cliques/drawing/colour_maps.h>
+
+#include <cliques/algorithms/louvain.h>
+//TODO get rid of this
+#include <cliques/structures/disjointset.h>
+
+#include <cliques/structures/vector_partition.h>
+
+#include <lemon/list_graph.h>
+#include <lemon/smart_graph.h>
+#include <lemon/concepts/graph_components.h>
+#include <lemon/concepts/graph.h>
+#include <lemon/connectivity.h>
+
+#include <vector>
+
+#include <cliques/graphhelpers.h>
+
+//TODO
+//REMOVE NEIGHBOURS TO SELF
+int main() {
+	typedef cliques::VectorPartition partition;
+	lemon::SmartGraph orange_graph;
+	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
+
+	double stability = 0;
+	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
+			orange_graph, weights);
+
+	double current_markov_time = 1.0;
+
+	std::vector<double> markov_times;
+	markov_times.push_back(current_markov_time);
+
+	std::vector<partition> optimal_partitions;
+	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
+			weights, cliques::find_weighted_linearised_stability(markov_times),
+			cliques::linearised_stability_gain_louvain(current_markov_time),
+			optimal_partitions);
+
+	partition best_partition = optimal_partitions.back();
+	int length = best_partition.element_count();
+	for (int i = 0; i < length; i++) {
+		std::cout << i << " " << best_partition.find_set(i) << "\n";
+	}
+	std::cout << stability << std::endl;
+
+	/*	cliques::print_partition(optimal_partitions.back());
+
+	 //Drawing
+	 float start = -10;
+	 std::vector<float> energies;
+	 for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
+	 energies.push_back(start);
+	 start += 12.0;
+	 std::cout << orange_graph.id(e) << std::endl;
+	 }
+
+	 cliques::draw_graph canvas(orange_graph);
+	 canvas.add_node_map(cliques::make_partition_colour_map<
+	 cliques::DisjointSetForest<int> >(best_partition));
+	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
+	 canvas.draw("test_louvain_out");
+	 */
+	return 0;
+}
