@@ -183,26 +183,40 @@ struct Internals {
 		// find internal statistics based on graph, weights and partitions
 		// consider all edges
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
-			// node_u_id and comm_of_node_u is the important thing we loop over
 			int node_u_id = graph.id(graph.u(edge));
-			int comm_of_node_u = partition.find_set(node_u_id);
+			int node_v_id = graph.id(graph.v(edge));
 
 			// this is to distinguish within community weight with total weight
-			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
+			int comm_of_node_u = partition.find_set(node_u_id);
+			int comm_of_node_v = partition.find_set(node_v_id);
+
 			// weight of edge
 			double weight = weights[edge];
 
 			// add weight to node weight
 			node_to_w[node_u_id] += weight;
+			node_to_w[node_v_id] += weight;
 			// add weight to total weight of community
 			comm_w_tot[comm_of_node_u] += weight;
+			comm_w_tot[comm_of_node_v] += weight;
 			if (comm_of_node_u == comm_of_node_v) {
 				// in case the weight stems from within the community add to internal weights
-				comm_w_in[comm_of_node_u] += weight;
+				comm_w_in[comm_of_node_u] += 2*weight;
 			}
-
 		}
-
+		std::cout << "cONSTRU" << std::endl;
+		for (int i = 0; i < node_to_w.size(); ++i) {
+			std::cout << node_to_w[i] << " ";
+		}
+		std::cout << std::endl;
+		for (int i = 0; i < comm_w_in.size(); ++i) {
+			std::cout << comm_w_in[i] << " ";
+		}
+		std::cout << std::endl;
+		for (int i = 0; i < comm_w_tot.size(); ++i) {
+			std::cout << comm_w_tot[i] << " ";
+		}
+		std::cout << std::endl;
 	}
 };
 /**

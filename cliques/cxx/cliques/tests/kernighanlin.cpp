@@ -16,12 +16,12 @@ int main() {
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
 	double stability = 0;
-	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
+	cliques::read_edgelist_weighted("/home/zenna/repos/graph-codes/cliques/data/triangletest.edj",
 			orange_graph, weights);
 
 	double current_markov_time = 1.0;
 
-	std::vector<double> markov_times;
+	std::vector<double> markov_times, adadad;
 	markov_times.push_back(current_markov_time);
 
 	std::vector<partition> optimal_partitions;
@@ -38,16 +38,23 @@ int main() {
 	std::cout << stability << std::endl;
 
 	cliques::VectorPartition refined_partition(lemon::countNodes(orange_graph));
+	partition bad_partition(lemon::countNodes(orange_graph));
+	bad_partition.initialise_as_singletons();
+	cliques::find_weighted_linearised_stability compute(markov_times);
+	//std::cout << "initially: " << compute(orange_graph, bad_partition, weights, adadad) << std::endl;
 
 	double new_stability = cliques::refine_partition_kernighan_lin(
 		orange_graph,
 		weights,
 		cliques::find_weighted_linearised_stability(markov_times),
 		cliques::linearised_stability_gain_louvain(current_markov_time),
-		optimal_partitions.back(),
+		bad_partition,
 		refined_partition);
 
 	std::cout << new_stability << std::endl;
+	for (int i = 0; i < length; i++) {
+		std::cout << i << " " << refined_partition.find_set(i) << "\n";
+	}
 
 	return 0;
 }

@@ -45,6 +45,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 		QFDIFF compute_quality_diff, P &input_partition, P &output_partition) {
 	typedef typename T::Node Node;
 	typedef typename T::NodeIt NodeIt;
+	typedef typename T::IncEdgeIt IncEdgeIt;
 
 	// Initializations..
 	int num_nodes = lemon::countNodes(graph);
@@ -56,6 +57,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	double original_quality, best_quality, current_quality;
 	original_quality = best_quality = current_quality = compute_quality(
 			internals);
+
 	// keep track of nodes that have moved before
 	std::set<Node> moved_nodes; //TODO change to unordered_set
 
@@ -71,7 +73,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 
 			// Don't move already moved nodes
-			if (moved_nodes.find(n1) == moved_nodes.end()) {
+			if (moved_nodes.find(n1) != moved_nodes.end()) {
 				continue;
 			}
 
@@ -79,10 +81,20 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 			int n1_id = graph.id(n1);
 			int n1_comm_id = partition.find_set(n1_id);
 
+			//TODO check if there is a faster way of computing this as there are lots of updates involved here..
+			// temporarily isolate node to compute the absolute gain via gain - loss
+
+			isolate_and_update_internals(graph, weights, n1, internals,
+					partition);
+
+			double isolation_loss = compute_quality_diff(internals, n1_comm_id,
+					n1_id) + find_weight_selfloops(graph, weights, Node(n1));
+			std::cout << "loss: " << isolation_loss << std::endl;
+
 			// consider all possible other nodes
 			// TODO: Don't we just have to look at all possible other communities the node could move to (at most all neighbouring nodes?)
-			for (NodeIt n2(graph); n2 != lemon::INVALID; ++n2) {
-
+			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+				Node n2 = graph.oppositeNode(n1, e);
 				int n2_id = graph.id(n2);
 				int n2_comm_id = partition.find_set(n2_id);
 
@@ -90,19 +102,11 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 					continue;
 				}
 
-				//TODO check if there is a faster way of computing this as there are lots of updates involved here..
-				// temporarily isolate node to compute the absolute gain via gain - loss
-				isolate_and_update_internals(graph, weights, n1, internals,
-						partition);
-				double isolation_loss = compute_quality_diff(internals,
-						n1_comm_id, n1_id);
 				double gain =
 						compute_quality_diff(internals, n2_comm_id, n1_id);
-				absolute_gain = gain - isolation_loss;
+				std::cout << "gain: " << gain << std::endl;
 
-				// Put node back - we don't want to move yet
-				insert_and_update_internals(graph, weights, n1, internals,
-						partition, n1_comm_id);
+				absolute_gain = gain - isolation_loss;
 
 				// keep track of best possible move
 				if (absolute_gain > best_gain) {
@@ -111,6 +115,10 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 					comm_to_move_to = n2_comm_id;
 				}
 			}
+			// Put node back - we don't want to move yet
+			insert_and_update_internals(graph, weights, n1, internals,
+					partition, n1_comm_id);
+
 		}
 
 		// TODO: check if this can be done more efficient, see above
@@ -124,6 +132,28 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 		// keep track of quality
 		current_quality = current_quality + best_gain;
+		double real_quality = compute_quality(internals);
+
+		// DETAILS
+		/*std::cout << "\n\nDETAILS" << std::endl;
+		 for (int i = 0; i < internals.node_to_w.size(); ++i) {
+		 std::cout << internals.node_to_w[i] << " ";
+		 }
+		 std::cout << std::endl;
+		 for (int i = 0; i < internals.comm_w_in.size(); ++i) {
+		 std::cout << internals.comm_w_in[i] << " ";
+		 }
+		 std::cout << std::endl;
+		 for (int i = 0; i < internals.comm_w_tot.size(); ++i) {
+		 std::cout << internals.comm_w_tot[i] << " ";
+		 }
+		 std::cout << std::endl;
+		 std::cout << "PARTITION" << std::endl;
+		 for (int i = 0; i < partition.element_count(); i++) {
+		 std::cout << i << " " << partition.find_set(i) << "\n";
+		 }*/
+		std::cout << "current: " << current_quality << std::endl;
+		std::cout << "real: " << real_quality << std::endl;
 
 		if (current_quality > best_quality) {
 			buffer_partition = partition;
