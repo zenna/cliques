@@ -10,29 +10,25 @@ namespace cliques {
  @brief  Finds neighbours of a partition
 
  */
-template<typename P>
-void find_neighbours(
-		P partition,
+template<typename G, typename P>
+void find_neighbours(G &graph, P &partition,
 		boost::unordered_set<P, cliques::partition_hash,
 				cliques::partition_equal> &neighbour_partitions) {
 	P temp_partition = partition;
 
-	for (int node = 0; node < partition.element_count(); ++node) {
-		int initial_set = temp_partition.find_set(node);
-		temp_partition.isolate_node(node);
+	typedef typename G::EdgeIt EdgeIt;
 
-		for (typename P::PartIterator pitr = temp_partition.begin(); pitr
-				!= partition.end(); ++pitr) {
+	for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
+		//
+		Node n1 = graph.u(edge);
+		Node n2 = graph.v(edge);
+		temp_partition.isolate_node(u);
+		temp_partition.isolate_node(v);
 
-			if (*pitr != initial_set) {
-				temp_partition.add_node_to_set(node, *pitr);
-				if (temp_partition != partition &&
-						cliques::is_partition_connected(temp_partition)) {
-					neighbour_partitions.insert(temp_partition);
-				}
-			}
-		}
-		temp_partition.add_node_to_set(node, initial_set);
+		int set_of_n1 = partition.find_set(n1);
+		int set_of_n2 = partition.find_set(n2);
+		partition.add_node_to_set(n1, set_of_n2);
+		partition.add_node_to_set(n2, set_of_n1);
 	}
 }
 
@@ -48,9 +44,8 @@ void find_neighbours(
  @param[out] space output graph representing the space
  */
 template<typename G, typename P>
-void create_space(
-		boost::unordered_set<P, cliques::partition_hash,
-				cliques::partition_equal> &all_partitions, G &space) {
+void create_space(boost::unordered_set<P, cliques::partition_hash,
+		cliques::partition_equal> &all_partitions, G &space) {
 
 	typedef typename G::Node Node;
 	typedef typename G::Edge Edge;
