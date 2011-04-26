@@ -1,31 +1,15 @@
 #include <iostream>
-#include <cliques/algorithms/complexity.h>
-#include <cliques/algorithms/all_partitions.h>
-#include <cliques/helpers.h>
-#include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/modularity.h>
-
-#include <cliques/drawing/draw.h>
-#include <cliques/drawing/colour_maps.h>
-
-#include <cliques/algorithms/louvain.h>
-//TODO get rid of this
-#include <cliques/structures/disjointset.h>
-
-#include <cliques/structures/vector_partition.h>
-
-#include <lemon/list_graph.h>
-#include <lemon/smart_graph.h>
-#include <lemon/concepts/graph_components.h>
-#include <lemon/concepts/graph.h>
-#include <lemon/connectivity.h>
 
 #include <vector>
 
+#include <lemon/smart_graph.h>
+
+#include <cliques/helpers.h>
+#include <cliques/algorithms/stability.h>
+#include <cliques/algorithms/kernighan_lin.h>
+#include <cliques/structures/vector_partition.h>
 #include <cliques/graphhelpers.h>
 
-//TODO
-//REMOVE NEIGHBOURS TO SELF
 int main() {
 	typedef cliques::VectorPartition partition;
 	lemon::SmartGraph orange_graph;
@@ -53,22 +37,17 @@ int main() {
 	}
 	std::cout << stability << std::endl;
 
-	/*	cliques::print_partition(optimal_partitions.back());
+	cliques::VectorPartition refined_partition(lemon::countNodes(orange_graph));
 
-	 //Drawing
-	 float start = -10;
-	 std::vector<float> energies;
-	 for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-	 energies.push_back(start);
-	 start += 12.0;
-	 std::cout << orange_graph.id(e) << std::endl;
-	 }
+	double new_stability = cliques::refine_partition_kernighan_lin(
+		orange_graph,
+		weights,
+		cliques::find_weighted_linearised_stability(markov_times),
+		cliques::linearised_stability_gain_louvain(current_markov_time),
+		optimal_partitions.back(),
+		refined_partition);
 
-	 cliques::draw_graph canvas(orange_graph);
-	 canvas.add_node_map(cliques::make_partition_colour_map<
-	 cliques::DisjointSetForest<int> >(best_partition));
-	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
-	 canvas.draw("test_louvain_out");
-	 */
+	std::cout << new_stability << std::endl;
+
 	return 0;
 }
