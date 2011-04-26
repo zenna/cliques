@@ -201,22 +201,9 @@ struct Internals {
 			comm_w_tot[comm_of_node_v] += weight;
 			if (comm_of_node_u == comm_of_node_v) {
 				// in case the weight stems from within the community add to internal weights
-				comm_w_in[comm_of_node_u] += 2*weight;
+				comm_w_in[comm_of_node_u] += 2 * weight;
 			}
 		}
-		std::cout << "cONSTRU" << std::endl;
-		for (int i = 0; i < node_to_w.size(); ++i) {
-			std::cout << node_to_w[i] << " ";
-		}
-		std::cout << std::endl;
-		for (int i = 0; i < comm_w_in.size(); ++i) {
-			std::cout << comm_w_in[i] << " ";
-		}
-		std::cout << std::endl;
-		for (int i = 0; i < comm_w_tot.size(); ++i) {
-			std::cout << comm_w_tot[i] << " ";
-		}
-		std::cout << std::endl;
 	}
 };
 /**

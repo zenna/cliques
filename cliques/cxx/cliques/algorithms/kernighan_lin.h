@@ -70,6 +70,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 		unsigned int comm_to_move_to;
 		double absolute_gain;
 
+		bool is_trapped_node = true;
 		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 
 			// Don't move already moved nodes
@@ -88,8 +89,8 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 					partition);
 
 			double isolation_loss = compute_quality_diff(internals, n1_comm_id,
-					n1_id) + find_weight_selfloops(graph, weights, Node(n1));
-			std::cout << "loss: " << isolation_loss << std::endl;
+					n1_id);
+
 
 			// consider all possible other nodes
 			// TODO: Don't we just have to look at all possible other communities the node could move to (at most all neighbouring nodes?)
@@ -101,15 +102,16 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 				if (n1_comm_id == n2_comm_id) {
 					continue;
 				}
+				is_trapped_node = false;
 
 				double gain =
 						compute_quality_diff(internals, n2_comm_id, n1_id);
-				std::cout << "gain: " << gain << std::endl;
 
 				absolute_gain = gain - isolation_loss;
 
 				// keep track of best possible move
 				if (absolute_gain > best_gain) {
+					optimum_changed = true;
 					best_gain = absolute_gain;
 					node_to_move = n1;
 					comm_to_move_to = n2_comm_id;
@@ -119,6 +121,10 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 			insert_and_update_internals(graph, weights, n1, internals,
 					partition, n1_comm_id);
 
+		}
+
+		if (is_trapped_node) {
+			//comm_to_move_to = TODO
 		}
 
 		// TODO: check if this can be done more efficient, see above
@@ -133,27 +139,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 		// keep track of quality
 		current_quality = current_quality + best_gain;
 		double real_quality = compute_quality(internals);
-
-		// DETAILS
-		/*std::cout << "\n\nDETAILS" << std::endl;
-		 for (int i = 0; i < internals.node_to_w.size(); ++i) {
-		 std::cout << internals.node_to_w[i] << " ";
-		 }
-		 std::cout << std::endl;
-		 for (int i = 0; i < internals.comm_w_in.size(); ++i) {
-		 std::cout << internals.comm_w_in[i] << " ";
-		 }
-		 std::cout << std::endl;
-		 for (int i = 0; i < internals.comm_w_tot.size(); ++i) {
-		 std::cout << internals.comm_w_tot[i] << " ";
-		 }
-		 std::cout << std::endl;
-		 std::cout << "PARTITION" << std::endl;
-		 for (int i = 0; i < partition.element_count(); i++) {
-		 std::cout << i << " " << partition.find_set(i) << "\n";
-		 }*/
-		std::cout << "current: " << current_quality << std::endl;
-		std::cout << "real: " << real_quality << std::endl;
 
 		if (current_quality > best_quality) {
 			buffer_partition = partition;

@@ -180,8 +180,8 @@ struct linearised_stability_gain_louvain {
 		double w_node_to_comm =
 				internals.node_weight_to_communities[comm_id_neighbour];
 		double w_deg_node = internals.node_to_w[node_id];
-		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node
-				/ internals.two_m)/internals.two_m;
+		return (markov_time *w_node_to_comm - tot_w_comm * w_deg_node
+				/ internals.two_m)*2/internals.two_m;
 	}
 };
 
