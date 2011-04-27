@@ -246,6 +246,14 @@ void print_partition(P &partition) {
 	}
 }
 
+template <typename P>
+void print_partition_list(P &partition) {
+    int length = partition.element_count();
+    for (int i = 0; i < length; i++) {
+        std::cout << i << "->" << partition.find_set(i) << std::endl;
+    }
+}
+
 // Type conversion
 template <class T>
 inline std::string to_string (const T& t)

@@ -87,17 +87,19 @@ void create_space(G &graph, boost::unordered_set<P, cliques::partition_hash,
 
         for (partition_set_itr neigh_itr = neighbour_partitions.begin(); neigh_itr
                 != neighbour_partitions.end(); ++neigh_itr ) {
-            Node neighbour_node = partition_to_spacenode[*itr];
+            Node neighbour_node = partition_to_spacenode[*neigh_itr];
 
-            // CHECK NOT SAME PARTITION
-            if (*itr != *neigh_itr) {
+            if (current_node != neighbour_node) {
                 Edge e = lemon::findEdge(space, current_node, neighbour_node);
                 if (e == lemon::INVALID) {
                     Edge e = space.addEdge(current_node, neighbour_node);
+                    std::cout << graph.id(current_node) << " " << graph.id(neighbour_node) << std::endl;
                 }
             }
         }
     }
+
+    return partition_to_spacenode;
 }
 
 template<typename G>

@@ -35,5 +35,19 @@ int main() {
     		<< cliques::find_variation_of_information(partition1,partition2)
     		<< std::endl;
 
+    /*VecPartition test(6);
+        VecPartition test2(6);
+
+        std::vector<int> v = {1,2,2,3,0,1};
+        std::vector<int> v2 = {5,3,3,2,1,5};
+
+        test.partition_vector = v;
+        test2.partition_vector = v2;
+
+        bool same = test == test2;
+        std::cout << "same" << same <<std::endl;
+
+        */
+
     return 0;
 };

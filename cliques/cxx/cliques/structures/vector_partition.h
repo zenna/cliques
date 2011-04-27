@@ -87,11 +87,43 @@ public:
 
 	//#################### Operators ####################
 	bool operator==(const VectorPartition& other) const {
-		return (partition_vector == other.partition_vector);
+	    VectorPartition a(*this);
+	    VectorPartition b(other);
+
+	    a.normalise_ids();
+	    b.normalise_ids();
+	    return a.partition_vector == b.partition_vector;
+	    /*if (partition_vector.size() != other.partition_vector.size()) {
+	        return false;
+	    }
+	    const int MAGIC_NUM = -321;
+	    int num_elements = partition_vector.size();
+
+	    std::vector<int> this_to_other(num_elements, MAGIC_NUM);
+	    std::vector<int> other_to_this(num_elements, MAGIC_NUM);
+
+	    for (int i=0; i<num_elements; ++i) {
+	        int a = partition_vector[i];
+	        int b = other.partition_vector[i];
+
+	        // TODO:Replace with exception handling or generalise to any set num
+	        if (a >= num_elements || b >= num_elements || a < 0 || b < 0) {
+	            std::cout << "out of bounds!";
+	        }
+
+	        if (this_to_other[a] == MAGIC_NUM && other_to_this[b] == MAGIC_NUM) {
+	            this_to_other[a] = b;
+	            other_to_this[b] = a;
+	        }
+	        else if (this_to_other[a] != b || other_to_this[b] != a) {
+	            return false;
+	        }
+	    }
+	    return true;*/
 	}
 
 	bool operator!=(const VectorPartition& other) const {
-		return (partition_vector != other.partition_vector);
+		return !(partition_vector == other.partition_vector);
 	}
 
 	//#################### ITERATOR SETUP ####################
