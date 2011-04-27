@@ -111,7 +111,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 				// keep track of best possible move
 				if (absolute_gain > best_gain) {
-					optimum_changed = true;
 					best_gain = absolute_gain;
 					node_to_move = n1;
 					comm_to_move_to = n2_comm_id;
@@ -138,7 +137,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 		// keep track of quality
 		current_quality = current_quality + best_gain;
-		double real_quality = compute_quality(internals);
 
 		if (current_quality > best_quality) {
 			buffer_partition = partition;
