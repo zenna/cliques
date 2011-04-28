@@ -3,7 +3,7 @@
  *
  * compile from MATLAB in directory cxx:
  * TODO add extra options for simpler name and ensure code optimization
- *   mex -DUSE_BOOST -I./ ./cliques/louvain_matlab_interface.cpp
+ *   mex  -DUSE_BOOST -I./ ./cliques/KL_matlab_interface.cpp
  *
  *  Created on: 11 Apr 2011
  *      Author: mts09
@@ -12,13 +12,14 @@
 #include "mex.h"
 #include <lemon/smart_graph.h>
 #include <map>
-#include "cliques/algorithms/louvain.h"
+#include "cliques/algorithms/kernighan_lin.h"
 #include "cliques/algorithms/stability.h"
 #include "cliques/structures/vector_partition.h"
 #include <vector>
 #include <string>
 
 double *data = NULL;
+double *partition_data = NULL;
 double precision = 0.000001;
 
 // TODO enable passing time vectors..
@@ -27,14 +28,18 @@ double m_time = 1;
 bool hierarchy = false;
 int num_largest_dim = -1;
 
+typedef cliques::VectorPartition partition;
+partition refined_partition(1);
+partition input_partition(1);
+
 // parse function definition, needed by constructor
 bool parse_arg(int nrhs, const mxArray *prhs[]) {
 
 	//FIRST ARGUMENT: Graph
 	if (nrhs > 0) {
-		// number of columns should be 3 (n1,n2, weight)
+		// number of colums should be 3 (n1,n2, weight)
 		if (mxGetN(prhs[0]) != 3) {
-			mexPrintf("Number of columns %d", mxGetN(prhs[0]));
+			mexPrintf("Graph number of columns %d \n", mxGetN(prhs[0]));
 			return false;
 		}
 		// data is stored in column major ordering ordering
@@ -48,11 +53,15 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		m_time = ((double) mxGetScalar(prhs[1]));
 	}
 
-	//THIRD ARGUMENT: precision
+	//THIRD ARGUMENT: partition
 	if (nrhs > 2) {
-		if (precision > 1)
+		// number of rows should be 3 (n1,n2, weight)
+		if (mxGetN(prhs[2]) != 1) {
+			mexPrintf("Partition Number of columns %d \n", mxGetN(prhs[2]));
 			return false;
-		precision = ((double) mxGetScalar(prhs[2]));
+		}
+		// data is stored in column major ordering ordering
+		partition_data = (double *) mxGetPr(prhs[2]);
 	}
 	//FOURTH ARGUMENT: hierarchical output
 	if (nrhs > 3) {
@@ -84,6 +93,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 
 // Template for reading in graph from weighted edgelist data as coming from Matlab
 // TODO: adapt this to make it read "two way" files as normally used by stability code without creating double edges
+// TODO: passing num_l_dim is not necessary really
 template<typename G, typename E>
 bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		G &graph, E &weights) {
@@ -112,13 +122,11 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		//TODO adapt for the case where unweighted graph is passed
 		double weight = graph_data[2 * num_l_dim + i];
 
-
 		// TODO maybe there is a neater solution here
 		// read in list is two-way yet undirected, but edges should only be created once
-		if(node1_id > node2_id){
+		if (node1_id > node2_id) {
 			continue;
 		}
-
 
 		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
 		Node node1, node2;
@@ -144,8 +152,21 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		typename G::Edge edge = graph.addEdge(node1, node2);
 		weights.set(edge, weight);
 	}
-    
-    return true;
+
+	return true;
+}
+
+template<typename G>
+bool initialise_partitions(G &graph, double* part_data) {
+	int number_of_nodes = lemon::countNodes(graph);
+	// intialise refined partition
+	refined_partition = partition(number_of_nodes);
+	input_partition = partition(number_of_nodes);
+
+	for (int i = 0; i < number_of_nodes; ++i) {
+		input_partition.add_node_to_set(i, part_data[i]);
+	}
+	return true;
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
@@ -170,27 +191,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		mexErrMsgTxt("Error creating graph from data");
 	}
 
-	// typedef for convenience
-	typedef cliques::VectorPartition partition;
-
-	// create empty vector of partitions
-	std::vector<partition> optimal_partitions;
+	if (!initialise_partitions(mygraph, partition_data)) {
+		mexErrMsgTxt("Error creating partition from data");
+	}
 
 	// create time vector
 	std::vector<double> markov_times;
 	markov_times.push_back(m_time);
 
 	//initialise stability
-	double stability = 0;
+	double improvement = 0;
 
 	// now run Louvain method
-	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(
-			mygraph, myweights, cliques::find_weighted_linearised_stability(
-					markov_times), cliques::linearised_stability_gain_louvain(
-					m_time), optimal_partitions);
-
-	// last partition in vector == best partition
-	partition best_partition = optimal_partitions.back();
+	improvement = cliques::refine_partition_kernighan_lin(mygraph, myweights,
+			cliques::find_weighted_linearised_stability(markov_times),
+			cliques::linearised_stability_gain_louvain(m_time),
+			input_partition, refined_partition);
 
 	//****************************************************
 	//----------------------------------------------------
@@ -198,13 +214,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	//----------------------------------------------------
 
 	/////////////////////////////////////////
-	// FIRST output: stability
+	// FIRST output: stability improvement
 
 	// mxReal is our data-type
 	plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	//Get a pointer to the data space in our newly allocated memory
 	double * out1 = (double*) mxGetPr(plhs[0]);
-	out1[0] = stability;
+	out1[0] = improvement;
 
 	////////////////////////////////////////
 	// SECOND output: number of communities
@@ -215,14 +231,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		//Get a pointer to the data space in our newly allocated memory
 		double * out2 = (double*) mxGetPr(plhs[1]);
 
-		out2[0] = double(best_partition.set_count());
+		out2[0] = double(refined_partition.set_count());
 
 	}
 	////////////////////////////////////////
 	// THIRD output: community assignments
 	if (nlhs > 2) {
 		// get number of nodes
-		int num_nodes = best_partition.element_count();
+		int num_nodes = refined_partition.element_count();
 
 		// allocate storage
 		plhs[2] = mxCreateDoubleMatrix(num_nodes, 1, mxREAL);
@@ -230,7 +246,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 		// write out results
 		for (unsigned int node = 0; node < num_nodes; ++node) {
-			output_tab[node] = double(best_partition.find_set(node));
+			output_tab[node] = double(refined_partition.find_set(node));
 
 		}
 	}
