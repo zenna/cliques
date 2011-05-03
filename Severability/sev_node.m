@@ -7,11 +7,7 @@ commrun=[];
 max_size = min(max_size,size(adj_matrix,1));
 
 %%
-graph_size=length(adj_matrix);
-%A = adj_matrix(community,community);
-D = diag(sum(adj_matrix)); % diagonal degree matrix
-P = (D^-1)*adj_matrix;  % Markovian transition matrix
-%P = full(P);
+P=diag(sum(adj_matrix,2).^-1)*adj_matrix;  % Markovian transition matrix
 
 % Get neighbors of startnode
 adj_nodes=find(sum(adj_matrix(start_node,:),1));
@@ -43,17 +39,13 @@ function [ commrun commsize sev ] = sev_node_pass( start_node, adj_matrix, t, ma
 %   Copyright (c) 2010 Yun William Yu
 
 graph_size = length(adj_matrix);
+P=diag(sum(adj_matrix,2).^-1)*adj_matrix;  % Markovian transition matrix
 
-%A = adj_matrix(community,community);
-D = diag(sum(adj_matrix,2)); % diagonal degree matrix
-P = (D^-1)*adj_matrix;  % Markovian transition matrix
-%P = full(P);
 
 commrun = zeros(1,graph_size); % Initialise family of communities
 commsize = zeros(1,1); % This is really duplicate information to commrun
 sev = zeros(1,1); % Vector of severabilities for each community
 
-%disp(t)
 community = start_node;
 sev_1 = -100000;
 %global I2;
@@ -80,7 +72,7 @@ while length(community)<max_size
         % Check the removal of all nodes but the seed node
         parfor i=1:length(interior_border)
             red_comm=community;
-            red_comm(find(red_comm==interior_border(i)))=[];
+            red_comm(red_comm==interior_border(i))=[];
             Q=P(red_comm,red_comm);
             sev_2(i)=sev0(Q^t);
         end
@@ -94,7 +86,7 @@ while length(community)<max_size
         if max_element > length(interior_border)
             community=[community neighbours(max_element-length(interior_border))];
         else
-            community(find(community==interior_border(max_element)))=[];
+            community(community==interior_border(max_element))=[];
         end
     else
     % Greedy optimisation on all other steps
