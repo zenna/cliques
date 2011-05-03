@@ -5,7 +5,9 @@
 #include <vector>
 #include <map>
 #include <set>
+
 #include <cliques/algorithms/louvain.h>
+
 #include <cliques/algorithms/stability.h>
 #include <cliques/structures/disjointset.h>
 
@@ -86,4 +88,4 @@ void create_hsg (G &graph, std::vector<float> &markov_times, G &hsg,
 
 }
 
-#endif // CLIQUES_HSG_H
+#endif

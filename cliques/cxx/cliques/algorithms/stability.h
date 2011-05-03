@@ -12,6 +12,7 @@
 #include <lemon/maps.h>
 
 #include <cliques/structures/disjointset.h>
+#include "cliques/algorithms/louvain.h"
 
 namespace cliques {
 /**
@@ -105,7 +106,7 @@ struct find_weighted_linearised_stability {
 
 	template<typename G, typename T2, typename W>
 	void operator ()(G &graph, T2 &my_partition, W &weights,
-			std::vector<float> &stabilities) {
+			std::vector<double> &stabilities) {
 		float two_m = 2.0 * cliques::find_total_weight(graph, weights);
 		float first_term = 0.0;
 		float second_term = 0.0;

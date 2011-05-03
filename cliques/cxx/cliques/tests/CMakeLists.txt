@@ -11,3 +11,6 @@ target_link_libraries(test_louvain ${graphviz_LIBRARIES})
 
 add_executable(test_kernighanlin kernighanlin.cpp)	
 target_link_libraries(test_louvain ${graphviz_LIBRARIES})
+
+add_executable(test_bimap testbimap.cpp)	
+target_link_libraries(test_louvain ${graphviz_LIBRARIES})

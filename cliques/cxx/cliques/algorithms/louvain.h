@@ -2,6 +2,7 @@
 #ifndef CLIQUES_LOUVAIN_H
 #define CLIQUES_LOUVAIN_H
 
+
 #include <limits>
 #include <vector>
 #include <lemon/concepts/graph.h>
@@ -9,6 +10,7 @@
 
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/partition.h>
+
 #include <cliques/structures/common.h>
 #include <iostream>
 #include <ctime>

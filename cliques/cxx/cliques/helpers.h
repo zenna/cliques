@@ -5,7 +5,7 @@
 #include <cliques/structures/common.h>
 #include <map>
 
-#define N 128
+#define NBITSET 128
 #define MAX_LINE_LENGTH 1000
 #define SET_MAX_SIZE 63
 
@@ -37,7 +37,7 @@ void reorder_map(std::map<int,int> &partition_map) {
 }
 
 //Sets the value of a bitset to value at offset
-void set_bitset(std::bitset<N> &bit_array, int &offset, int value) {
+void set_bitset(std::bitset<NBITSET> &bit_array, int &offset, int value) {
 	std::bitset<BITS_PER_NODE> temp_bit_array = value;
 	for (int i =0;i<BITS_PER_NODE;i++) {
 		int j = offset + i;
@@ -46,7 +46,7 @@ void set_bitset(std::bitset<N> &bit_array, int &offset, int value) {
 	offset = offset + BITS_PER_NODE;
 }
 
-int get_bitset(std::bitset<N> &bit_array, int &offset) {
+int get_bitset(std::bitset<NBITSET> &bit_array, int &offset) {
 	std::bitset<BITS_PER_NODE> temp_bit_array;
 	for (int i =0;i<BITS_PER_NODE;i++) {
 		int j = offset + i;
@@ -59,7 +59,7 @@ int get_bitset(std::bitset<N> &bit_array, int &offset) {
 
 // CONVERSIONS --------------------------------------------
 
-std::map<int,int> bitset_to_map(std::bitset<N> &bit_array) {
+std::map<int,int> bitset_to_map(std::bitset<NBITSET> &bit_array) {
 	int offset = 0;
 	std::map<int,int> partition_map;
 
@@ -72,9 +72,9 @@ std::map<int,int> bitset_to_map(std::bitset<N> &bit_array) {
 	return partition_map;
 };
 
-std::bitset<N> map_to_bitset(std::map<int,int> &partition_map) {
+std::bitset<NBITSET> map_to_bitset(std::map<int,int> &partition_map) {
 	int offset = 0;
-	std::bitset<N> bit_array;
+	std::bitset<NBITSET> bit_array;
 
 	for (std::map<int, int>::iterator itr = partition_map.begin(); itr != partition_map.end(); ++itr) {
 		set_bitset(bit_array, offset, itr->first);
@@ -84,7 +84,7 @@ std::bitset<N> map_to_bitset(std::map<int,int> &partition_map) {
 	return bit_array;
 }
 
-std::vector<std::vector<int> > bitset_to_vector(std::bitset<N> &bit_array) {
+std::vector<std::vector<int> > bitset_to_vector(std::bitset<NBITSET> &bit_array) {
 	int offset = 0;
 	std::vector<std::vector<int > > p;
 
@@ -125,7 +125,7 @@ return temp_partition_vector;
 
 /*std::bitset<N> vector_to_bitset(vec_2d_ints &p) {
 
-	std::bitset<N> temp_bitset;
+	std::bitset<NBITSET> temp_bitset;
 	int offset = 0;
 	for (unsigned int i = 0;i<p.size();++i) {
 		for (unsigned int j = 0; j < p[i].size(); ++j) {
@@ -137,7 +137,7 @@ return temp_partition_vector;
 	return temp_bitset;
 };*/
 
-std::set<std::set<int> > bitset_to_set(std::bitset<N> &bit_array) {
+std::set<std::set<int> > bitset_to_set(std::bitset<NBITSET> &bit_array) {
 	int offset = 0;
 	std::set<std::set<int > > p;
 

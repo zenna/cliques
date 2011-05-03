@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-	int element_count() {
+	int element_count() const {
 		return partition_vector.size();
 	}
 

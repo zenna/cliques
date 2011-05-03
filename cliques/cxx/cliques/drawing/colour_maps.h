@@ -111,10 +111,14 @@ struct make_energy_edge_colour_map {
         float range = max_weight - min_weight;
         float hue;
 
+        // TODO account for case when range == 0
+        // currently causes nan due to divide by 0
         int i = 0;
         for (std::vector<float>::iterator itr = energies_.begin(); itr
                 != energies_.end(); ++itr) {
+
             hue = (*itr + shift) / range;
+
             colour_map.insert(std::pair<int, cliques::xyz_colour<float> >(i,
                     cliques::xyz_colour<float>(hue, 0.7, 0.7)));
             ++i;

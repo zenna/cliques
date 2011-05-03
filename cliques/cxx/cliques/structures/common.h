@@ -14,7 +14,7 @@
     #include <unordered_set>
 #endif
 
-#define N 128
+#define NBITSET 128
 #define MAX_LINE_LENGTH 1000
 #define SET_MAX_SIZE 63
 
@@ -35,16 +35,16 @@ namespace cliques {
 #endif
 struct bitset_hash
 {
-	size_t operator()(std::bitset<N> bitset) const
+	size_t operator()(std::bitset<NBITSET> bitset) const
 	{
 		return shash()(bitset.to_string());
 	}
 };
 
 #if defined USE_BOOST
-	typedef boost::unordered_map<std::bitset<N>, cliques::Partition, bitset_hash> umap;
+	typedef boost::unordered_map<std::bitset<NBITSET>, cliques::Partition, bitset_hash> umap;
 #else
-	typedef std::unordered_map<std::bitset<N>, cliques::Partition, bitset_hash> umap;
+	typedef std::unordered_map<std::bitset<NBITSET>, cliques::Partition, bitset_hash> umap;
 #endif
 
 struct iterator_hash
@@ -101,7 +101,18 @@ struct partition_hash
 	size_t operator()(P &partition) const
 	{
 		boost::hash<int> ihash;
-		return ihash(partition.find_set(0));
+		int seed;
+		std::size_t seeda = 0;
+		int num_elements = partition.element_count();
+		for (int i=0; i<num_elements;++i) {
+		   boost::hash_combine(seeda, partition.find_set(i));
+		   /*int multiplier = 1;
+		   for (int j=0;j<num_elements-1;j++) {
+		       multiplier *= 10;
+		   }
+		   seed += multiplier * partition.find_set(i);*/
+		}
+		return ihash(seeda);
 	}
 };
 

@@ -170,7 +170,13 @@ void add_partition_to_set(
 			//temp_partition_map[i] = set_num;
 		}
 	}
+	new_partition.normalise_ids();
 	all_partitions.insert(new_partition);
+
+	num_partitions++;
+    if (num_partitions % 100 == 0) {
+        std::cout << num_partitions << "\n";
+    }
 }
 
 void save_partition(c_partition *p, cliques::umap &partition_map,
@@ -264,7 +270,7 @@ void gen_partitions_prune_aux(
 			//print_partition_old(part);
 			//save_partition(part, partition_map, num_partitions);
 			add_partition_to_set(part, g->n, num_partitions, all_partitions);
-			std::cout << "found\n";
+			//std::cout << "found\n";
 			remove_last_set(part);
 			return;
 		}
@@ -296,7 +302,108 @@ void gen_partitions_prune_aux(
 		part_union = set_difference(part_union, comp_tmp);
 	}
 }
-;
+
+void report_error(char *s){
+  fprintf(stderr,"%s\n",s);
+  exit(-1);
+}
+
+c_graph *graph_from_file(FILE *f){
+  char line[MAX_LINE_LENGTH];
+  int i, u, v;
+  c_graph *g;
+
+  assert( (g=(c_graph *)malloc(sizeof(c_graph))) != NULL );
+
+  /* read n */
+  if( fgets(line,MAX_LINE_LENGTH,f) == NULL )
+    report_error("graph_from_file: read error (fgets) 1");
+  if( sscanf(line, "%d\n", &(g->n)) != 1 )
+    report_error("graph_from_file: read error (sscanf) 2");
+
+  /* read the degree sequence */
+  if( (g->capacities=(int *)malloc(g->n*sizeof(int))) == NULL )
+    report_error("graph_from_file: malloc() error 2");
+  if( (g->degrees=(int *)calloc(g->n,sizeof(int))) == NULL )
+    report_error("graph_from_file: calloc() error");
+  for(i=0;i<g->n;i++){
+    if( fgets(line,MAX_LINE_LENGTH,f) == NULL )
+      report_error("graph_from_file; read error (fgets) 2");
+    if( sscanf(line, "%d %d\n", &v, &(g->capacities[i])) != 2 )
+      report_error("graph_from_file; read error (sscanf) 2");
+    if( v != i ){
+      fprintf(stderr,"Line just read : %s\n i = %d; v = %d\n",line,i,v);
+      report_error("graph_from_file: error while reading degrees");
+    }
+  }
+
+  /* compute the number of links */
+  g->m=0;
+  for(i=0;i<g->n;i++)
+    g->m += g->capacities[i];
+  g->m /= 2;
+
+  /* create contiguous space for links */
+  if (g->n==0){
+    g->links = NULL; g->degrees = NULL; g->capacities = NULL;
+  }
+  else {
+    if( (g->links=(int **)malloc(g->n*sizeof(int*))) == NULL )
+      report_error("graph_from_file: malloc() error 3");
+    if( (g->links[0]=(int *)malloc(2*g->m*sizeof(int))) == NULL )
+      report_error("graph_from_file: malloc() error 4");
+    for(i=1;i<g->n;i++)
+      g->links[i] = g->links[i-1] + g->capacities[i-1];
+  }
+
+  /* read the links */
+  for(i=0;i<g->m;i++) {
+    if( fgets(line,MAX_LINE_LENGTH,f) == NULL )
+      report_error("graph_from_file; read error (fgets) 3");
+    if( sscanf(line, "%d %d\n", &u, &v) != 2 ){
+      fprintf(stderr,"Attempt to scan link #%d failed. Line read:%s\n", i, line);
+      report_error("graph_from_file; read error (sscanf) 3");
+    }
+    if ( (u>=g->n) || (v>=g->n) || (u<0) || (v<0) ) {
+      fprintf(stderr,"Line just read: %s",line);
+      report_error("graph_from_file: bad node number");
+    }
+    if ( (g->degrees[u]>=g->capacities[u]) ||
+         (g->degrees[v]>=g->capacities[v]) ){
+      fprintf(stderr, "reading link %s\n", line);
+      report_error("graph_from_file: too many links for a node");
+    }
+    g->links[u][g->degrees[u]] = v;
+    g->degrees[u]++;
+    g->links[v][g->degrees[v]] = u;
+    g->degrees[v]++;
+  }
+  for(i=0;i<g->n;i++)
+    if (g->degrees[i]!=g->capacities[i])
+      report_error("graph_from_file: capacities <> degrees");
+  /*  printf("%s\n", line);*/
+  /* horrible hack */
+/*   if( fgets(line,MAX_LINE_LENGTH,f) != NULL ) */
+/*     printf("%s\n", line); */
+/*     report_error("graph_from_file; too many lines"); */
+
+  return(g);
+}
+
+void free_graph(c_graph *g){
+  if (g!=NULL) {
+    if (g->links!=NULL) {
+      if (g->links[0]!=NULL)
+        free(g->links[0]);
+      free(g->links);
+    }
+    if (g->capacities!=NULL)
+      free(g->capacities);
+    if (g->degrees!=NULL)
+      free(g->degrees);
+    free(g);
+  }
+}
 
 /**
  @brief  Find all connected partitions of a graph
@@ -310,7 +417,7 @@ void find_connected_partitions(
 		boost::unordered_set<P, cliques::partition_hash,
 				cliques::partition_equal> &all_partitions) {
 	cliques::umap partition_map;
-	c_graph *g = new c_graph;
+	/*c_graph *g = new c_graph;
 	g->n = lemon::countNodes(graph);
 	g->m = lemon::countEdges(graph);
 	g->degrees = new int[g->n];
@@ -331,7 +438,9 @@ void find_connected_partitions(
 			g->links[graph.id(itr)][i] = graph.id(graph.runningNode(e_itr));
 			++i;
 		}
-	}
+	}*/
+
+	c_graph *g;
 
 	unsigned long nodes_to_place;
 	c_partition *part;
@@ -339,7 +448,10 @@ void find_connected_partitions(
 	unsigned long comp_tmp, neighbours, forbidden;
 	int num_partitions = 0;
 
-	//g=graph_from_file(pFile);
+	FILE *pFile;
+	pFile=fopen("/home/zenna/repos/graph-codes/cliques/data/graphs/barbell_n12.nke", "r");
+	g=graph_from_file(pFile);
+
 	nodes_to_place = empty_set();
 	for (int i = 1; i < g->n; i++)
 		nodes_to_place = add_to_set(i, nodes_to_place);
@@ -358,12 +470,13 @@ void find_connected_partitions(
 			nodes_to_place, part_union, partition_map, num_partitions,
 			all_partitions);
 
-	delete[] g->degrees;
+	free_graph(g);
+	/*delete[] g->degrees;
 	for (int i = 0; i < g->n; ++i) {
 		delete[] g->links[i];
 	}
 	delete[] g->links;
-	delete g;
+	delete g;*/
 }
 
 }

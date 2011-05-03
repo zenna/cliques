@@ -2,6 +2,13 @@
 #ifndef CLIQUES_SPACE_H
 #define CLIQUES_SPACE_H
 
+#include <boost/unordered_map.hpp>
+
+#include <boost/bimap.hpp>
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <boost/bimap/multiset_of.hpp>
+
 #include <cliques/graphhelpers.h>
 
 namespace cliques {
@@ -30,19 +37,32 @@ void find_neighbours(G &graph, P const &partition,
         int set_of_n1 = partition.find_set(n1);
         int set_of_n2 = partition.find_set(n2);
 
-        //Add partition with n1 isolated and in n2's set, then undo
-        temp_partition.isolate_node(n1);
-        neighbour_partitions.insert(temp_partition);
-        temp_partition.add_node_to_set(n1, set_of_n2);
-        neighbour_partitions.insert(temp_partition);
-        temp_partition.add_node_to_set(n1, set_of_n1);
-
-        // Do vice versa for n2
-        temp_partition.isolate_node(n2);
-        neighbour_partitions.insert(temp_partition);
-        temp_partition.add_node_to_set(n2, set_of_n1);
-        neighbour_partitions.insert(temp_partition);
-        temp_partition.add_node_to_set(n1, set_of_n1);
+        // Add partition with n1 isolated and in n2's set
+        // Avoid using too much memory, destroy temp_partiton after use
+        {
+            P temp_partition = partition;
+            temp_partition.isolate_node(n1);
+            temp_partition.normalise_ids();
+            neighbour_partitions.insert(temp_partition);
+        }
+        {
+            P temp_partition = partition;
+            temp_partition.add_node_to_set(n1, set_of_n2);
+            temp_partition.normalise_ids();
+            neighbour_partitions.insert(temp_partition);
+        }
+        {
+            P temp_partition = partition;
+            temp_partition.isolate_node(n2);
+            temp_partition.normalise_ids();
+            neighbour_partitions.insert(temp_partition);
+        }
+        {
+            P temp_partition = partition;
+            temp_partition.add_node_to_set(n2, set_of_n1);
+            temp_partition.normalise_ids();
+            neighbour_partitions.insert(temp_partition);
+        }
     }
 }
 
@@ -58,7 +78,10 @@ void find_neighbours(G &graph, P const &partition,
  @param[out] space output graph representing the space
  */
 template<typename G, typename P>
-void create_space(G &graph, boost::unordered_set<P, cliques::partition_hash,
+boost::bimap<
+        boost::bimaps::unordered_set_of<P, cliques::partition_hash,cliques::partition_equal>,
+        boost::bimaps::set_of<typename G::Node>
+    > create_space(G &graph, boost::unordered_set<P, cliques::partition_hash,
         cliques::partition_equal> &all_partitions, G &space) {
 
     typedef typename G::Node Node;
@@ -71,35 +94,52 @@ void create_space(G &graph, boost::unordered_set<P, cliques::partition_hash,
     boost::unordered_map<P, Node, cliques::partition_hash,
             cliques::partition_equal> partition_to_spacenode;
 
+    typedef boost::bimap<
+        boost::bimaps::unordered_set_of<P, cliques::partition_hash,cliques::partition_equal>,
+        boost::bimaps::set_of<Node>
+    > Bimap;
+
+    typedef typename Bimap::value_type bimap_value;
+    Bimap partition_tofrom_Node;
+
     // Create node in space for each partition
     for (partition_set_itr itr = all_partitions.begin(); itr
             != all_partitions.end(); ++itr) {
         Node temp_node = space.addNode();
         partition_to_spacenode[*itr] = temp_node;
+        partition_tofrom_Node.insert( bimap_value(*itr, temp_node ) );
     }
 
     for (partition_set_itr itr = all_partitions.begin(); itr
             != all_partitions.end(); ++itr) {
 
-        Node current_node = partition_to_spacenode[*itr];
+        //Node current_node = partition_to_spacenode[*itr];
+        Node current_node = partition_tofrom_Node.left.at(*itr);
+
         partition_set neighbour_partitions;
         cliques::find_neighbours(graph, *itr, neighbour_partitions);
 
         for (partition_set_itr neigh_itr = neighbour_partitions.begin(); neigh_itr
                 != neighbour_partitions.end(); ++neigh_itr ) {
-            Node neighbour_node = partition_to_spacenode[*neigh_itr];
+            //Node neighbour_node = partition_to_spacenode[*neigh_itr];
+
+            // Hack?: skip if partition not found (i.e. find_neighbours
+            // - returns a disconnected partition
+            if (all_partitions.find(*neigh_itr) == all_partitions.end()) {
+                continue;
+            }
+            Node neighbour_node = partition_tofrom_Node.left.at(*neigh_itr);
 
             if (current_node != neighbour_node) {
                 Edge e = lemon::findEdge(space, current_node, neighbour_node);
                 if (e == lemon::INVALID) {
                     Edge e = space.addEdge(current_node, neighbour_node);
-                    std::cout << graph.id(current_node) << " " << graph.id(neighbour_node) << std::endl;
+                    //std::cout << graph.id(current_node) << " " << graph.id(neighbour_node) << std::endl;
                 }
             }
         }
     }
-
-    return partition_to_spacenode;
+    return partition_tofrom_Node;
 }
 
 template<typename G>
