@@ -3,6 +3,8 @@ function [ commrun commsize sev ] = sev_node( start_node, adj_matrix, t, max_siz
 %   Will always give you a community with the original node in it.
 %   Copyright (c) 2010 Yun William Yu
 commrun=[];
+commsize=0;
+sev=-1;
 % Doesn't make sense for the max size to be greater than the community size
 max_size = min(max_size,size(adj_matrix,1));
 
@@ -51,6 +53,7 @@ sev_1 = -100000;
 %global I2;
 j=0;
 emptymax=false;
+comm_final=community;
 while (length(community)<max_size)
     j=j+1;
     if true % (mod(j,1)==0)
@@ -84,7 +87,9 @@ while (length(community)<max_size)
         end
         % Choose the new community with highest severability
         max_element = find(sev_2==max(sev_2),1,'first');
-        if max_element > length(interior_border)
+        if isempty(max_element)
+            emptymax=true;
+        elseif max_element > length(interior_border)
             community=[community neighbours(max_element-length(interior_border))];
         else
             community(community==interior_border(max_element))=[];

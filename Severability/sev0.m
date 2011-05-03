@@ -1,6 +1,12 @@
 % Computes a sev0, which takes the already exponentiated Q-transition
 % submatrix and spits back the severability, retention, and mixing
 function [sev retention mixing ] = sev0(Q_power)
+    if max(size(Q_power))==0
+        sev = 0;
+        retention = 0;
+        mixing = 0;
+        return
+    end
     community_size=length(Q_power);
     retention = full((1/community_size)*sum(sum(Q_power)));   % Normalised sum of entries
 
