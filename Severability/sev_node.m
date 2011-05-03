@@ -50,7 +50,8 @@ community = start_node;
 sev_1 = -100000;
 %global I2;
 j=0;
-while length(community)<max_size
+emptymax=false;
+while (length(community)<max_size)
     j=j+1;
     if true % (mod(j,1)==0)
         if j~=1
@@ -97,6 +98,9 @@ while length(community)<max_size
         end
         % Choose the new community with highest severability
         max_element = find(sev_2==max(sev_2),1,'first');
+        if isempty(max_element)
+            emptymax=true;
+        end
         community = [community neighbours(max_element)];
     end
 
@@ -105,6 +109,9 @@ while length(community)<max_size
     if sev_2(max_element)>sev_1
         sev_1=sev_2(max_element);
         comm_final=community;
+    end
+    if emptymax
+        break
     end
 end
 %end
