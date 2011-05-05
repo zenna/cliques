@@ -106,11 +106,13 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 
 	// reserve memory space for number of nodes
 	graph.reserveNode(num_nodes);
+	// now node id internal <> external
+	for (int i = 0; i < num_nodes; ++i) {
+		graph.addNode();
+	}
 
 	// define Node class for convenience
 	typedef typename G::Node Node;
-	// mapping from id to node
-	std::map<int, Node> id_to_node;
 
 	// loop over complete list
 	for (int i = 0; i < num_l_dim; ++i) {
@@ -128,28 +130,8 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 			continue;
 		}
 
-		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
-		Node node1, node2;
 
-		// If the node is not in the map
-		// then create node and add to map
-		if (itr == id_to_node.end()) {
-			node1 = graph.addNode();
-			id_to_node[node1_id] = node1;
-		} else {
-			node1 = itr->second;
-		}
-
-		// same for node 2
-		itr = id_to_node.find(node2_id);
-		if (itr == id_to_node.end()) {
-			node2 = graph.addNode();
-			id_to_node[node2_id] = node2;
-		} else {
-			node2 = itr->second;
-		}
-
-		typename G::Edge edge = graph.addEdge(node1, node2);
+		typename G::Edge edge = graph.addEdge(graph.nodeFromId(node1_id), graph.nodeFromId(node2_id));
 		weights.set(edge, weight);
 	}
 
@@ -184,7 +166,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	//create new graph and weight map
 	lemon::SmartGraph mygraph;
-	lemon::SmartGraph::EdgeMap<float> myweights(mygraph);
+	lemon::SmartGraph::EdgeMap<double> myweights(mygraph);
 
 	if (!read_edgelist_weighted_from_data(data, num_largest_dim, mygraph,
 			myweights)) {
@@ -201,6 +183,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	//initialise stability
 	double improvement = 0;
+
+	int number_of_nodes = lemon::countNodes(mygraph);
+	//	for (int i = 0; i < number_of_nodes; i++) {
+	//		std::cout << i << " " << input_partition.find_set(i) << "\n";
+	//	}
+	std::cout << number_of_nodes;
 
 	// now run Louvain method
 	improvement = cliques::refine_partition_kernighan_lin(mygraph, myweights,

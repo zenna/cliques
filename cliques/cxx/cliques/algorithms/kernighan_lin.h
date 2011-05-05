@@ -13,6 +13,8 @@
 #include <cliques/graphhelpers.h>
 #include <cliques/algorithms/louvain.h>
 
+
+
 namespace cliques {
 /**
  @brief  Refines a given partition using Kernighan Lin style movements
@@ -57,6 +59,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	double original_quality, best_quality, current_quality;
 	original_quality = best_quality = current_quality = compute_quality(
 			internals);
+
 
 	// keep track of nodes that have moved before
 	std::set<Node> moved_nodes; //TODO change to unordered_set
@@ -121,9 +124,9 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 					partition, n1_comm_id);
 
 		}
-
+		//TODO adapt this  to deal with trapped case better
 		if (is_trapped_node) {
-			//comm_to_move_to = TODO
+			continue;
 		}
 
 		// TODO: check if this can be done more efficient, see above
@@ -145,6 +148,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	}
 
 	double total_quality_improvement = best_quality - original_quality;
+
 
 	// TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
 	if (total_quality_improvement > minimum_improve) {
