@@ -46,6 +46,9 @@ public:
 		srand ( time(NULL) );
 
 		for (typename G::EdgeIt itr(graph); itr != lemon::INVALID; ++itr) {
+	        if (graph.id(itr) % 1000 == 0) {
+	            std::cout << "edge" << graph.id(itr) << "\n";
+	        }
 			std::string n_name = cliques::to_string(graph.id(graph.u(itr)));
 			std::string m_name = cliques::to_string(graph.id(graph.v(itr)));
 

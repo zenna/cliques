@@ -110,6 +110,9 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
             != all_partitions.end(); ++itr) {
 
         Node current_node = partition_tofrom_Node.left.at(*itr);
+        if (space.id(current_node) % 1000 == 0) {
+            std::cout << space.id(current_node) << "\n";
+        }
         partition_set neighbour_partitions;
         cliques::find_neighbours(graph, *itr, neighbour_partitions);
 

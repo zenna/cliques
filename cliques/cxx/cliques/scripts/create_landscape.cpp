@@ -14,49 +14,63 @@
 #include <cliques/algorithms/space.h>
 #include <cliques/structures/vector_partition.h>
 
-
-
 int main() {
-	lemon::SmartGraph orange_graph;
-	lemon::SmartGraph::EdgeMap<int> weights(orange_graph);
+    lemon::SmartGraph orange_graph;
+    lemon::SmartGraph::EdgeMap<int> weights(orange_graph);
 
-	typedef cliques::VectorPartition VecPartition;
-	cliques::read_edgelist_weighted(
-			"/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj", orange_graph,
-			weights);
+    typedef cliques::VectorPartition VecPartition;
+    cliques::read_edgelist_weighted(
+            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj",
+            orange_graph, weights);
 
     std::cout << "num_nodes" << lemon::countNodes(orange_graph) << std::endl;
     std::cout << "num_edges" << lemon::countEdges(orange_graph) << std::endl;
     std::cout << "connected" << lemon::connected(orange_graph) << std::endl;
 
-	boost::unordered_set<VecPartition, cliques::partition_hash,
-			cliques::partition_equal> all_partitions;
-	cliques::find_connected_partitions(orange_graph, all_partitions);
+    std::cout << "Finding connected partitions" << std::endl;
+    boost::unordered_set<VecPartition, cliques::partition_hash,
+            cliques::partition_equal> all_partitions;
+    cliques::find_connected_partitions(orange_graph, all_partitions);
 
-	lemon::SmartGraph space;
-	auto map = cliques::create_space(orange_graph, all_partitions, space);
+    /*std::vector<double> markov_times = { 1000.0 };
+    cliques::find_weighted_linearised_stability func(markov_times);
+    int num_partitions = 0;
 
-	std::vector<float> stabilities;
-	std::vector<double> markov_times = {1.0};
-	cliques::find_weighted_linearised_stability func(markov_times);
+    double stability = 0.0;
+    for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
+        VecPartition p = *itr;
+        cliques::Internals internals(orange_graph, weights, p);
+        stability = func(internals);
+        std::cout << stability << std::endl;
+    }*/
 
-	int i =0;
-	for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
-	    std::vector<double> stabs;
-	    VecPartition p = map.right.at(itr);
-	    cliques::Internals internals(orange_graph, weights, p);
-	    double stability = func(internals);
-	    stabilities.push_back(stability);
-	}
+    std::cout << "Computing Space" << std::endl;
+    lemon::SmartGraph space;
+    auto map = cliques::create_space(orange_graph, all_partitions, space);
+
+    std::vector<float> stabilities;
+    std::vector<double> markov_times = { 1.0 };
+    cliques::find_weighted_linearised_stability func(markov_times);
+
+    std::cout << "computing stability" << std::endl;
+    for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
+        std::vector<double> stabs;
+        VecPartition p = map.right.at(itr);
+        cliques::Internals internals(orange_graph, weights, p);
+        double stability = func(internals);
+        stabilities.push_back(stability);
+        std::cout << stability << std::endl;
+    }
 
     std::cout << "num_nodes" << lemon::countNodes(space) << std::endl;
     std::cout << "num_edges" << lemon::countEdges(space) << std::endl;
-	std::cout << "connected" << lemon::connected(space) << std::endl;
+    std::cout << "connected" << lemon::connected(space) << std::endl;
 
+    std::cout << "drawing" << std::endl;
     cliques::draw_graph canvas(space);
     cliques::make_energy_edge_colour_map A(stabilities);
     canvas.add_node_map(cliques::make_energy_edge_colour_map(stabilities));
     canvas.draw("spaces2.png");
 
-	return 0;
+    return 0;
 }

@@ -2,7 +2,6 @@
 #ifndef CLIQUES_LOUVAIN_H
 #define CLIQUES_LOUVAIN_H
 
-
 #include <limits>
 #include <vector>
 #include <lemon/concepts/graph.h>
