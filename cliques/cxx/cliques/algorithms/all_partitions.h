@@ -107,7 +107,6 @@ c_partition *add_set(unsigned long s, c_partition *p) {
 
 c_partition *remove_last_set(c_partition *p) {
 	assert( p->current > 0 );
-	//std::cout << "p->current =" << p->current << " size of sets is: " << p->size << endl;
 	p->sets[p->current] = empty_set();
 	p->current--;
 	return (p);
@@ -174,7 +173,7 @@ void add_partition_to_set(
 	all_partitions.insert(new_partition);
 
 	num_partitions++;
-    if (num_partitions % 100 == 0) {
+    if (num_partitions % 1000 == 0) {
         std::cout << num_partitions << "\n";
     }
 }
@@ -410,6 +409,7 @@ void free_graph(c_graph *g){
 
  TODO remove mem leak (delete) from c_partition
  TODO save partitions into partition map
+ TODO breaks if directed (i.e. double edge)
  */
 template<typename G, typename P>
 void find_connected_partitions(
@@ -417,7 +417,8 @@ void find_connected_partitions(
 		boost::unordered_set<P, cliques::partition_hash,
 				cliques::partition_equal> &all_partitions) {
 	cliques::umap partition_map;
-	/*c_graph *g = new c_graph;
+
+	c_graph *g = new c_graph;
 	g->n = lemon::countNodes(graph);
 	g->m = lemon::countEdges(graph);
 	g->degrees = new int[g->n];
@@ -438,9 +439,9 @@ void find_connected_partitions(
 			g->links[graph.id(itr)][i] = graph.id(graph.runningNode(e_itr));
 			++i;
 		}
-	}*/
+	}
 
-	c_graph *g;
+	//c_graph *g;
 
 	unsigned long nodes_to_place;
 	c_partition *part;
@@ -449,8 +450,8 @@ void find_connected_partitions(
 	int num_partitions = 0;
 
 	FILE *pFile;
-	pFile=fopen("/home/zenna/repos/graph-codes/cliques/data/graphs/barbell_n12.nke", "r");
-	g=graph_from_file(pFile);
+	//pFile=fopen("//home/zenna/repos/graph-codes/cliques/data/graphs/triangle_n4.edj", "r");
+	//g=graph_from_file(pFile);
 
 	nodes_to_place = empty_set();
 	for (int i = 1; i < g->n; i++)
@@ -470,13 +471,13 @@ void find_connected_partitions(
 			nodes_to_place, part_union, partition_map, num_partitions,
 			all_partitions);
 
-	free_graph(g);
-	/*delete[] g->degrees;
+	//free_graph(g);
+	delete[] g->degrees;
 	for (int i = 0; i < g->n; ++i) {
 		delete[] g->links[i];
 	}
 	delete[] g->links;
-	delete g;*/
+	delete g;
 }
 
 }

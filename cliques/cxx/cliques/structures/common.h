@@ -101,18 +101,12 @@ struct partition_hash
 	size_t operator()(P &partition) const
 	{
 		boost::hash<int> ihash;
-		int seed;
-		std::size_t seeda = 0;
+		std::size_t seed = 0;
 		int num_elements = partition.element_count();
 		for (int i=0; i<num_elements;++i) {
-		   boost::hash_combine(seeda, partition.find_set(i));
-		   /*int multiplier = 1;
-		   for (int j=0;j<num_elements-1;j++) {
-		       multiplier *= 10;
-		   }
-		   seed += multiplier * partition.find_set(i);*/
+		   boost::hash_combine(seed, partition.find_set(i));
 		}
-		return ihash(seeda);
+		return ihash(seed);
 	}
 };
 

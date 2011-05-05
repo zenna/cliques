@@ -22,7 +22,7 @@ int main() {
 
 	typedef cliques::VectorPartition VecPartition;
 	cliques::read_edgelist_weighted(
-			"/home/zenna/repos/graph-codes/cliques/data/renaud_16.edj", orange_graph,
+			"/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj", orange_graph,
 			weights);
 
     std::cout << "num_nodes" << lemon::countNodes(orange_graph) << std::endl;
@@ -53,10 +53,10 @@ int main() {
     std::cout << "num_edges" << lemon::countEdges(space) << std::endl;
 	std::cout << "connected" << lemon::connected(space) << std::endl;
 
-    //cliques::draw_graph canvas(space);
-    //cliques::make_energy_edge_colour_map A(stabilities);
-    //canvas.add_node_map(cliques::make_energy_edge_colour_map(stabilities));
-    //canvas.draw("spaces.png");
+    cliques::draw_graph canvas(space);
+    cliques::make_energy_edge_colour_map A(stabilities);
+    canvas.add_node_map(cliques::make_energy_edge_colour_map(stabilities));
+    canvas.draw("spaces2.png");
 
 	return 0;
 }

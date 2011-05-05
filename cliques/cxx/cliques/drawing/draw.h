@@ -75,7 +75,7 @@ public:
 		gvFreeContext(gvc);
 	}
 
-	void draw(std::string filename, std::string algorithm = "neato") {
+	void draw(std::string filename, std::string algorithm = "sfdp") {
 		gvLayout (gvc, g, &(cliques::string_to_char_p(algorithm))[0]);
 		gvRenderFilename (gvc, g, "png", &(cliques::string_to_char_p(filename))[0]);
 	}
@@ -112,7 +112,6 @@ public:
 			typename G::Edge edge = graph.edgeFromId(itr->first);
 
 			std::string weight_str = cliques::to_string(1/scaler(weights[edge]));
-			std::cout << "setting edge " << graph.id(edge) << "to " <<  weight_str << std::endl;
 			agsafeset(itr->second, &(cliques::string_to_char_p("len"))[0], &(cliques::string_to_char_p(weight_str))[0], &(cliques::string_to_char_p(""))[0]);
 		}
 	}
