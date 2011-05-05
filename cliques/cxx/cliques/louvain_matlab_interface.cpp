@@ -83,7 +83,6 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 }
 
 // Template for reading in graph from weighted edgelist data as coming from Matlab
-// TODO: adapt this to make it read "two way" files as normally used by stability code without creating double edges
 template<typename G, typename E>
 bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		G &graph, E &weights) {
@@ -96,11 +95,13 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 
 	// reserve memory space for number of nodes
 	graph.reserveNode(num_nodes);
+	// now node id internal <> external
+	for (int i = 0; i < num_nodes; ++i) {
+		graph.addNode();
+	}
 
 	// define Node class for convenience
 	typedef typename G::Node Node;
-	// mapping from id to node
-	std::map<int, Node> id_to_node;
 
 	// loop over complete list
 	for (int i = 0; i < num_l_dim; ++i) {
@@ -112,40 +113,18 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		//TODO adapt for the case where unweighted graph is passed
 		double weight = graph_data[2 * num_l_dim + i];
 
-
 		// TODO maybe there is a neater solution here
 		// read in list is two-way yet undirected, but edges should only be created once
-		if(node1_id > node2_id){
+		if (node1_id > node2_id) {
 			continue;
 		}
 
-
-		typename std::map<int, Node>::iterator itr = id_to_node.find(node1_id);
-		Node node1, node2;
-
-		// If the node is not in the map
-		// then create node and add to map
-		if (itr == id_to_node.end()) {
-			node1 = graph.addNode();
-			id_to_node[node1_id] = node1;
-		} else {
-			node1 = itr->second;
-		}
-
-		// same for node 2
-		itr = id_to_node.find(node2_id);
-		if (itr == id_to_node.end()) {
-			node2 = graph.addNode();
-			id_to_node[node2_id] = node2;
-		} else {
-			node2 = itr->second;
-		}
-
-		typename G::Edge edge = graph.addEdge(node1, node2);
+		typename G::Edge edge = graph.addEdge(graph.nodeFromId(node1_id),
+				graph.nodeFromId(node2_id));
 		weights.set(edge, weight);
 	}
-    
-    return true;
+
+	return true;
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {

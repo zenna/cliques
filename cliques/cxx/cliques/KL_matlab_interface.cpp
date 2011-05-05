@@ -92,8 +92,6 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 }
 
 // Template for reading in graph from weighted edgelist data as coming from Matlab
-// TODO: adapt this to make it read "two way" files as normally used by stability code without creating double edges
-// TODO: passing num_l_dim is not necessary really
 template<typename G, typename E>
 bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		G &graph, E &weights) {
