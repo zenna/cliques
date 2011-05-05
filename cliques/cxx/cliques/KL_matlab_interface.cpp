@@ -182,13 +182,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	//initialise stability
 	double improvement = 0;
 
-	int number_of_nodes = lemon::countNodes(mygraph);
-	//	for (int i = 0; i < number_of_nodes; i++) {
-	//		std::cout << i << " " << input_partition.find_set(i) << "\n";
-	//	}
-	std::cout << number_of_nodes;
-
-	// now run Louvain method
+	// run KL algorithm
 	improvement = cliques::refine_partition_kernighan_lin(mygraph, myweights,
 			cliques::find_weighted_linearised_stability(markov_times),
 			cliques::linearised_stability_gain_louvain(m_time),
