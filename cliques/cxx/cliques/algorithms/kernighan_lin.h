@@ -13,8 +13,6 @@
 #include <cliques/graphhelpers.h>
 #include <cliques/algorithms/louvain.h>
 
-
-
 namespace cliques {
 /**
  @brief  Refines a given partition using Kernighan Lin style movements
@@ -60,7 +58,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	original_quality = best_quality = current_quality = compute_quality(
 			internals);
 
-
 	// keep track of nodes that have moved before
 	std::set<Node> moved_nodes; //TODO change to unordered_set
 
@@ -94,7 +91,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 			double isolation_loss = compute_quality_diff(internals, n1_comm_id,
 					n1_id);
 
-
 			// consider all possible other nodes
 			// TODO: Don't we just have to look at all possible other communities the node could move to (at most all neighbouring nodes?)
 			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
@@ -122,7 +118,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 			// Put node back - we don't want to move yet
 			insert_and_update_internals(graph, weights, n1, internals,
 					partition, n1_comm_id);
-
 		}
 		//TODO adapt this  to deal with trapped case better
 		if (is_trapped_node) {
@@ -148,7 +143,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	}
 
 	double total_quality_improvement = best_quality - original_quality;
-
 
 	// TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
 	if (total_quality_improvement > minimum_improve) {

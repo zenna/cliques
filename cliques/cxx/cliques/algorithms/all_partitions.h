@@ -173,8 +173,8 @@ void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
     //cliques::print_partition_list(new_partition);
 
     num_partitions++;
-    if (num_partitions % 1000 == 0) {
-        std::cout << num_partitions << "\n";
+    if (num_partitions % 100000 == 0) {
+        std::cerr << num_partitions << "\n";
     }
 }
 

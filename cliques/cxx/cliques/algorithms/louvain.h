@@ -4,16 +4,22 @@
 
 #include <limits>
 #include <vector>
+#include <iostream>
+#include <ctime>
+
+#include <boost/random.hpp>
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
+#include <cliques/helpers.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/partition.h>
-
 #include <cliques/structures/common.h>
-#include <iostream>
-#include <ctime>
-#include <boost/random.hpp>
+
+//TODO: Louvain gets noticably slower on second iteration
+//It seems that hte algorithm get sstuck in an infiniite loop on second iteration
+  // Improvement alternates between same two values
+// On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
 
 namespace cliques {
 
@@ -235,7 +241,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	Internals internals(graph, weights);
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
-	double minimum_improve = 0.000001;
+	double minimum_improve = 0.0001;
 	double current_quality = compute_quality(internals);
 	bool one_level_end = false;
 	double old_quality = current_quality;
@@ -253,10 +259,13 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	// actual shuffling
 	std::random_shuffle(nodes_ordered_randomly.begin(),
 			nodes_ordered_randomly.end());
+    int num_partitions = 0;
 
 	do {
 		did_nodes_move = false;
 		old_quality = current_quality;
+
+	    int node_done = 0;
 
 		// loop over all nodes in random order
 		typename std::vector<Node>::iterator n1_it;
@@ -264,6 +273,11 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				!= nodes_ordered_randomly.end(); ++n1_it) {
 			// get node id and comm id
 			Node n1 = *n1_it;
+		    num_partitions++;
+		    node_done++;
+		    if (num_partitions % 10000 == 0) {
+		        cliques::output("evaluating node:", node_done, "out of", nodes_ordered_randomly.size());
+		    }
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
 			isolate_and_update_internals(graph, weights, n1, internals,
@@ -306,6 +320,8 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			one_level_end = true;
 		}
 
+		float improvement = current_quality - old_quality;
+		cliques::output("moved?:", did_nodes_move, "current_quality:", current_quality, "old_quality:", old_quality, "improvement is:", improvement, "\n");
 		// If there was a movement of the nodes AND quality increases make another run
 	} while ((current_quality - old_quality) > minimum_improve);
 
