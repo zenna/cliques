@@ -27,6 +27,7 @@ Community::~Community(){
 	free(g.links);
 	free(g.weights);
 	free(g.degrees);
+	free(g.nb_nodes_per_comm);
 }
 /*
 Community::Community(char * filename, int type, int nbp, double minm, double timet) {

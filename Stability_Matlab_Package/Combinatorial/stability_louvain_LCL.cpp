@@ -205,10 +205,7 @@ extern "C" {
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     
-  mxArray **a;
-   mxArray **b;
   
-
 struct timeval tv;
 gettimeofday(&tv,NULL);
 
@@ -313,6 +310,7 @@ gettimeofday(&tv,NULL);
   free(g.links);
   free(g.weights);
   free(g.degrees);
+  free(g.nb_nodes_per_comm);
     /*pointdegrees.pushback((*c).g.degrees);
     pointlinks.pushback((*c).g.links);
     pointweights.pushback((*c).g.weights);
