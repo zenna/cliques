@@ -60,10 +60,3 @@ is to decrease the number of optimisations on which the variation of
 information is calculated. To do so, add the option 'M' and put a value
 such that M < L (L is the number of louvain optimisations).
 ex: [S, N, VI, C] = stability(Graph,time,'plot','v', 'L', 100, 'M', 10);
-
-* If you don't have the Bioinformatics package installed in Matlab, you
-will not be able to do the initial checks on your input graph. Make sure
-that your graph is correctly incoded (either list of edges with nodes 
-numbering starting from zero, or adjacendy matrix) and disable the checks
-with the option 'nocheck'.
-
