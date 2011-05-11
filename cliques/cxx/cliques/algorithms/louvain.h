@@ -241,7 +241,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	Internals internals(graph, weights);
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
-	double minimum_improve = 0.0001;
+	double minimum_improve = 0.001;
 	double current_quality = compute_quality(internals);
 	bool one_level_end = false;
 	double old_quality = current_quality;
@@ -367,15 +367,19 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 		// Find between community total weights by checking
 		// Edges within graph
+		int i = 0;
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
 			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
+			cliques::output("edge:",i);
+			i++;
 
 			float weight = weights[edge];
 
 			Node node_of_comm_u = reduced_graph.nodeFromId(comm_of_node_u);
 			Node node_of_comm_v = reduced_graph.nodeFromId(comm_of_node_v);
 
+			// TODO: findEdge is slow!
 			Edge edge_in_reduced_graph = lemon::findEdge(reduced_graph,
 					node_of_comm_u, node_of_comm_v);
 

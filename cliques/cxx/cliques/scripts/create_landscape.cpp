@@ -10,17 +10,23 @@
 #include <cliques/drawing/colour_maps.h>
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/stability.h>
+#include <cliques/nldr/nldr.h>
+#include <cliques/structures/make_graphs.h>
+
 
 #include <cliques/algorithms/space.h>
 #include <cliques/structures/vector_partition.h>
 
 int main() {
+
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<int> weights(orange_graph);
 
     typedef cliques::VectorPartition VecPartition;
+
+//    cliques::make_complete_graph(orange_graph, 7);
     cliques::read_edgelist_weighted(
-            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj",
+            "/home/zenna/repos/graph-codes/cliques/data/graphs/path_n11.edj",
             orange_graph, weights);
 
     /*std::cout << "num_nodes" << lemon::countNodes(orange_graph) << std::endl;
@@ -30,12 +36,10 @@ int main() {
     //std::cout << "Finding connected partitions" << std::endl;
     boost::unordered_set<VecPartition, cliques::partition_hash,
             cliques::partition_equal> all_partitions;
-    cliques::find_connected_partitions(orange_graph, all_partitions);
-
+    int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions);
     std::vector<double> markov_times = { 1.0 };
     double current_markov_time = 1.0;
     cliques::find_weighted_linearised_stability func(markov_times);
-    int num_partitions = 0;
 
     double stability = 0.0;
     /*for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
@@ -48,11 +52,39 @@ int main() {
     std::cout << "Computing Space" << std::endl;
     lemon::SmartGraph space;
     auto map = cliques::create_space(orange_graph, all_partitions, space);
+    lemon::SmartGraph::EdgeMap<float> space_weights(space);
+    for (lemon::SmartGraph::EdgeIt e(space); e!= lemon::INVALID; ++e) {
+        space_weights[e] = 1.0;
+    }
 
-    std::vector<VecPartition> optimal_partitions;
+    cliques::output("choosing nodes");
+    //auto landmark_nodes = cliques::randomly_choose_nodes(space, num_partitions);
+
+    std::vector<lemon::SmartGraph::Node> landmark_nodes;
+    for (lemon::SmartGraph::NodeIt n(space); n!= lemon::INVALID; ++n) {
+        lemon::SmartGraph::Node node = n;
+        landmark_nodes.push_back(node);
+    }
+
+    cliques::output("choosing nodes");
+    auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
+
+    cliques::output("finding embedding");
+    auto L = cliques::find_embedding_mds_smacof(X, 5);
+
+    cliques::output("saving");
+    arma::mat L_t = arma::trans(L);
+
+    L_t.save("coords3.mat", arma::raw_ascii);
+
+    auto D_y = cliques::euclid_pairwise_dists(L_t);
+
+    cliques::output("num partitions:", num_partitions);
+    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+    /*std::vector<VecPartition> optimal_partitions;
     stability
             = cliques::find_optimal_partition_louvain_with_gain<VecPartition>(
-                    space, weights,
+                    space, space_weights,
                     cliques::find_weighted_linearised_stability(markov_times),
                     cliques::linearised_stability_gain_louvain(
                             current_markov_time), optimal_partitions);
@@ -61,7 +93,7 @@ int main() {
     best_partition.normalise_ids();
     std::cout << "num_sets: " << *std::max_element(
             best_partition.partition_vector.begin(),
-            best_partition.partition_vector.end());
+            best_partition.partition_vector.end());*/
 
     /*std::vector<float> stabilities;
      std::vector<double> markov_times = { 1.0 };

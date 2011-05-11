@@ -314,7 +314,7 @@ c_graph *convert_lemon_to_c_graph(G &graph) {
  TODO breaks if directed (i.e. double edge)
  */
 template<typename G, typename P>
-void find_connected_partitions(G &graph, boost::unordered_set<P,
+int find_connected_partitions(G &graph, boost::unordered_set<P,
         cliques::partition_hash, cliques::partition_equal> &all_partitions) {
     cliques::umap partition_map;
 
@@ -350,6 +350,7 @@ void find_connected_partitions(G &graph, boost::unordered_set<P,
     }
     delete[] g->links;
     delete g;
+    return num_partitions;
 }
 
 }
