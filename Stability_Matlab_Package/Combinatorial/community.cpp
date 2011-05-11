@@ -469,12 +469,15 @@ Community::one_level() {
             for(int i=0; i<size; i++)
                 n2c[i]=0;
             nb_pass = -10;
+	    delete[] nb_nodes_per_comm_temp;
             return false;
     }
 
   } while (nb_moves>0 && new_mod-cur_mod>min_modularity);
 
 
+  delete [] nb_nodes_per_comm_temp;
+  
   return improvement;
 }
 
