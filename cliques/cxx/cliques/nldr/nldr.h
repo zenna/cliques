@@ -1,3 +1,4 @@
+/* Copyright (c) Zenna Tavares, zennatavares@gmail.com, 2010-2011 */
 #ifndef CLIQUES_NLDR_H
 #define CLIQUES_NLDR_H
 
@@ -123,15 +124,16 @@ arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
     int total = N * (N - 1) / 2;
     for (int i = 0; i < N - 1; ++i) {
         for (int j = i + 1; j < N; ++j) {
-            auto d = lemon::Dijkstra<lemon::SmartGraph,
-            lemon::SmartGraph::EdgeMap<float>>(graph, weights);
+            auto d = lemon::Dijkstra<G,M>(graph, weights);
             auto n1 = nodes[i];
             auto n2 = nodes[j];
             d.run(n1, n2);
             float dist = d.dist(n2);
             X(i,j) = dist;
             X(j,i) = dist;
-            cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",total);
+            if (num  % 10000 == 0) {
+                cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",total);
+            }
             num++;
             }
         }
@@ -140,6 +142,7 @@ arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
 
 /**
  @brief  Embed pairwise distance matrix into another (lower) dimension
+ //TODO deal with negative eigen values
  */
 arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
     int N = X.n_cols;
@@ -161,6 +164,7 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
     arma::vec eigvals;
     arma::mat eigvecs;
     eig_sym(eigvals, eigvecs, B_n);
+
     arma::uvec indices = arma::sort_index(eigvals, 1);
     arma::mat L(num_dimen, N);
     for (int i=0;i<num_dimen;++i) {
@@ -169,6 +173,35 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
         }
     }
     return L;
+}
+
+template <typename G, typename M>
+arma::mat embed_graph(G& graph, M& weights, int num_dim) {
+    typedef typename G::Node Node;
+    typedef typename G::NodeIt NodeIt;
+
+    // Use all nodes
+    std::vector<Node> landmark_nodes;
+    for (NodeIt n(graph); n!= lemon::INVALID; ++n) {
+        Node node = n;
+        landmark_nodes.push_back(node);
+    }
+
+    cliques::output("choosing nodes");
+    auto X = cliques::find_geodesic_dists(graph, landmark_nodes, weights);
+    X.print("X");
+
+    cliques::output("finding embedding");
+    auto L = cliques::find_embedding_mds_smacof(X, num_dim);
+    L.print("L");
+
+    cliques::output("saving");
+    arma::mat L_t = arma::trans(L);
+
+    auto D_y = cliques::euclid_pairwise_dists(L_t);
+    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+
+    return L_t;
 }
 
 }
