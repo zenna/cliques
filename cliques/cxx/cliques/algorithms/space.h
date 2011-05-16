@@ -2,14 +2,17 @@
 #ifndef CLIQUES_SPACE_H
 #define CLIQUES_SPACE_H
 
-#include <boost/unordered_map.hpp>
+#include <random>
+#include <functional>
 
+#include <boost/unordered_map.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/bimap/multiset_of.hpp>
 
 #include <cliques/graphhelpers.h>
+#include <cliques/structures/vector_partition.h>
 
 namespace cliques {
 
@@ -137,8 +140,60 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
     return partition_tofrom_Node;
 }
 
-template<typename G>
-void create_disconnectivity_graph(G graph_landscape, G graph_dg) {
+template<typename G, typename S>
+void sample_space_uniform(G &graph, int num_samples,
+        int num_steps_per_sample, S &sampled_partitions) {
+    typedef typename boost::unordered_set<cliques::VectorPartition,
+            cliques::partition_hash, cliques::partition_equal> partition_set;
+
+    int num_sampled = 0;
+    int num_steps = 0;
+    int num_nodes = lemon::countNodes(graph);
+    cliques::VectorPartition current_partition(num_nodes);
+    current_partition.initialise_as_singletons();
+
+    std::uniform_real_distribution<double> real_distribution();
+    std::mt19937 m_engine; // Mersenne twister MT19937
+    auto real_generator = std::bind(real_distribution, m_engine);
+
+    while (true) {
+        partition_set neigh_partitions;
+        cliques::find_neighbours(graph, current_partition, neigh_partitions);
+        int num_current_neighs = neigh_partitions.size();
+
+        while (true) {
+            std::uniform_int_distribution<int> distribution(0,
+                    num_current_neighs);
+            std::mt19937 engine; // Mersenne twister MT19937
+            auto generator = std::bind(distribution, engine);
+            int rand_neigh = generator();
+
+            auto set_itr = neigh_partitions.begin();
+            for (int i = 0; i < rand_neigh; ++i) {
+                ++set_itr;
+            }
+            cliques::VectorPartition proposed_partition = *set_itr;
+            partition_set proposed_neighs;
+            cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
+            int num_proposed_neighs = proposed_neighs.size();
+            float alpha = float(num_current_neighs)
+                    / float(num_proposed_neighs);
+            double rand_real_num = real_generator();
+
+            if (rand_real_num > alpha) {
+                num_steps++;
+                current_partition = proposed_partition;
+                break;
+            }
+        }
+        if (num_steps % num_steps_per_sample == 0) {
+            sampled_partitions.insert(current_partition);
+            num_sampled++;
+        }
+        if (num_sampled == num_samples) {
+            break;
+        }
+    }
 }
 
 }

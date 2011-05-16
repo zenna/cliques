@@ -3,6 +3,7 @@
 #define VECTOR_PARTITION_H
 
 #include <vector>
+#include <set>
 #include <map>
 #include <iostream>
 
@@ -41,6 +42,10 @@ public:
             *itr = itr - partition_vector.begin();
         }
         is_normalised = true;
+    }
+
+    void initialsie_as_global() {
+        partition_vector = std::vector<int>(partition_vector.size(), 0);
     }
 
     //#################### PUBLIC METHODS ####################

@@ -12,10 +12,12 @@
 #include <lemon/concepts/graph.h>
 
 #include <cliques/helpers.h>
+#include <cliques/helpers/edit_distance.h>
 
 // TODO: Extend to larger graphs
     // Triangulate
     // Parallelise
+    // Make edit distance run independently of space
 
 // TODO: Error
     // Sampled error
@@ -139,6 +141,68 @@ arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
         }
     return X;
 }
+
+/**
+ @brief  Find the pairwise partition edit distances (equivalent to above for partitions)
+ */
+template<typename G, typename BM>
+arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes, BM &map) {
+    int N = nodes.size();
+    arma::mat X(N, N);
+    X.zeros();
+
+    int num = 0;
+    int total = N * (N - 1) / 2;
+    for (int i = 0; i < N - 1; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            auto n1 = nodes[i];
+            auto n2 = nodes[j];
+            auto p1 = map.right.at(n1);
+            auto p2 = map.right.at(n2);
+            cliques::Hungarian hungarian(p1,p2);
+            float edit_distance = float(hungarian.edit_distance());
+            X(i,j) = edit_distance;
+            X(j,i) = edit_distance;
+            if (num  % 10000 == 0) {
+                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
+            }
+            num++;
+            }
+        }
+    return X;
+}
+
+/**
+ @brief  Find the pairwise partition edit distances (equivalent to above for partitions)
+ */
+template<typename S>
+arma::mat find_edit_dists(S &partitions, std::vector<int> partitions) {
+
+    int N = partitions.size();
+    arma::mat X(N, N);
+    X.zeros();
+
+    int num = 0;
+    int total = N * (N - 1) / 2;
+    for (int i = 0; i < N - 1; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            auto n1 = nodes[i];
+            auto n2 = nodes[j];
+            auto p1 = map.right.at(n1);
+            auto p2 = map.right.at(n2);
+            cliques::Hungarian hungarian(p1,p2);
+            float edit_distance = float(hungarian.edit_distance());
+            X(i,j) = edit_distance;
+            X(j,i) = edit_distance;
+            if (num  % 10000 == 0) {
+                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
+            }
+            num++;
+            }
+        }
+    return X;
+}
+
 
 /**
  @brief  Embed pairwise distance matrix into another (lower) dimension
