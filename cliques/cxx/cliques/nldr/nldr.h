@@ -176,30 +176,30 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes, BM &map
  @brief  Find the pairwise partition edit distances (equivalent to above for partitions)
  */
 template<typename S>
-arma::mat find_edit_dists(S &partitions, std::vector<int> partitions) {
-
+arma::mat find_edit_dists(S &partitions) {
     int N = partitions.size();
     arma::mat X(N, N);
     X.zeros();
 
+    int i=0;
+    int j=0;
     int num = 0;
-    int total = N * (N - 1) / 2;
-    for (int i = 0; i < N - 1; ++i) {
-        for (int j = i + 1; j < N; ++j) {
-            auto n1 = nodes[i];
-            auto n2 = nodes[j];
-            auto p1 = map.right.at(n1);
-            auto p2 = map.right.at(n2);
+    for (auto itr1 = partitions.begin(); itr1 != partitions.end(); ++itr1) {
+    	j = i+1;
+        for (auto itr2 = itr1; ++itr2 != partitions.end();) {
+        	auto p1 = *itr1;
+            auto p2 = *itr2;
             cliques::Hungarian hungarian(p1,p2);
             float edit_distance = float(hungarian.edit_distance());
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
             if (num  % 10000 == 0) {
-                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
+                cliques::output(i,j, edit_distance, num, ":");
             }
             num++;
-            }
-        }
+            j++;
+        }i++;
+    }
     return X;
 }
 

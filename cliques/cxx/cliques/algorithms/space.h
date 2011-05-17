@@ -123,6 +123,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
                 != neighbour_partitions.end(); ++neigh_itr) {
 
             // TODO: Hack! find_neighbours can return disconnected partition
+        	// Because of isolation
             // This discards if not in the set of all connected partitions
             if (all_partitions.find(*neigh_itr) == all_partitions.end()) {
                 continue;
@@ -132,7 +133,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
             if (current_node != neighbour_node) {
                 Edge e = lemon::findEdge(space, current_node, neighbour_node);
                 if (e == lemon::INVALID) {
-                    Edge e = space.addEdge(current_node, neighbour_node);
+                    space.addEdge(current_node, neighbour_node);
                 }
             }
         }
@@ -140,8 +141,11 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
     return partition_tofrom_Node;
 }
 
+/**
+ @brief  Uniformly sample partition space using Metropolis-Hastings
+  */
 template<typename G, typename S>
-void sample_space_uniform(G &graph, int num_samples,
+void sample_uniform_metropolis(G &graph, int num_samples,
         int num_steps_per_sample, S &sampled_partitions) {
     typedef typename boost::unordered_set<cliques::VectorPartition,
             cliques::partition_hash, cliques::partition_equal> partition_set;
@@ -152,43 +156,45 @@ void sample_space_uniform(G &graph, int num_samples,
     cliques::VectorPartition current_partition(num_nodes);
     current_partition.initialise_as_singletons();
 
-    std::uniform_real_distribution<double> real_distribution();
-    std::mt19937 m_engine; // Mersenne twister MT19937
-    auto real_generator = std::bind(real_distribution, m_engine);
+    std::uniform_real_distribution<> real_distribution(0,1);
+    std::mt19937 m_engine;
+    std::mt19937 engine; // Mersenne twister MT19937
 
     while (true) {
         partition_set neigh_partitions;
         cliques::find_neighbours(graph, current_partition, neigh_partitions);
         int num_current_neighs = neigh_partitions.size();
+        std::uniform_int_distribution<int> distribution(0,
+                num_current_neighs-1);
 
         while (true) {
-            std::uniform_int_distribution<int> distribution(0,
-                    num_current_neighs);
-            std::mt19937 engine; // Mersenne twister MT19937
-            auto generator = std::bind(distribution, engine);
-            int rand_neigh = generator();
+            int rand_neigh = distribution(engine);
 
             auto set_itr = neigh_partitions.begin();
-            for (int i = 0; i < rand_neigh; ++i) {
+            for (int i = 0; i < rand_neigh -1; ++i) {
                 ++set_itr;
             }
             cliques::VectorPartition proposed_partition = *set_itr;
             partition_set proposed_neighs;
             cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
             int num_proposed_neighs = proposed_neighs.size();
-            float alpha = float(num_current_neighs)
-                    / float(num_proposed_neighs);
-            double rand_real_num = real_generator();
 
-            if (rand_real_num > alpha) {
+            //Metropolis-Hastings acceptance alpha
+            float alpha = real_distribution(m_engine);
+            float rand_real_num = float(num_current_neighs) / float(num_proposed_neighs);
+            //cliques::output(alpha, num_current_neighs, num_proposed_neighs);
+
+            if (alpha < rand_real_num) {
                 num_steps++;
                 current_partition = proposed_partition;
                 break;
             }
         }
         if (num_steps % num_steps_per_sample == 0) {
+        	current_partition.normalise_ids();
             sampled_partitions.insert(current_partition);
             num_sampled++;
+            cliques::output(num_sampled, sampled_partitions.size());
         }
         if (num_sampled == num_samples) {
             break;

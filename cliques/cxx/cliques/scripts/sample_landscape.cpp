@@ -31,6 +31,7 @@ int main() {
             cliques::partition_equal> sampled_partitions;
     cliques::sample_space_uniform(orange_graph,1000, 10, sampled_partitions);
 
+
 //    cliques::output("Finding stabilities");
 //    std::vector<double> markov_times = { 1.0 };
 //    cliques::find_weighted_linearised_stability func(markov_times);
@@ -49,62 +50,17 @@ int main() {
 //    }
 //    stabs_mat.save("stabs.mat", arma::raw_ascii);
 
-//    cliques::output("Finding distances");
-//    auto X = cliques::find_edit_dists(sampled_partitions, partitions);
-//
-//    cliques::output("finding embedding");
-//    auto L = cliques::find_embedding_mds_smacof(X, 3);
-//    arma::mat L_t = arma::trans(L);
-//
-//    cliques::output("saving");
-//    L_t.save("coords3.mat", arma::raw_ascii);
-//
-//    auto D_y = cliques::euclid_pairwise_dists(L_t);
-//    cliques::output("num partitions:", num_partitions);
-//    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+    cliques::output("Finding distances");
+    auto X = cliques::find_edit_dists(sampled_partitions);
 
-//    for (lemon::SmartGraph::EdgeIt e(orange_graph); e!= lemon::INVALID; ++e) {
-//        weights[e] = 1.0;
-//    }
-//    auto L_t = cliques::embed_graph(orange_graph, weights, 3);
+    cliques::output("finding embedding");
+    auto L = cliques::find_embedding_mds_smacof(X, 3);
+    arma::mat L_t = arma::trans(L);
 
-//    L_t.save("coords.mat", arma::raw_ascii);
-    /*std::vector<VecPartition> optimal_partitions;
-    stability
-            = cliques::find_optimal_partition_louvain_with_gain<VecPartition>(
-                    space, space_weights,
-                    cliques::find_weighted_linearised_stability(markov_times),
-                    cliques::linearised_stability_gain_louvain(
-                            current_markov_time), optimal_partitions);
+    cliques::output("saving");
+    L_t.save("coords.mat", arma::raw_ascii);
 
-    VecPartition best_partition = optimal_partitions.back();
-    best_partition.normalise_ids();
-    std::cout << "num_sets: " << *std::max_element(
-            best_partition.partition_vector.begin(),
-            best_partition.partition_vector.end());
-
-    std::vector<float> stabilities;
-     std::vector<double> markov_times = { 1.0 };
-     cliques::find_weighted_linearised_stability func(markov_times);
-
-     std::cout << "computing stability" << std::endl;
-     for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
-     std::vector<double> stabs;
-     VecPartition p = map.right.at(itr);
-     cliques::Internals internals(orange_graph, weights, p);
-     double stability = func(internals);
-     stabilities.push_back(stability);
-     std::cout << stability << std::endl;
-     }
-
-     std::cout << "num_nodes" << lemon::countNodes(space) << std::endl;
-     std::cout << "num_edges" << lemon::countEdges(space) << std::endl;
-     std::cout << "connected" << lemon::connected(space) << std::endl;
-
-     std::cout << "drawing" << std::endl;
-     cliques::draw_graph canvas(space);
-     cliques::make_energy_edge_colour_map A(stabilities);
-     canvas.add_node_map(cliques::make_energy_edge_colour_map(stabilities));
-     canvas.draw("spaces2.png");*/
+    auto D_y = cliques::euclid_pairwise_dists(L_t);
+    cliques::output("residual variance", cliques::residual_variance(X, D_y));
     return 0;
 }
