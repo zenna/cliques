@@ -144,9 +144,9 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 /**
  @brief  Uniformly sample partition space using Metropolis-Hastings
   */
-template<typename G, typename S>
+template<typename G, typename S, typename Logger>
 void sample_uniform_metropolis(G &graph, int num_samples,
-        int num_steps_per_sample, S &sampled_partitions) {
+        int num_steps_per_sample, S &sampled_partitions, Logger &logger) {
     typedef typename boost::unordered_set<cliques::VectorPartition,
             cliques::partition_hash, cliques::partition_equal> partition_set;
 
@@ -175,6 +175,7 @@ void sample_uniform_metropolis(G &graph, int num_samples,
                 ++set_itr;
             }
             cliques::VectorPartition proposed_partition = *set_itr;
+            logger.log(proposed_partition);
             partition_set proposed_neighs;
             cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
             int num_proposed_neighs = proposed_neighs.size();
@@ -182,7 +183,6 @@ void sample_uniform_metropolis(G &graph, int num_samples,
             //Metropolis-Hastings acceptance alpha
             float alpha = real_distribution(m_engine);
             float rand_real_num = float(num_current_neighs) / float(num_proposed_neighs);
-            //cliques::output(alpha, num_current_neighs, num_proposed_neighs);
 
             if (alpha < rand_real_num) {
                 num_steps++;
@@ -193,8 +193,9 @@ void sample_uniform_metropolis(G &graph, int num_samples,
         if (num_steps % num_steps_per_sample == 0) {
         	current_partition.normalise_ids();
             sampled_partitions.insert(current_partition);
+            logger.log(current_partition);
             num_sampled++;
-            cliques::output(num_sampled, sampled_partitions.size());
+            //cliques::output(num_sampled, sampled_partitions.size());
         }
         if (num_sampled == num_samples) {
             break;

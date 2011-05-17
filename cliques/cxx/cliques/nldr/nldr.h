@@ -1,6 +1,5 @@
 /* Copyright (c) Zenna Tavares, zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_NLDR_H
-#define CLIQUES_NLDR_H
+#pragma once
 
 #include <cmath>
 #include <stdlib.h>
@@ -14,10 +13,42 @@
 #include <cliques/helpers.h>
 #include <cliques/helpers/edit_distance.h>
 
+//BUGS
+    // 1. Fully dense sampling should yield the same result as other sampling
+    // Looks less uniform but residual error is lower
+    // 2. Can't visualise
+
 // TODO: Extend to larger graphs
     // Triangulate
     // Parallelise
-    // Make edit distance run independently of space
+
+// Evolution of algorithm over time
+    // Need algorithm to return list of nodes/partitions
+
+    // If we just visualised louvains nodes
+    // Then from set of partitions, would embed [p1, p2, p3] would find coord [p1x, p1y, p1z; p2x, p2y..]
+    //
+
+// Problems: vector vs set.  vector allows backtracking, preserves order
+//   But when embedding we only want unique partitions
+// Sol: Have set, and vector/list of pointers to partition
+
+// Most algorithms have some proposed step, which is either followed or not
+// vector of pairs (partition*,int type or enum)
+
+// Problem, ensuring relation between set number and iterator.
+// Could use stl::distance, or create mapping from set -> position in array
+
+// Evolution of landscape over time
+// Find Maxima
+
+// Sol 1: make the logger store a reference to all the partitions,
+// find the added partition in that set of partitions
+// And store iterator to it
+    // This means you need complete set of partitions before running, can't work with sampling
+
+// Sol 2. Store all partitions and post process
+    //
 
 // TODO: Error
     // Sampled error
@@ -163,9 +194,14 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes, BM &map
             float edit_distance = float(hungarian.edit_distance());
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
-            if (num  % 10000 == 0) {
-                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
+            cliques::output(i,j, edit_distance);
+            if (edit_distance == 2.0) {
+                cliques::print_partition_list(p1);
+                cliques::print_partition_list(p2);
             }
+//            if (num  % 10000 == 0) {
+//                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
+//            }
             num++;
             }
         }
@@ -193,16 +229,20 @@ arma::mat find_edit_dists(S &partitions) {
             float edit_distance = float(hungarian.edit_distance());
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
-            if (num  % 10000 == 0) {
-                cliques::output(i,j, edit_distance, num, ":");
+            if (edit_distance == 2.0) {
+                cliques::print_partition_list(p1);
+                cliques::print_partition_list(p2);
             }
+            cliques::output(i,j, edit_distance);
+//            if (num  % 10000 == 0) {
+//                cliques::output(i,j, edit_distance, num, ":");
+//            }
             num++;
             j++;
         }i++;
     }
     return X;
 }
-
 
 /**
  @brief  Embed pairwise distance matrix into another (lower) dimension
@@ -228,6 +268,8 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
     arma::vec eigvals;
     arma::mat eigvecs;
     eig_sym(eigvals, eigvecs, B_n);
+    eigvals.print("eigenvals");
+    eigvecs.print("eigenvecs");
 
     arma::uvec indices = arma::sort_index(eigvals, 1);
     arma::mat L(num_dimen, N);
@@ -239,6 +281,9 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
     return L;
 }
 
+/**
+ @brief  Embeds a graph in a lower dim space (convenience function)
+ */
 template <typename G, typename M>
 arma::mat embed_graph(G& graph, M& weights, int num_dim) {
     typedef typename G::Node Node;
@@ -269,4 +314,3 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
 }
 
 }
-#endif

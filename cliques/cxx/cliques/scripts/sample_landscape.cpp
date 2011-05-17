@@ -11,26 +11,50 @@
 #include <cliques/algorithms/space.h>
 #include <cliques/structures/vector_partition.h>
 
-int main() {
+struct NoLogging {
+    template <typename P>
+    void log(const P &) {}
+};
 
+template <typename P>
+struct Logging {
+    std::vector<P> vec;
+
+    //template <typename P>
+    void log(const P &p) {
+        vec.push_back(p);
+    }
+};
+
+int main() {
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
     typedef cliques::VectorPartition VecPartition;
 
-//    cliques::output("making graph");
+    cliques::output("making graph");
 //    cliques::make_path_graph(orange_graph, 16);
-    cliques::make_complete_graph(orange_graph, 8);
+    cliques::make_complete_graph(orange_graph, 7);
 //    cliques::read_edgelist_weighted(
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
 //            orange_graph, weights);
 
     typedef cliques::VectorPartition VecPartition;
 
+    Logging<VecPartition> log;
     cliques::output("Sampling Partitions");
     boost::unordered_set<VecPartition, cliques::partition_hash,
             cliques::partition_equal> sampled_partitions;
-    cliques::sample_space_uniform(orange_graph,1000, 10, sampled_partitions);
+    cliques::sample_uniform_metropolis(orange_graph,100000, 1, sampled_partitions, log);
 
+    cliques::output("Finding Walk");
+    int num_steps = log.vec.size();
+    arma::umat walk(num_steps,2);
+    walk.zeros();
+    for (int i=0;i<num_steps;++i) {
+        auto what = sampled_partitions.find(log.vec[i]);
+        walk(i,0) = std::distance(sampled_partitions.begin(), what);
+    }
+    walk.save("walk.mat", arma::raw_ascii);
 
 //    cliques::output("Finding stabilities");
 //    std::vector<double> markov_times = { 1.0 };
@@ -54,7 +78,7 @@ int main() {
     auto X = cliques::find_edit_dists(sampled_partitions);
 
     cliques::output("finding embedding");
-    auto L = cliques::find_embedding_mds_smacof(X, 3);
+    auto L = cliques::find_embedding_mds_smacof(X, 2);
     arma::mat L_t = arma::trans(L);
 
     cliques::output("saving");
