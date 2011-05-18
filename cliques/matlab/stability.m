@@ -274,7 +274,7 @@ function [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, 
 
 % Initialise parameters
 
-StabilityFunction = @stability_louvain_LNL;     % Linearised stability with normalised laplacian is used by default
+StabilityFunction = @louvain_LNL;     		% Linearised stability with normalised laplacian is used by default
 ComputeVI = true;                               % True if the variation of information should be computed
 OutputFile = false;                             % No output file by default.
 NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
