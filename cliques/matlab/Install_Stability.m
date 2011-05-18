@@ -10,21 +10,13 @@ cd(clique_path);
 
 disp('Building of mex files...');
 
-mex -DUSE_BOOST -I./ ./louvain_matlab_interface.cpp
+mex -DUSE_BOOST -O -output stability_louvain -I./ ./louvain_matlab_interface.cpp
 
 disp('Moving build files to bin directory...');
 
 movefile('louvain_matlab_interface.mex*',curr_folder);
 
-%copyfile('./stability.m',curr_folder);
-
-%copyfile('./varvarinfo.m',curr_folder);
-
 cd(curr_folder);
-
-mexfile = dir('louvain_matlab_interface.mex*');
-
-movefile(mexfile(1).name,['stability_louvain' mexfile(1).name(25:end)]);
 
 disp('Adding bin directory to path...');
 
