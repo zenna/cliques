@@ -13,42 +13,16 @@
 #include <cliques/helpers.h>
 #include <cliques/helpers/edit_distance.h>
 
-//BUGS
-    // 1. Fully dense sampling should yield the same result as other sampling
-    // Looks less uniform but residual error is lower
-    // 2. Can't visualise
+//Issues
+    // Sampling depends on order of nodes considered
+        // Seems unsatisfactory, eigenvectors (but not eigenvalues) different
+    // Overlapping nodes makes visualisation difficult
+        // Sol: Z-order
+    // Visualisation slow
 
 // TODO: Extend to larger graphs
     // Triangulate
     // Parallelise
-
-// Evolution of algorithm over time
-    // Need algorithm to return list of nodes/partitions
-
-    // If we just visualised louvains nodes
-    // Then from set of partitions, would embed [p1, p2, p3] would find coord [p1x, p1y, p1z; p2x, p2y..]
-    //
-
-// Problems: vector vs set.  vector allows backtracking, preserves order
-//   But when embedding we only want unique partitions
-// Sol: Have set, and vector/list of pointers to partition
-
-// Most algorithms have some proposed step, which is either followed or not
-// vector of pairs (partition*,int type or enum)
-
-// Problem, ensuring relation between set number and iterator.
-// Could use stl::distance, or create mapping from set -> position in array
-
-// Evolution of landscape over time
-// Find Maxima
-
-// Sol 1: make the logger store a reference to all the partitions,
-// find the added partition in that set of partitions
-// And store iterator to it
-    // This means you need complete set of partitions before running, can't work with sampling
-
-// Sol 2. Store all partitions and post process
-    //
 
 // TODO: Error
     // Sampled error
@@ -164,12 +138,12 @@ arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
             float dist = d.dist(n2);
             X(i,j) = dist;
             X(j,i) = dist;
-            if (num  % 10000 == 0) {
+            if (num  % 1000000 == 0) {
                 cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",total);
             }
             num++;
-            }
         }
+    }
     return X;
 }
 
@@ -195,16 +169,12 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes, BM &map
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
             cliques::output(i,j, edit_distance);
-            if (edit_distance == 2.0) {
-                cliques::print_partition_list(p1);
-                cliques::print_partition_list(p2);
+            if (num  % 1000000 == 0) {
+                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
             }
-//            if (num  % 10000 == 0) {
-//                cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
-//            }
             num++;
-            }
         }
+    }
     return X;
 }
 
@@ -216,6 +186,8 @@ arma::mat find_edit_dists(S &partitions) {
     int N = partitions.size();
     arma::mat X(N, N);
     X.zeros();
+
+    int total = N * (N - 1) / 2;
 
     int i=0;
     int j=0;
@@ -229,14 +201,9 @@ arma::mat find_edit_dists(S &partitions) {
             float edit_distance = float(hungarian.edit_distance());
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
-            if (edit_distance == 2.0) {
-                cliques::print_partition_list(p1);
-                cliques::print_partition_list(p2);
+            if (num  % 1000000 == 0) {
+                cliques::output(i,j, edit_distance, num, ":", total);
             }
-            cliques::output(i,j, edit_distance);
-//            if (num  % 10000 == 0) {
-//                cliques::output(i,j, edit_distance, num, ":");
-//            }
             num++;
             j++;
         }i++;
@@ -245,10 +212,36 @@ arma::mat find_edit_dists(S &partitions) {
 }
 
 /**
+ @brief  Find the pairwise partition edit distances (equivalent to above for partitions)
+ */
+template<typename S>
+arma::mat find_edit_landmark_dists(S &partitions, S &landmarks) {
+    int N = partitions.size();
+    int N_l = landmarks.size();
+    arma::mat D_l(N_l, N);
+    D_l.zeros();
+
+    int i=0;
+    for (auto l_itr = landmarks.begin(); l_itr != landmarks.end(); ++l_itr) {
+        int j=0;
+        for (auto n_itr = landmarks.begin(); n_itr != landmarks.end(); ++n_itr) {
+            auto p1 = *n_itr;
+            auto p2 = *l_itr;
+            cliques::Hungarian hungarian(p1,p2);
+            float edit_distance = float(hungarian.edit_distance());
+            D_l(i,j) = edit_distance;
+            ++j;
+        }
+        ++i;
+    }
+    return D_l;
+}
+
+/**
  @brief  Embed pairwise distance matrix into another (lower) dimension
  //TODO deal with negative eigen values
  */
-arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
+arma::mat embed_mds(arma::mat &X,int num_dimen) {
     int N = X.n_cols;
     arma::vec means = arma::zeros<arma::vec>(N);
     for (int i=0; i<N;++i) {
@@ -268,8 +261,6 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
     arma::vec eigvals;
     arma::mat eigvecs;
     eig_sym(eigvals, eigvecs, B_n);
-    eigvals.print("eigenvals");
-    eigvecs.print("eigenvecs");
 
     arma::uvec indices = arma::sort_index(eigvals, 1);
     arma::mat L(num_dimen, N);
@@ -279,6 +270,55 @@ arma::mat find_embedding_mds_smacof(arma::mat &X,int num_dimen) {
         }
     }
     return L;
+}
+
+/**
+ @brief  Embed pairwise distance matrix into another (lower) dimension
+ */
+arma::mat embed_landmark_mds(arma::mat &D_n, arma::mat &D_l, int num_dimen) {
+    int N = D_n.n_cols;
+    arma::vec means = arma::zeros<arma::vec>(N);
+    for (int i=0; i<N;++i) {
+        means(i) = arma::mean(D_n.col(i));
+    }
+    double mean = arma::mean(means);
+    arma::mat B_n(N,N);
+    B_n.zeros();
+
+    for (int i=0;i<N-1;++i) {
+        for (int j=i+1;j<N;++j) {
+            B_n(i,j) = -(D_n(i,j) - means(i) - means(j) +mean)/2.0;
+            B_n(j,i) = B_n(i,j);
+        }
+    }
+
+    arma::vec eigvals;
+    arma::mat eigvecs;
+    eig_sym(eigvals, eigvecs, B_n);
+
+    arma::uvec indices = arma::sort_index(eigvals, 1);
+    arma::mat L(num_dimen, N);
+    for (int i=0;i<num_dimen;++i) {
+        for (int j=0;j<N;++j) {
+            L(i,j) = eigvecs(j, indices(i)) * std::sqrt(eigvals(indices(i)));
+        }
+    }
+
+    arma::mat L_sharp(num_dimen, N);
+    for (int i=0;i<num_dimen;++i) {
+        for (int j=0;j<N;++j) {
+            L_sharp(i,j) = eigvecs(j, indices(i)) / std::sqrt(eigvals(indices(i)));
+        }
+    }
+
+    int N_all = D_l.n_cols;
+    arma::mat X(num_dimen, N_all);
+    for (int i=0;i<N_all;++i) {
+        arma::vec second_term = D_l.col(i) - means;
+        X.col(i) = -L_sharp * second_term/2.0;
+    }
+
+    return X;
 }
 
 /**
@@ -301,7 +341,7 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
     X.print("X");
 
     cliques::output("finding embedding");
-    auto L = cliques::find_embedding_mds_smacof(X, num_dim);
+    auto L = cliques::embed_mds(X, num_dim);
     L.print("L");
 
     cliques::output("saving");

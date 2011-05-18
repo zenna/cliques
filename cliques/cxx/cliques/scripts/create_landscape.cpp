@@ -24,8 +24,8 @@ int main() {
     typedef cliques::VectorPartition VecPartition;
 
 //    cliques::output("making graph");
-//    cliques::make_path_graph(orange_graph, 16);
-    cliques::make_complete_graph(orange_graph, 3);
+    cliques::make_path_graph(orange_graph, 5);
+//    cliques::make_complete_graph(orange_graph, 3);
 //    cliques::read_edgelist_weighted(
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
 //            orange_graph, weights);
@@ -85,12 +85,9 @@ int main() {
     //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
     auto Y = cliques::find_edit_dists(space, landmark_nodes, map);
     auto X = cliques::find_edit_dists(all_partitions);
-    cliques::output("What residual variance", cliques::residual_variance(X, Y));
-    X.print("X");
-    Y.print("Y");
 
     cliques::output("finding embedding");
-    auto L = cliques::find_embedding_mds_smacof(X, 3);
+    auto L = cliques::embed_mds(X, 2);
     arma::mat L_t = arma::trans(L);
 
     auto D_y = cliques::euclid_pairwise_dists(L_t);
@@ -103,7 +100,6 @@ int main() {
 //    auto L_t = cliques::embed_graph(orange_graph, weights, 3);
 
     L_t.save("coords.mat", arma::raw_ascii);
-    D_y.print("D_y");
     /*std::vector<VecPartition> optimal_partitions;
     stability
             = cliques::find_optimal_partition_louvain_with_gain<VecPartition>(

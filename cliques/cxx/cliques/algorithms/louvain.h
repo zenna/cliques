@@ -259,13 +259,10 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	// actual shuffling
 	std::random_shuffle(nodes_ordered_randomly.begin(),
 			nodes_ordered_randomly.end());
-    int num_partitions = 0;
 
 	do {
 		did_nodes_move = false;
 		old_quality = current_quality;
-
-	    int node_done = 0;
 
 		// loop over all nodes in random order
 		typename std::vector<Node>::iterator n1_it;
@@ -273,11 +270,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				!= nodes_ordered_randomly.end(); ++n1_it) {
 			// get node id and comm id
 			Node n1 = *n1_it;
-		    num_partitions++;
-		    node_done++;
-		    if (num_partitions % 10000 == 0) {
-		        cliques::output("evaluating node:", node_done, "out of", nodes_ordered_randomly.size());
-		    }
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
 			isolate_and_update_internals(graph, weights, n1, internals,
@@ -320,8 +312,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			one_level_end = true;
 		}
 
-		float improvement = current_quality - old_quality;
-		cliques::output("moved?:", did_nodes_move, "current_quality:", current_quality, "old_quality:", old_quality, "improvement is:", improvement, "\n");
 		// If there was a movement of the nodes AND quality increases make another run
 	} while ((current_quality - old_quality) > minimum_improve);
 
@@ -371,7 +361,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
 			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
-			cliques::output("edge:",i);
 			i++;
 
 			float weight = weights[edge];

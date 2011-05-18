@@ -143,6 +143,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 
 /**
  @brief  Uniformly sample partition space using Metropolis-Hastings
+ // TODO make type partition type independent
   */
 template<typename G, typename S, typename Logger>
 void sample_uniform_metropolis(G &graph, int num_samples,
