@@ -34,11 +34,11 @@ int main() {
     typedef cliques::VectorPartition VecPartition;
 
     cliques::output("making graph");
-//    cliques::make_path_graph(orange_graph, 4);
-//    cliques::make_complete_graph(orange_graph, 7);
-    cliques::read_edgelist_weighted(
-            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
-            orange_graph, weights);
+    cliques::make_path_graph(orange_graph, 4, weights);
+//    cliques::make_complete_graph(orange_graph, 4, weights);
+//    cliques::read_edgelist_weighted(
+//            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
+//            orange_graph, weights);
 
     Logging<VecPartition> log_uniform;
     cliques::output("Sampling Partitions Uniformly");
@@ -96,6 +96,8 @@ int main() {
 
     for (auto set_itr = maxima.begin(); set_itr != maxima.end(); ++set_itr) {
         all_sampled_partitions.insert(*set_itr);
+        cliques::print_partition_list(*set_itr);
+        cliques::output("\n");
     }
 
     cliques::output("Finding stabilities");
@@ -104,6 +106,25 @@ int main() {
     for (auto set_itr = all_sampled_partitions.begin(); set_itr != all_sampled_partitions.end(); ++set_itr) {
         std::vector<double> stabs;
         cliques::Internals internals(orange_graph, weights, *set_itr);
+        cliques::print_partition_list(*set_itr);
+        cliques::output("comm_w_in");
+        for (int i =0;i < internals.comm_w_in.size(); ++i) {
+            cliques::output(internals.comm_w_in[i]);
+        }
+        cliques::output("comm_w_tot");
+        for (int i =0;i < internals.comm_w_tot.size(); ++i) {
+            cliques::output(internals.comm_w_tot[i]);
+        }
+        cliques::output("node_to_w");
+        for (int i =0;i < internals.node_to_w.size(); ++i) {
+            cliques::output(internals.node_to_w[i]);
+        }
+        cliques::output("node weight to com");
+        for (int i =0;i < internals.node_weight_to_communities.size(); ++i) {
+            cliques::output(internals.node_weight_to_communities[i]);
+        }
+        cliques::output("two_m", internals.two_m);
+        cliques::output("num_nodes",internals.num_nodes);
         double stability = compute_quality(internals);
         int i = std::distance(all_sampled_partitions.begin(), set_itr);
         //cliques::output(std::distance(maxima.begin(), set_itr));
@@ -117,11 +138,11 @@ int main() {
     stabs_mat.save("stabs.mat", arma::raw_ascii);
 
     cliques::output("Finding distances - maxima", maxima.size());
-    arma::mat D_n = cliques::find_edit_dists(maxima);
+    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
     cliques::output("Finding distances - rest");
     arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
     cliques::output("finding embedding");
-    arma::mat L = cliques::embed_landmark_mds(D_n, D_l, 3);
+    arma::mat L = cliques::embed_mds(D_n, 2);
     arma::mat L_t = arma::trans(L);
     L_t.save("trilaterated.mat", arma::raw_ascii);
 

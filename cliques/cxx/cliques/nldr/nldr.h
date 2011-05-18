@@ -168,7 +168,6 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes, BM &map
             float edit_distance = float(hungarian.edit_distance());
             X(i,j) = edit_distance;
             X(j,i) = edit_distance;
-            cliques::output(i,j, edit_distance);
             if (num  % 1000000 == 0) {
                 cliques::output(graph.id(n1), graph.id(n2), edit_distance, num, ":",total);
             }

@@ -23,12 +23,14 @@ int main() {
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
     typedef cliques::VectorPartition VecPartition;
 
-//    cliques::output("making graph");
-    cliques::make_complete_graph(orange_graph, 5);
-//    cliques::make_complete_graph(orange_graph, 3);
+    cliques::output("making graph");
+    //cliques::make_path_graph(orange_graph, 7, weights);
+    //cliques::make_complete_graph(orange_graph, 3);
 //    cliques::read_edgelist_weighted(
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
 //            orange_graph, weights);
+    cliques::make_path_graph(orange_graph, 4, weights);
+
 
     cliques::output("Finding Connected Partitions");
     boost::unordered_set<VecPartition, cliques::partition_hash,
@@ -83,21 +85,16 @@ int main() {
 
     cliques::output("Finding distances");
     //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
-    auto Y = cliques::find_edit_dists(space, landmark_nodes, map);
+    //auto Y = cliques::find_edit_dists(space, landmark_nodes, map);
     auto X = cliques::find_edit_dists(all_partitions);
 
     cliques::output("finding embedding");
     auto L = cliques::embed_mds(X, 2);
     arma::mat L_t = arma::trans(L);
 
-    auto D_y = cliques::euclid_pairwise_dists(L_t);
-    cliques::output("num partitions:", num_partitions);
-    cliques::output("residual variance", cliques::residual_variance(X, D_y));
-
-//    for (lemon::SmartGraph::EdgeIt e(orange_graph); e!= lemon::INVALID; ++e) {
-//        weights[e] = 1.0;
-//    }
-//    auto L_t = cliques::embed_graph(orange_graph, weights, 3);
+    //auto D_y = cliques::euclid_pairwise_dists(L_t);
+    //cliques::output("num partitions:", num_partitions);
+    //cliques::output("residual variance", cliques::residual_variance(X, D_y));
 
     L_t.save("coords.mat", arma::raw_ascii);
     /*std::vector<VecPartition> optimal_partitions;
