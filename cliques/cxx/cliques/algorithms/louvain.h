@@ -18,7 +18,7 @@
 
 //TODO: Louvain gets noticably slower on second iteration
 //It seems that hte algorithm get sstuck in an infiniite loop on second iteration
-  // Improvement alternates between same two values
+// Improvement alternates between same two values
 // On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
 
 namespace cliques {
@@ -317,9 +317,10 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	// Start Second phase - create reduced graph with self loops
 	partition.normalise_ids();
+
+	int hierarchy = optimal_partitions.size();
 	if (one_level_end == true) {
 		// Compile P into original partition size
-		short hierarchy = optimal_partitions.size();
 		if (hierarchy == 0) {
 			optimal_partitions.push_back(partition);
 		} else {
@@ -385,7 +386,9 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 				reduced_graph, reduced_weight_map, compute_quality,
 				compute_quality_diff, optimal_partitions);
 	}
-
+	if (hierarchy == 0) {
+		optimal_partitions.push_back(partition);
+	}
 	return current_quality;
 }
 

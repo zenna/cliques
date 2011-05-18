@@ -24,7 +24,7 @@ int main() {
     typedef cliques::VectorPartition VecPartition;
 
 //    cliques::output("making graph");
-    cliques::make_path_graph(orange_graph, 5);
+    cliques::make_complete_graph(orange_graph, 5);
 //    cliques::make_complete_graph(orange_graph, 3);
 //    cliques::read_edgelist_weighted(
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",

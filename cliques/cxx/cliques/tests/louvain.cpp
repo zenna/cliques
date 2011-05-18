@@ -5,6 +5,8 @@
 #include <cliques/algorithms/stability.h>
 #include <cliques/algorithms/modularity.h>
 
+#include <cliques/structures/make_graphs.h>
+
 #include <cliques/drawing/draw.h>
 #include <cliques/drawing/colour_maps.h>
 
@@ -32,8 +34,10 @@ int main() {
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
 
 	double stability = 0;
-	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
-			orange_graph, weights);
+	//cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
+	//		orange_graph, weights);
+
+	cliques::make_complete_graph(orange_graph,5);
 
 	double current_markov_time = 1.0;
 
