@@ -38,13 +38,59 @@ int main() {
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
 //            orange_graph, weights);
 
-    typedef cliques::VectorPartition VecPartition;
-
-    Logging<VecPartition> log;
-    cliques::output("Sampling Partitions");
+    Logging<VecPartition> log_uniform;
+    cliques::output("Sampling Partitions Uniformly");
     boost::unordered_set<VecPartition, cliques::partition_hash,
             cliques::partition_equal> sampled_partitions;
-    cliques::sample_uniform_metropolis(orange_graph,100000, 1, sampled_partitions, log);
+    cliques::sample_uniform_metropolis(orange_graph,100000, 1, sampled_partitions, log_uniform);
+
+    Logging<VecPartition> log_louvain;
+    cliques::output("Sampling Partitions Louvain");
+	std::vector<partition> optimal_partitions;
+	double current_markov_time = 1.0;
+	std::vector<double> markov_times = {1.0};
+    cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
+    			weights, cliques::find_weighted_linearised_stability(markov_times),
+    			cliques::linearised_stability_gain_louvain(current_markov_time),
+    			optimal_partitions, log_lovauin);
+
+    Logging<VecPartition> log_klin;
+    cliques::output("Sampling Partitions Kernighan Lin");
+    VecPartition input_partition, output_partition;
+    input_partition.initialise_as_singletons();
+    cliques::refine_partition_kernighan_lin(
+    		orange_graph,
+    		weights,
+    		cliques::find_weighted_linearised_stability(markov_times),
+    		cliques::linearised_stability_gain_louvain(current_markov_time),
+    		input_partition,
+    		output_partition,
+    		log_klin);
+
+    Logging<VecPartition> log_maxima;
+    cliques::output("Sampling Partitions Maxima");
+    cliques::find_maxima_sampled(
+    		orange_graph,
+    		weights,
+    		cliques::find_weighted_linearised_stability(markov_times),
+    		cliques::linearised_stability_gain_louvain(current_markov_time),
+    		maxima,
+    		log_maxima);
+
+    Logging<VecPartition> log_around_maxima;
+	cliques::output("Sampling Partitions Around Maxima");
+	int depth = 3;
+	cliques::bfs_around_partitions(
+			orange_graph,
+			weights,
+			maxima,
+			log_around_maxima);
+
+	//Set union
+	// Produce landmrks from set of maxima + random sampling
+	// Embed
+	// Compute stabilities / save
+	// Compute walks / save
 
     cliques::output("Finding Walk");
     int num_steps = log.vec.size();
