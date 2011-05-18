@@ -16,9 +16,9 @@ disp('Moving build files to bin directory...');
 
 movefile('louvain_matlab_interface.mex*',curr_folder);
 
-copyfile('./stability.m',curr_folder);
+%copyfile('./stability.m',curr_folder);
 
-copyfile('./varvarinfo.m',curr_folder);
+%copyfile('./varvarinfo.m',curr_folder);
 
 cd(curr_folder);
 
