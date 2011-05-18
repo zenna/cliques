@@ -578,8 +578,9 @@ function Graph = check(Graph, verbose)
     if edgelist
         if min(min(Graph(:,1:2))) ~=0
             warning('The numbering of the nodes in the graph should always start with zero.');
-            Graph(:,1)=Graph(:,1)-min(min(Graph(:,1:2)));
-            Graph(:,2)=Graph(:,2)-min(min(Graph(:,1:2)));
+            old_node_1 = min(min(Graph(:,1:2)));
+            Graph(:,1)=Graph(:,1)-old_node_1;
+            Graph(:,2)=Graph(:,2)-old_node_1;
         end
         if unweighted == false
             Graph=sparse(Graph(:,1)+1,Graph(:,2)+1,Graph(:,3));
