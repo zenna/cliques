@@ -8,7 +8,7 @@ function convertAdjListGraphToPajekGraph(AdjGraph, filename)
 %                       e.g. 'pajekgraph.net'. If file already exists
 %                       contents are overwritten
 %
-% last revision: 28/3/2010 by Michael  
+% last revision: 20/5/2010 by Michael  
 
 
 % NOTE: the 0/1 functionaliy has not been thoroughly tested
@@ -18,7 +18,7 @@ if zero_or_one == 0
     display('Node numbering started with 0?!')
     % If node numbering starts with 0 increment
     AdjGraph(:,1) = AdjGraph(:,1) +1;
-    AdjGraph(:,1) = AdjGraph(:,1) +1;
+    AdjGraph(:,2) = AdjGraph(:,2) +1;
 else
     display('Node numbering started with 1?!')
 end
