@@ -25,7 +25,6 @@ private:
     int num_elements;
 
 public:
-
     template <typename P>
     Hungarian(P &p1, P &p2) {
         n = 0;

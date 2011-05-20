@@ -13,7 +13,6 @@
 
 #include <cliques/helpers.h>
 #include <cliques/graphhelpers.h>
-#include <cliques/structures/partition.h>
 #include <cliques/structures/common.h>
 
 //TODO: Louvain gets noticably slower on second iteration
@@ -226,10 +225,10 @@ struct Internals {
  * add static bool has_gain_function = true
  * still need to select gain function
  */
-template<typename P, typename T, typename W, typename QF, typename QFDIFF>
+template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
 double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 		QF compute_quality, QFDIFF compute_quality_diff,
-		std::vector<P> &optimal_partitions) {
+		std::vector<P> &optimal_partitions, Logger &log) {
 
 	typedef typename T::Node Node;
 	typedef typename T::Edge Edge;
@@ -303,6 +302,33 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 			insert_and_update_internals(graph, weights, n1, internals,
 					partition, best_comm);
+
+			// HIJACK ---------------------------------------
+			int hierarchy = optimal_partitions.size();
+			if (hierarchy == 0) {
+				log.log(partition);
+			} else {
+				// get size of partition one level below, i.e. number of nodes in original graph
+				unsigned int original_number_of_nodes =
+						optimal_partitions[hierarchy - 1].element_count();
+				// create new empty partition of this size
+				P partition_original_nodes(original_number_of_nodes);
+
+				// loop over nodes one level below
+				int old_comm, new_comm;
+				for (unsigned int id = 0; id < original_number_of_nodes; id++) {
+					// get the communities for each node one level below
+					old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+					// use this as node_id in the current partition as old community id
+					//is equivalent to new node id and read out new community id
+					new_comm = partition.find_set(old_comm);
+					// include pair (node, new community) id in the newly created partition
+					partition_original_nodes.add_node_to_set(id, new_comm);
+				}
+				log.log(partition_original_nodes);
+			}
+			// ----------------------------------------------
+
 			if (best_comm != comm_id) {
 				did_nodes_move = true;
 			}
@@ -384,7 +410,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 		return cliques::find_optimal_partition_louvain_with_gain<P>(
 				reduced_graph, reduced_weight_map, compute_quality,
-				compute_quality_diff, optimal_partitions);
+				compute_quality_diff, optimal_partitions, log);
 	}
 	if (hierarchy == 0) {
 		optimal_partitions.push_back(partition);

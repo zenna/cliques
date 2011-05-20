@@ -1,5 +1,5 @@
-#ifndef CLIQUES_GRAPHHELPERS_H
-#define CLIQUES_GRAPHHELPERS_H
+/* Copyright (c) Zenna Tavares & M. Schaub - zennatavares@gmail.com, 2010-2011 */
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -24,6 +24,17 @@ float A(G &graph, int node1_id, int node2_id) {
 	return 0.0;
 }
 
+template <typename G>
+int find_unweighted_degree(G &graph, int node_id) {
+    int count = 0;
+    typename G::Node n = graph.nodeFromId(node_id);
+
+    for (typename G::IncEdgeIt e(graph, n); e != lemon::INVALID; ++e) {
+        ++count;
+    }
+    return count;
+}
+
 template<typename G, typename M, typename NO>
 float find_weighted_degree(G &graph, M &weights, NO node) {
 	double degree = 0.0;
@@ -37,10 +48,12 @@ float find_weighted_degree(G &graph, M &weights, NO node) {
 template<typename G, typename M, typename NO>
 double find_weight_selfloops(G &graph, M &weights, NO node) {
 	typename G::Edge edge = lemon::findEdge(graph, node, node);
-	if (edge == lemon::INVALID)
+	if (edge == lemon::INVALID) {
 		return 0.0;
-	else
+	}
+	else {
 		return 2*double(weights[edge]);
+	}
 }
 
 template<typename G, typename M>
@@ -69,7 +82,6 @@ std::map<int, double> find_weight_node_to_communities(G &graph, P &partition,
 
 template<typename G>
 void read_edgelist(G &graph, std::string filename) {
-
 	std::ifstream maxima_file(filename.c_str());
 	std::string line;
 	std::string maxima;
@@ -113,7 +125,6 @@ void read_edgelist(G &graph, std::string filename) {
 
 template<typename G, typename E>
 void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
-
 	// initialise input stream and strings for readout
 	std::ifstream maxima_file(filename.c_str());
 	std::string line;
@@ -185,5 +196,3 @@ bool is_partition_connected(P &partition) {
 }
 
 }
-
-#endif

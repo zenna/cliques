@@ -1,19 +1,18 @@
 /* Copyright (c) Modified by Zenna Tavares-zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_ALLPARTITIONS_H
-#define CLIQUES_ALLPARTITIONS_H
+#pragma once
+
 #include <assert.h>
 #include <cstdlib>
 #include <iostream>
-
 #include <map>
 
-#include <lemon/list_graph.h>
-#include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 
 #include <cliques/structures/common.h>
-#include <cliques/structures/partition.h>
 #include <cliques/helpers.h>
+#include <cliques/helpers/logger.h>
+
+#define SET_MAX_SIZE 63
 
 namespace cliques {
 
@@ -134,10 +133,10 @@ void partition_long_to_map(unsigned long s, int n, int set_num, std::map<int,
     }
 }
 
-template<typename P>
+template<typename P, typename Logger>
 void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
         boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &all_partitions) {
+                cliques::partition_equal> &all_partitions, Logger &log) {
 
     P new_partition(num_nodes);
 
@@ -153,12 +152,10 @@ void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
         while (i < n) {
             if ((test & s) != 0) {
                 new_partition.add_node_to_set(i, set_num);
-                //temp_partition_map[i] = set_num;
             }
 
             i += 1;
             test = test << 1;
-            /*      printf("i : %d, test : %ld\n", i, test);  */
         }
         if ((test & s) != 0) {
             //printf("%d ", i);
@@ -168,9 +165,7 @@ void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
     }
     new_partition.normalise_ids();
     all_partitions.insert(new_partition);
-
-    //std::cout << "partition " << num_partitions << std::endl;
-    //cliques::print_partition_list(new_partition);
+    log.log(new_partition);
 
     num_partitions++;
     if (num_partitions % 100000 == 0) {
@@ -178,13 +173,13 @@ void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
     }
 }
 
-template<typename P>
+template<typename P, typename Logger>
 void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
         unsigned long forbidden, c_graph* &g, c_partition*& part,
         unsigned long & nodes_to_place, unsigned long & part_union,
-        cliques::umap & partition_map, int & num_partitions,
+        int & num_partitions,
         boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &all_partitions) {
+                cliques::partition_equal> &all_partitions, Logger &log) {
     int v, vn, i;
     unsigned long new_neighbours, new_forbidden, new_comp_tmp;
 
@@ -206,8 +201,8 @@ void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
 
         /*  Recursive call, extend comp_tmp with first neighbour" */
         gen_partitions_prune_aux(comp_tmp, new_neighbours, forbidden, g, part,
-                nodes_to_place, part_union, partition_map, num_partitions,
-                all_partitions);
+                nodes_to_place, part_union, num_partitions,
+                all_partitions, log);
 
         nodes_to_place = add_to_set(vn, nodes_to_place);
         comp_tmp = remove_from_set(vn, comp_tmp);
@@ -217,8 +212,8 @@ void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
 
         /*  rec call, extend comp_tmp with other neighour */
         gen_partitions_prune_aux(comp_tmp, new_neighbours, forbidden, g, part,
-                nodes_to_place, part_union, partition_map, num_partitions,
-                all_partitions);
+                nodes_to_place, part_union, num_partitions,
+                all_partitions, log);
         forbidden = remove_from_set(vn, forbidden);
     } else {
         /* all possibilities to extend comp_tmp have been considered, */
@@ -231,7 +226,7 @@ void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
         if (nodes_to_place == 0) {
             /* we have a c_partition */
             part = add_set(comp_tmp, part);
-            add_partition_to_set(part, g->n, num_partitions, all_partitions);
+            add_partition_to_set(part, g->n, num_partitions, all_partitions, log);
             remove_last_set(part);
             return;
         }
@@ -254,28 +249,12 @@ void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
 
         /* rec call, comp_tmp is a new set */
         gen_partitions_prune_aux(new_comp_tmp, new_neighbours, new_forbidden,
-                g, part, nodes_to_place, part_union, partition_map,
-                num_partitions, all_partitions);
+                g, part, nodes_to_place, part_union, num_partitions, all_partitions, log);
 
         nodes_to_place = add_to_set(v, nodes_to_place);
 
         part = remove_last_set(part);
         part_union = set_difference(part_union, comp_tmp);
-    }
-}
-
-void free_graph(c_graph *g) {
-    if (g != NULL) {
-        if (g->links != NULL) {
-            if (g->links[0] != NULL)
-                free(g->links[0]);
-            free(g->links);
-        }
-        if (g->capacities != NULL)
-            free(g->capacities);
-        if (g->degrees != NULL)
-            free(g->degrees);
-        free(g);
     }
 }
 
@@ -313,10 +292,9 @@ c_graph *convert_lemon_to_c_graph(G &graph) {
  TODO save partitions into partition map
  TODO breaks if directed (i.e. double edge)
  */
-template<typename G, typename P>
+template<typename G, typename P, typename Logger>
 int find_connected_partitions(G &graph, boost::unordered_set<P,
-        cliques::partition_hash, cliques::partition_equal> &all_partitions) {
-    cliques::umap partition_map;
+        cliques::partition_hash, cliques::partition_equal> &all_partitions, Logger &log) {
 
     c_graph *g = convert_lemon_to_c_graph(graph);
     c_partition *part;
@@ -340,10 +318,9 @@ int find_connected_partitions(G &graph, boost::unordered_set<P,
     forbidden = add_to_set(0, forbidden);
 
     gen_partitions_prune_aux(comp_tmp, neighbours, forbidden, g, part,
-            nodes_to_place, part_union, partition_map, num_partitions,
-            all_partitions);
+            nodes_to_place, part_union, num_partitions,
+            all_partitions, log);
 
-    //free_graph(g);
     delete[] g->degrees;
     for (int i = 0; i < g->n; ++i) {
         delete[] g->links[i];
@@ -354,5 +331,3 @@ int find_connected_partitions(G &graph, boost::unordered_set<P,
 }
 
 }
-
-#endif

@@ -1,11 +1,11 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
 #pragma once
 
-#include <cliques/structures/partition.h>
 #include <limits>
 #include <vector>
-#include <lemon/concepts/graph.h>
 #include <set>
+
+#include <lemon/concepts/graph.h>
 
 namespace cliques {
 /**
@@ -50,7 +50,6 @@ std::set<int> find_maxima(G &graph, float *stabilities) {
         }
         num_iterations++;
     }
-
     return maxima;
 }
 
@@ -93,7 +92,6 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
             }
             if (has_improved == false) {
                 maxima.insert(best_neighbour);
-                cliques::output(maxima.size());
                 break;
             }
         }

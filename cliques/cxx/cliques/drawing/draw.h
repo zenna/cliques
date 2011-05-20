@@ -1,5 +1,4 @@
-#ifndef CLIQUES_DRAW_H
-#define CLIQUES_DRAW_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -9,6 +8,7 @@
 #include <map>
 #include <gvc.h>
 
+#include <cliques/structures/common.h>
 #include <cliques/helpers.h>
 #include <cliques/algorithms/scalers.h>
 
@@ -25,7 +25,6 @@ namespace cliques
 
 /**
 @brief  Draws the graph using graphviz
-
 */
 class draw_graph{
 private:
@@ -170,5 +169,3 @@ private:
 };
 
 }
-
-#endif

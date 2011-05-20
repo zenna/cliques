@@ -25,7 +25,7 @@ void make_complete_graph(G &graph, int num_nodes) {
 template<typename G, typename M>
 void make_complete_graph(G &graph, int num_nodes, M &weights) {
     make_complete_graph(graph, num_nodes);
-    initialise_weights(graph, weights);
+    make_weights_from_edges(graph, weights);
 }
 
 template<typename G>
@@ -48,11 +48,11 @@ void make_path_graph(G &graph, int num_nodes) {
 template<typename G, typename M>
 void make_path_graph(G &graph, int num_nodes, M &weights) {
     make_path_graph(graph, num_nodes);
-    initialise_weights(graph, weights);
+    make_weights_from_edges(graph, weights);
 }
 
 template <typename G, typename M>
-void initialise_weights(G &graph, M &weights) {
+void make_weights_from_edges(G &graph, M &weights) {
     for (typename G::EdgeIt e(graph); e!= lemon::INVALID; ++e) {
         weights[e] = 1.0;
     }
