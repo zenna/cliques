@@ -80,10 +80,10 @@ int main() {
 //    		log_klin);
 
     // All Partitions
-//    cliques::output("Finding Connected Partitions");
-//    cliques::Logging<VecPartition> log_all;
-//    VecPartitionSet all_partitions;
-//    int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
+    cliques::output("Finding Connected Partitions");
+    cliques::Logging<VecPartition> log_all;
+    VecPartitionSet all_partitions;
+    int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
 
     // Finding Maxima
     cliques::output("Sampling Partitions Maxima");

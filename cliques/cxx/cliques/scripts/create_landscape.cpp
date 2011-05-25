@@ -34,8 +34,8 @@ int main() {
     cliques::Logging<VecPartition> log_all;
 
     cliques::output("Finding Connected Partitions");
-    boost::unordered_set<VecPartition, cliques::partition_hash,
-            cliques::partition_equal> all_partitions;
+    cliques::Logging<VecPartition> log_all;
+    VecPartitionSet all_partitions;
     int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
 
 //    cliques::output("Finding stabilities");
