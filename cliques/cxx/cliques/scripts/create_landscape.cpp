@@ -15,13 +15,17 @@
 
 
 #include <cliques/algorithms/space.h>
+#include <cliques/algorithms/internals/linearised_internals.h>
 #include <cliques/structures/vector_partition.h>
+
 
 int main() {
 
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
     typedef cliques::VectorPartition VecPartition;
+    typedef boost::unordered_set<VecPartition, cliques::partition_hash,
+                cliques::partition_equal> VecPartitionSet;
 
     cliques::output("making graph");
     //cliques::make_path_graph(orange_graph, 7, weights);
@@ -30,8 +34,6 @@ int main() {
 //            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n12.edj",
 //            orange_graph, weights);
     cliques::make_path_graph(orange_graph, 4, weights);
-
-    cliques::Logging<VecPartition> log_all;
 
     cliques::output("Finding Connected Partitions");
     cliques::Logging<VecPartition> log_all;
@@ -64,7 +66,7 @@ int main() {
     for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
         std::vector<double> stabs;
         VecPartition p = map.right.at(itr);
-        cliques::Internals internals(orange_graph, weights, p);
+        cliques::LinearisedInternals internals(orange_graph, weights, p);
         double stability = func(internals);
         stabilities[orange_graph.id(itr)] = stability;
     }

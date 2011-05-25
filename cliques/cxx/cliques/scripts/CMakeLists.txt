@@ -7,8 +7,7 @@ message(STATUS ${graphviz_LIBRARIES})
 #set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -llapack -DUSE_BOOST")
 
-
-add_executable(sample_landscape sample_landscape.cpp)
+#add_executable(sample_landscape sample_landscape.cpp)
 
 add_executable(create_landscape create_landscape.cpp)
 target_link_libraries(create_landscape ${graphviz_LIBRARIES})

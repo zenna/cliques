@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cliques/algorithms/stability.h>
+
 namespace cliques {
     /**
      @brief  isolate a node into its singleton set & update internals
@@ -95,9 +97,9 @@ namespace cliques {
         }
     };
 
-    LinearisedInternals gen(cliques::find_weighted_linearised_stability &compute_quality, graph, weights) {
-        LinearisedInternals internals(graph, weight);
+    template <typename G, typename M>
+    cliques::LinearisedInternals gen(find_weighted_linearised_stability, G &graph, M &weights) {
+        LinearisedInternals internals(graph, weights);
         return internals;
     }
-
 }

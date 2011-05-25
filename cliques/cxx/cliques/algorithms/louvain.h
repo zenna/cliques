@@ -1,6 +1,5 @@
 /* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_LOUVAIN_H
-#define CLIQUES_LOUVAIN_H
+#pragma once
 
 #include <limits>
 #include <vector>
@@ -14,6 +13,7 @@
 #include <cliques/helpers.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/common.h>
+#include <cliques/algorithms/internals/linearised_internals.h>
 
 //TODO: Louvain gets noticably slower on second iteration
 //It seems that hte algorithm get sstuck in an infiniite loop on second iteration
@@ -57,7 +57,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	typedef typename T::IncEdgeIt IncEdgeIt;
 	typedef lemon::RangeMap<double> range_map;
 
-	auto internals = cliques::gen(compute_quality_diff, graph, weights);
+	auto internals = cliques::gen(compute_quality, graph, weights);
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
 	double minimum_improve = 0.001;
@@ -239,5 +239,3 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 }
 
 }
-
-#endif

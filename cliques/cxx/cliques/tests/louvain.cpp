@@ -11,8 +11,6 @@
 #include <cliques/drawing/colour_maps.h>
 
 #include <cliques/algorithms/louvain.h>
-//TODO get rid of this
-#include <cliques/structures/disjointset.h>
 
 #include <cliques/structures/vector_partition.h>
 
@@ -32,6 +30,8 @@ int main() {
 	typedef cliques::VectorPartition partition;
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
+    typedef cliques::VectorPartition VecPartition;
+
 
 	double stability = 0;
 	//cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
@@ -40,15 +40,14 @@ int main() {
 	cliques::make_complete_graph(orange_graph,5);
 
 	double current_markov_time = 1.0;
+	std::vector<double> markov_times = {1.0};
 
-	std::vector<double> markov_times;
-	markov_times.push_back(current_markov_time);
-
+    cliques::Logging<VecPartition> log_louvain;
 	std::vector<partition> optimal_partitions;
 	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
 			weights, cliques::find_weighted_linearised_stability(markov_times),
 			cliques::linearised_stability_gain_louvain(current_markov_time),
-			optimal_partitions);
+			optimal_partitions, log_louvain);
 
 	partition best_partition = optimal_partitions.back();
 	int length = best_partition.element_count();

@@ -1,6 +1,5 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_STABILITY_H
-#define CLIQUES_STABILITY_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -12,7 +11,6 @@
 #include <lemon/maps.h>
 
 #include <cliques/structures/disjointset.h>
-#include "cliques/algorithms/louvain.h"
 
 namespace cliques {
 /**
@@ -209,6 +207,7 @@ struct linearised_stability_louvain {
 	}
 };
 
+struct alphaman {
+    int alpha;
+};
 }
-
-#endif

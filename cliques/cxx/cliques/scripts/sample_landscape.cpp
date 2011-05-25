@@ -80,10 +80,10 @@ int main() {
 //    		log_klin);
 
     // All Partitions
-    cliques::output("Finding Connected Partitions");
-    cliques::Logging<VecPartition> log_all;
-    VecPartitionSet all_partitions;
-    int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
+//    cliques::output("Finding Connected Partitions");
+//    cliques::Logging<VecPartition> log_all;
+//    VecPartitionSet all_partitions;
+//    int num_partitions = cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
 
     // Finding Maxima
     cliques::output("Sampling Partitions Maxima");
@@ -148,31 +148,31 @@ int main() {
     arma::mat L_t = arma::trans(L);
     L_t.save("trilaterated.mat", arma::raw_ascii);
 
-    int i=0;
-    int num_max = maxima.size();
-    arma::uvec maxima_mat(num_max);
-    for (auto itr = maxima.begin(); itr != maxima.end(); ++itr) {
-    	auto max_itr = all_sampled_partitions.find(*itr);
-    	maxima_mat(i) = std::distance(all_sampled_partitions.begin(), max_itr);
-    	++i;
-    }
-    maxima_mat.save("maxima.mat", arma::raw_ascii);
-
-    cliques::output("D_n",D_n.n_rows,D_n.n_cols);
-    //cliques::output("D_l",D_l.n_rows,D_l.n_cols);
-    cliques::output("Maxima",maxima.size());
-    cliques::output("All",all_sampled_partitions.size());
-
-    cliques::output("Finding Walk");
-//    arma::umat walk = save_walk(log_all.vec, all_sampled_partitions);
-//    walk.save("walk.mat", arma::raw_ascii);
-
-    arma::umat walk2 = save_walk(log_uniform.vec, all_sampled_partitions);
-    walk2.save("walk2.mat", arma::raw_ascii);
-
-	for (auto itr = all_sampled_partitions.begin(); itr != all_sampled_partitions.end(); ++itr) {
-		cliques::print_partition_line(*itr);
-	}
+//    int i=0;
+//    int num_max = maxima.size();
+//    arma::uvec maxima_mat(num_max);
+//    for (auto itr = maxima.begin(); itr != maxima.end(); ++itr) {
+//    	auto max_itr = all_sampled_partitions.find(*itr);
+//    	maxima_mat(i) = std::distance(all_sampled_partitions.begin(), max_itr);
+//    	++i;
+//    }
+//    maxima_mat.save("maxima.mat", arma::raw_ascii);
+//
+//    cliques::output("D_n",D_n.n_rows,D_n.n_cols);
+//    //cliques::output("D_l",D_l.n_rows,D_l.n_cols);
+//    cliques::output("Maxima",maxima.size());
+//    cliques::output("All",all_sampled_partitions.size());
+//
+//    cliques::output("Finding Walk");
+////    arma::umat walk = save_walk(log_all.vec, all_sampled_partitions);
+////    walk.save("walk.mat", arma::raw_ascii);
+//
+//    arma::umat walk2 = save_walk(log_uniform.vec, all_sampled_partitions);
+//    walk2.save("walk2.mat", arma::raw_ascii);
+//
+//	for (auto itr = all_sampled_partitions.begin(); itr != all_sampled_partitions.end(); ++itr) {
+//		cliques::print_partition_line(*itr);
+//	}
 ////
 ////    arma::colvec stabs_mat(stabilities.size());
 ////    for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
