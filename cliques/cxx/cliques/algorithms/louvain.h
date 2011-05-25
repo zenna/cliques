@@ -57,7 +57,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	typedef typename T::IncEdgeIt IncEdgeIt;
 	typedef lemon::RangeMap<double> range_map;
 
-	auto internals = gen();Internals internals(graph, weights);
+	auto internals = cliques::gen(compute_quality_diff, graph, weights);Internals internals(graph, weights);
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
 	double minimum_improve = 0.001;
