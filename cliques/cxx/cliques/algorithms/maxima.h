@@ -7,6 +7,8 @@
 
 #include <lemon/concepts/graph.h>
 
+#include <cliques/algorithms/internals/internals.h>
+
 namespace cliques {
 /**
  @brief  Finds the maxima of a landscape graph through steepest ascent
@@ -68,7 +70,7 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
     typedef typename boost::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
 
-    Internals internals(graph, weights);
+    auto internals = cliques::gen(compute_quality, graph, weights);
     P partition(lemon::countNodes(graph));
     partition.initialise_as_singletons();
 
@@ -79,10 +81,11 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
             bool has_improved = false;
             partition_set neighs;
             cliques::find_neighbours(graph, *set_itr, neighs);
-            Internals internals(graph, weights, best_neighbour);
+            auto internals = cliques::gen(compute_quality, graph, weights, best_neighbour);
             double best_quality = compute_quality(internals);
             for (auto neigh_itr = neighs.begin(); neigh_itr != neighs.end(); ++neigh_itr) {
-                Internals neigh_internals(graph, weights, *neigh_itr);
+                auto neigh_internals = cliques::gen(compute_quality, graph, weights, *neigh_itr);
+                //Internals neigh_internals(graph, weights, *neigh_itr);
                 double neigh_quality = compute_quality(neigh_internals);
                 if (best_quality < neigh_quality) {
                     best_quality = neigh_quality;

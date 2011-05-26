@@ -11,7 +11,7 @@
 #include <lemon/concepts/graph.h>
 
 #include <cliques/graphhelpers.h>
-#include <cliques/algorithms/louvain.h>
+#include <cliques/algorithms/internals/internals.h>
 
 namespace cliques {
 /**
@@ -47,12 +47,11 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	typedef typename T::NodeIt NodeIt;
 	typedef typename T::IncEdgeIt IncEdgeIt;
 
-	// Initializations..
+	// Initialisations..
 	int num_nodes = lemon::countNodes(graph);
 	P partition = input_partition;
 	P buffer_partition = partition;
-	// initialize internals
-	Internals internals(graph, weights, partition);
+    auto internals = cliques::gen(compute_quality, graph, weights, partition);
 	double minimum_improve = 0.000001;
 	double original_quality, best_quality, current_quality;
 	original_quality = best_quality = current_quality = compute_quality(
