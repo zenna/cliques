@@ -6,28 +6,22 @@
 #include <iostream>
 #include <ctime>
 
-#include <boost/random.hpp>
 #include <lemon/concepts/graph.h>
-#include <lemon/maps.h>
 
 #include <cliques/helpers.h>
 #include <cliques/graphhelpers.h>
-#include <cliques/structures/common.h>
-#include <cliques/algorithms/internals/linearised_internals.h>
+#include <cliques/algorithms/internals/internals.h>
 
-//TODO: Louvain gets noticably slower on second iteration
-//It seems that hte algorithm get sstuck in an infiniite loop on second iteration
-// Improvement alternates between same two values
-// On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
+// TODO: Louvain gets noticably slower on second iteration
+// TODO: It Doesn't even when map of different graph is passed, this is wrong
+// TODO: On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
 
 namespace cliques {
 
 /**
  @brief  Louvain method - greedy algorithm to find community structure of a network.
 
- This specialisation is for efficiency.
-
-  The second phase of the algorithm consists in building a new network
+ The second phase of the algorithm consists in building a new network
  whose nodes are now the communities found during the first phase.
  To do so, the weights of the links between the new nodes are given by
  the sum of the weight of the links between nodes in the corresponding
@@ -37,13 +31,10 @@ namespace cliques {
  it is then possible to reapply the first phase of the algorithm
  to the resulting weighted network and to iterate.
 
- @param[in]  graph     graph to find partition of
- @param[in]  compute_quality     partition quality function object
- @param[out]  std::vector<partitions>     optimal partitions, last in vector is overall best
- */
-/*
- * add static bool has_gain_function = true
- * still need to select gain function
+ @param[in]  graph     graph to partition
+ @param[in]  weights   EdgeMap of edge weights
+ @param[in]  compute_quality     partition quality functor
+ @param[out] optimal_partitions     optimal partitions found, last in vector is overall best
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
 double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
@@ -55,7 +46,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	typedef typename T::NodeIt NodeIt;
 	typedef typename T::EdgeIt EdgeIt;
 	typedef typename T::IncEdgeIt IncEdgeIt;
-	typedef lemon::RangeMap<double> range_map;
 
 	auto internals = cliques::gen(compute_quality, graph, weights);
 	P partition(lemon::countNodes(graph));
@@ -65,7 +55,6 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	bool one_level_end = false;
 	double old_quality = current_quality;
 	bool did_nodes_move = false;
-	//one level louvain
 
 	// Randomise the looping over nodes
 	// initialise random number generator
@@ -75,7 +64,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node) {
 		nodes_ordered_randomly.push_back(temp_node);
 	}
-	// actual shuffling
+	// Randomly shuffle nodes
 	std::random_shuffle(nodes_ordered_randomly.begin(),
 			nodes_ordered_randomly.end());
 
