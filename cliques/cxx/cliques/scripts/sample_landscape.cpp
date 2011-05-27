@@ -46,11 +46,13 @@ int main() {
                 cliques::partition_equal> VecPartitionSet;
 
     cliques::output("making graph");
-    cliques::make_path_graph(orange_graph, 3, weights);
+//    cliques::make_path_graph(orange_graph, 8, weights);
+//    cliques::make_ring_graph(orange_graph, 12, weights);
+
 //    cliques::make_complete_graph(orange_graph, 6, weights);
-//    cliques::read_edgelist_weighted(
-//            "/home/zenna/repos/graph-codes/cliques/data/graphs/karate.edj",
-//            orange_graph, weights);
+    cliques::read_edgelist_weighted(
+            "/home/zenna/repos/graph-codes/cliques/data/graphs/barbell_n8.edj",
+            orange_graph, weights);
 
     cliques::output("Sampling Partitions Uniformly");
     cliques::Logging<VecPartition> log_uniform;

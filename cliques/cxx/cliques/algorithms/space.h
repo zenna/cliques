@@ -30,7 +30,6 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
     std::set<int> neighs_in_same_comm;
     int node_to_isolate_comm = partition.find_set(node_to_isolate_id);
 
-
     // Find neighbours of node in the same community
     for (IncEdgeIt e(graph, node_to_isolate); e != lemon::INVALID; ++e) {
         Node neigh_node = graph.runningNode(e);
@@ -47,7 +46,7 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
 
     partition.isolate_node(node_to_isolate_id);
     std::set<int> seen_nodes;
-    std::list<int> queue(neighs_in_same_comm.begin(), neighs_in_same_comm.end());
+    std::list<int> queue(1, *neighs_in_same_comm.begin());
     // Do breadth first search from a neighbour
     // Until either all neighs_in_same_comm found
     // or nowhere left to search
@@ -57,7 +56,11 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
         queue.pop_back();
         seen_nodes.insert(source_id);
 
-        if (auto node_itr = neighs_in_same_comm.find(source_id) != neighs_in_same_comm.end()) {
+        // If you remove a node once it has been seen then this
+        // Will always go to zero
+        // If we don't remove it
+        auto node_itr = neighs_in_same_comm.find(source_id);
+        if (node_itr != neighs_in_same_comm.end()) {
             neighs_in_same_comm.erase(node_itr);
         }
 
@@ -101,14 +104,40 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
  @param[in] all_partitons reference to unordered set of partitions
  @param[out] space output graph representing the space
  */
+
+void problem() {
+    cliques::output("houston, we have a problem");
+}
+
+template <typename P>
+void test_disconnected(P &partition) {
+    int a = partition.find_set(0);
+    int b = partition.find_set(1);
+    int c = partition.find_set(2);
+    int d = partition.find_set(3);
+
+    if (a == 0 && b == 0 && c == 1 && d == 0) {
+        problem();
+    }
+    if (a == 0 && b == 1 && c == 0 && d == 1) {
+        problem();
+    }
+    if (a == 0 && b == 1 && c == 1 && d == 0) {
+        problem();
+    }
+    if (a == 0 && b == 1 && c == 1 && d == 1) {
+        problem();
+    }
+}
+
 template<typename G, typename P>
 void find_neighbours(G &graph, P const &partition,
         boost::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &neighbour_partitions) {
-    P temp_partition = partition;
-
     typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
+
+    //test_disconnected(partition);
 
     for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
         Node n1 = graph.u(edge);
@@ -117,14 +146,22 @@ void find_neighbours(G &graph, P const &partition,
         int n2_id = graph.id(n2);
         int set_of_n1 = partition.find_set(n1_id);
         int set_of_n2 = partition.find_set(n2_id);
+        bool are_in_same_set = (set_of_n1 == set_of_n2);
 
         // Add partition with n1 isolated and in n2's set
         // Avoid using too much memory, destroy temp_partiton after use
         if (will_isolation_break_partition(graph, partition, n1) == false) {
             P temp_partition = partition;
-            temp_partition.add_node_to_set(n1_id, set_of_n2);
+            temp_partition.isolate_node(n1_id);
             temp_partition.normalise_ids();
             neighbour_partitions.insert(temp_partition);
+
+            if (!are_in_same_set) {
+                P temp_partition = partition;
+                temp_partition.add_node_to_set(n1_id, set_of_n2);
+                temp_partition.normalise_ids();
+                neighbour_partitions.insert(temp_partition);
+            }
         }
 
         if (will_isolation_break_partition(graph, partition, n2) == false) {
@@ -132,22 +169,29 @@ void find_neighbours(G &graph, P const &partition,
             temp_partition.isolate_node(n2_id);
             temp_partition.normalise_ids();
             neighbour_partitions.insert(temp_partition);
-        }
 
-        if (set_of_n1 != set_of_n2) {
-            {
-                P temp_partition = partition;
-                temp_partition.isolate_node(n1_id);
-                temp_partition.normalise_ids();
-                neighbour_partitions.insert(temp_partition);
-            }
-            {
+            if (!are_in_same_set) {
                 P temp_partition = partition;
                 temp_partition.add_node_to_set(n2_id, set_of_n1);
                 temp_partition.normalise_ids();
                 neighbour_partitions.insert(temp_partition);
             }
         }
+
+//        if (set_of_n1 != set_of_n2) {
+//            {
+//                P temp_partition = partition;
+//                temp_partition.add_node_to_set(n1_id, set_of_n2);
+//                temp_partition.normalise_ids();
+//                neighbour_partitions.insert(temp_partition);
+//            }
+//            {
+//                P temp_partition = partition;
+//                temp_partition.add_node_to_set(n2_id, set_of_n1);
+//                temp_partition.normalise_ids();
+//                neighbour_partitions.insert(temp_partition);
+//            }
+//        }
     }
 }
 
@@ -245,17 +289,17 @@ void sample_uniform_metropolis(G &graph, int num_samples,
 
     while (true) {
         partition_set neigh_partitions;
-        cliques::print_partition_list(current_partition);
         cliques::find_neighbours(graph, current_partition, neigh_partitions);
         int num_current_neighs = neigh_partitions.size();
-        cliques::output("num shii", num_current_neighs);
 
-        for (auto a = neigh_partitions.begin(); a != neigh_partitions.end(); ++a) {
-            cliques::print_partition_list(*a);
-        }
-        if (num_current_neighs == 0) {
-            cliques::find_neighbours(graph, current_partition, neigh_partitions);
-        }
+
+//        cliques::output("The following partition", num_current_neighs);
+//        cliques::print_partition_list(current_partition);
+//        cliques::output("has", num_current_neighs, "neighbours");
+//        for (auto a = neigh_partitions.begin(); a != neigh_partitions.end(); ++a) {
+//            cliques::print_partition_list(*a);
+//            test_disconnected(*a);
+//        }
         std::uniform_int_distribution<int> distribution(0,
                 num_current_neighs-1);
 
@@ -263,18 +307,19 @@ void sample_uniform_metropolis(G &graph, int num_samples,
             int rand_neigh = distribution(engine);
 
             auto set_itr = neigh_partitions.begin();
-            for (int i = 0; i < rand_neigh -1; ++i) {
+            for (int i = 0; i < rand_neigh; ++i) {
                 ++set_itr;
             }
             cliques::VectorPartition proposed_partition = *set_itr;
             logger.log(proposed_partition);
             partition_set proposed_neighs;
+            //cliques::print_partition_list(proposed_partition);
             cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
             int num_proposed_neighs = proposed_neighs.size();
 
             //Metropolis-Hastings acceptance alpha
-            float alpha = real_distribution(m_engine);
-            float rand_real_num = float(num_current_neighs) / float(num_proposed_neighs);
+            double alpha = real_distribution(m_engine);
+            double rand_real_num = double(num_current_neighs) / double(num_proposed_neighs);
 
             if (alpha < rand_real_num) {
                 num_steps++;

@@ -51,6 +51,30 @@ void make_path_graph(G &graph, int num_nodes, M &weights) {
     make_weights_from_edges(graph, weights);
 }
 
+template<typename G>
+void make_ring_graph(G &graph, int num_nodes) {
+    typedef typename G::NodeIt NodeIt;
+
+    for (int i = 0; i < num_nodes; ++i) {
+        graph.addNode();
+    }
+    for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
+        NodeIt n2 = n1;
+        ++n2;
+        if (n2 == lemon::INVALID) {
+            graph.addEdge(n1,NodeIt(graph));
+            break;
+        }
+        graph.addEdge(n1,n2);
+    }
+}
+
+template<typename G, typename M>
+void make_ring_graph(G &graph, int num_nodes, M &weights) {
+    make_ring_graph(graph, num_nodes);
+    make_weights_from_edges(graph, weights);
+}
+
 template <typename G, typename M>
 void make_weights_from_edges(G &graph, M &weights) {
     for (typename G::EdgeIt e(graph); e!= lemon::INVALID; ++e) {
