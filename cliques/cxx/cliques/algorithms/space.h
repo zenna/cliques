@@ -21,20 +21,20 @@ namespace cliques {
  @brief  Find all (single node moveset) neighbours of a partition
 */
 template <typename G, typename P, typename NO>
-bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node_to_isolate) {
+bool will_move_break_partition(G &graph, const P &partition_const, NO &node_to_move) {
     typedef typename G::Node Node;
     typedef typename G::IncEdgeIt IncEdgeIt;
 
     P partition = partition_const;
-    int node_to_isolate_id = graph.id(node_to_isolate);
+    int node_to_move_id = graph.id(node_to_move);
     std::set<int> neighs_in_same_comm;
-    int node_to_isolate_comm = partition.find_set(node_to_isolate_id);
+    int node_to_move_comm = partition.find_set(node_to_move_id);
 
     // Find neighbours of node in the same community
-    for (IncEdgeIt e(graph, node_to_isolate); e != lemon::INVALID; ++e) {
+    for (IncEdgeIt e(graph, node_to_move); e != lemon::INVALID; ++e) {
         Node neigh_node = graph.runningNode(e);
         int neigh_node_id = graph.id(neigh_node);
-        if (node_to_isolate_comm == partition.find_set(neigh_node_id)) {
+        if (node_to_move_comm == partition.find_set(neigh_node_id)) {
             neighs_in_same_comm.insert(neigh_node_id);
         }
     }
@@ -44,7 +44,7 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
         return false;
     }
 
-    partition.isolate_node(node_to_isolate_id);
+    partition.isolate_node(node_to_move_id);
     std::set<int> seen_nodes;
     std::list<int> queue(1, *neighs_in_same_comm.begin());
     // Do breadth first search from a neighbour
@@ -69,7 +69,7 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
             int neigh_node_id = graph.id(neigh_node);
 
             // Only look at neighbours within same community
-            if (partition.find_set(neigh_node_id) == node_to_isolate_comm) {
+            if (partition.find_set(neigh_node_id) == node_to_move_comm) {
                 if (seen_nodes.find(neigh_node_id) == seen_nodes.end()) {
                     queue.push_back(neigh_node_id);
                     seen_nodes.insert(neigh_node_id);
@@ -78,19 +78,20 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
                     break;
                 }
 
-                if (auto neigh_itr = neighs_in_same_comm.find(neigh_node_id) != neighs_in_same_comm.end()) {
+                auto neigh_itr = neighs_in_same_comm.find(neigh_node_id);
+                if (neigh_itr != neighs_in_same_comm.end()) {
                     neighs_in_same_comm.erase(neigh_itr);
                 }
             }
         }
         if (neighs_in_same_comm.size() == 0) {
             // Undo isolation
-            partition.add_node_to_set(node_to_isolate_id, node_to_isolate_comm);
+            partition.add_node_to_set(node_to_move_id, node_to_move_comm);
             return false;
         }
     }
 
-    partition.add_node_to_set(node_to_isolate_id, node_to_isolate_comm);
+    partition.add_node_to_set(node_to_move_id, node_to_move_comm);
     return true;
 }
 
@@ -101,43 +102,24 @@ bool will_isolation_break_partition(G &graph, const P &partition_const, NO &node
  which can be created by moving one node into an adjacent group
  or by isolating it into its own group.
 
+ Basic algorithm: Iterate through edges, for each node u, v of edge:
+ If moving the node (or isolation) would not break the partition:
+     1. Isolate it
+     2. If u and v are not in the same set, move u to v's set
+
  @param[in] all_partitons reference to unordered set of partitions
  @param[out] space output graph representing the space
+
+ //TODO: This can return (and does return the same partition as a neighbour
+  * Needs to be fixed.  This happens for example in a set of singletons, because
+  * isolating a node would not break a partition
  */
-
-void problem() {
-    cliques::output("houston, we have a problem");
-}
-
-template <typename P>
-void test_disconnected(P &partition) {
-    int a = partition.find_set(0);
-    int b = partition.find_set(1);
-    int c = partition.find_set(2);
-    int d = partition.find_set(3);
-
-    if (a == 0 && b == 0 && c == 1 && d == 0) {
-        problem();
-    }
-    if (a == 0 && b == 1 && c == 0 && d == 1) {
-        problem();
-    }
-    if (a == 0 && b == 1 && c == 1 && d == 0) {
-        problem();
-    }
-    if (a == 0 && b == 1 && c == 1 && d == 1) {
-        problem();
-    }
-}
-
 template<typename G, typename P>
 void find_neighbours(G &graph, P const &partition,
         boost::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &neighbour_partitions) {
     typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
-
-    //test_disconnected(partition);
 
     for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
         Node n1 = graph.u(edge);
@@ -150,7 +132,7 @@ void find_neighbours(G &graph, P const &partition,
 
         // Add partition with n1 isolated and in n2's set
         // Avoid using too much memory, destroy temp_partiton after use
-        if (will_isolation_break_partition(graph, partition, n1) == false) {
+        if (will_move_break_partition(graph, partition, n1) == false) {
             P temp_partition = partition;
             temp_partition.isolate_node(n1_id);
             temp_partition.normalise_ids();
@@ -164,7 +146,7 @@ void find_neighbours(G &graph, P const &partition,
             }
         }
 
-        if (will_isolation_break_partition(graph, partition, n2) == false) {
+        if (will_move_break_partition(graph, partition, n2) == false) {
             P temp_partition = partition;
             temp_partition.isolate_node(n2_id);
             temp_partition.normalise_ids();
@@ -177,21 +159,6 @@ void find_neighbours(G &graph, P const &partition,
                 neighbour_partitions.insert(temp_partition);
             }
         }
-
-//        if (set_of_n1 != set_of_n2) {
-//            {
-//                P temp_partition = partition;
-//                temp_partition.add_node_to_set(n1_id, set_of_n2);
-//                temp_partition.normalise_ids();
-//                neighbour_partitions.insert(temp_partition);
-//            }
-//            {
-//                P temp_partition = partition;
-//                temp_partition.add_node_to_set(n2_id, set_of_n1);
-//                temp_partition.normalise_ids();
-//                neighbour_partitions.insert(temp_partition);
-//            }
-//        }
     }
 }
 

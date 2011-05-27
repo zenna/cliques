@@ -51,13 +51,13 @@ int main() {
 
 //    cliques::make_complete_graph(orange_graph, 6, weights);
     cliques::read_edgelist_weighted(
-            "/home/zenna/repos/graph-codes/cliques/data/graphs/barbell_n8.edj",
+            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj",
             orange_graph, weights);
 
     cliques::output("Sampling Partitions Uniformly");
     cliques::Logging<VecPartition> log_uniform;
     VecPartitionSet sampled_partitions;
-    cliques::sample_uniform_metropolis(orange_graph,5000, 10, sampled_partitions, log_uniform);
+    cliques::sample_uniform_metropolis(orange_graph,20000, 1, sampled_partitions, log_uniform);
 
     cliques::output("size:",sampled_partitions.size());
 
@@ -107,48 +107,49 @@ int main() {
 ////			maxima,
 ////			log_around_maxima);
 //
-//	VecPartitionSet all_sampled_partitions = sampled_partitions;
-////    for (auto set_itr = maxima.begin(); set_itr != maxima.end(); ++set_itr) {
-////        all_sampled_partitions.insert(*set_itr);
-////        cliques::print_partition_list(*set_itr);
-////        cliques::output("\n");
-////    }
+	VecPartitionSet all_sampled_partitions = sampled_partitions;
+//    for (auto set_itr = maxima.begin(); set_itr != maxima.end(); ++set_itr) {
+//        all_sampled_partitions.insert(*set_itr);
+//        cliques::print_partition_list(*set_itr);
+//        cliques::output("\n");
+//    }
+
+////
+//    arma::vec stabs_mat(stabilities.size());
 //
-////
-////    arma::vec stabs_mat(stabilities.size());
-////
-////    int jj = 0;
-////    for (double t = 0.001; t< 1000; t = t * 10) {
-////    	std::vector<double> markov_times;
-////    	markov_times.push_back(t);
-////		cliques::output("Finding stabilities");
-////		cliques::find_weighted_linearised_stability compute_quality(markov_times);
-////		std::map<int, double> stabilities;
-////		for (auto set_itr = all_sampled_partitions.begin(); set_itr != all_sampled_partitions.end(); ++set_itr) {
-////			std::vector<double> stabs;
-////			cliques::Internals internals(orange_graph, weights, *set_itr);
-////			double stability = compute_quality(internals);
-////			int i = std::distance(all_sampled_partitions.begin(), set_itr);
-////			stabilities[i] = stability;
-////		}
-////
-////		for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
-////			stabs_mat(itr->first) = itr->second;
-////		}
-////    }
-////    stabs_mat.save("stabs.mat", arma::raw_ascii);
+//    int jj = 0;
+//    for (double t = 0.001; t< 1000; t = t * 10) {
+//    	std::vector<double> markov_times;
+//    	markov_times.push_back(t);
+//		cliques::output("Finding stabilities");
+//		cliques::find_weighted_linearised_stability compute_quality(markov_times);
+//		std::map<int, double> stabilities;
+//		for (auto set_itr = all_sampled_partitions.begin(); set_itr != all_sampled_partitions.end(); ++set_itr) {
+//			std::vector<double> stabs;
+//			cliques::Internals internals(orange_graph, weights, *set_itr);
+//			double stability = compute_quality(internals);
+//			int i = std::distance(all_sampled_partitions.begin(), set_itr);
+//			stabilities[i] = stability;
+//		}
 //
-//	// Distances
+//		for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
+//			stabs_mat(itr->first) = itr->second;
+//		}
+//    }
+//    stabs_mat.save("stabs.mat", arma::raw_ascii);
+//
+	// Distances
+    cliques::output("Finding distances - maxima");
 //    cliques::output("Finding distances - maxima", maxima.size());
-//    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
-//    cliques::output("Finding distances - rest");
-//    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
-//    cliques::output("finding embedding");
-//    arma::mat L = cliques::embed_mds(D_n, 3);
-//    arma::mat L_t = arma::trans(L);
-//    L_t.save("trilaterated.mat", arma::raw_ascii);
-//
-//    int i=0;
+    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
+    cliques::output("Finding distances - rest");
+    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
+    cliques::output("finding embedding");
+    arma::mat L = cliques::embed_mds(D_n, 3);
+    arma::mat L_t = arma::trans(L);
+    L_t.save("trilaterated.mat", arma::raw_ascii);
+
+      int i=0;
 //    int num_max = maxima.size();
 //    arma::uvec maxima_mat(num_max);
 //    for (auto itr = maxima.begin(); itr != maxima.end(); ++itr) {

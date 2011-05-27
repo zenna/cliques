@@ -5,7 +5,7 @@ include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${graphviz_INCLUDE_DIRECTORIES})
 message(STATUS ${graphviz_LIBRARIES})
 #set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -Wall -llapack -DUSE_BOOST")
+set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -llapack -DUSE_BOOST")
 
 add_executable(sample_landscape sample_landscape.cpp)
 
