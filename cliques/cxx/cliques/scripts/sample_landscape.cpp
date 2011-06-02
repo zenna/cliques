@@ -88,15 +88,9 @@ int main(int ac, char* av[]) {
     cliques::NoLogging log_uniform;
     //cliques::Logging<VecPartition> log_uniform;
     VecPartitionSet sampled_partitions;
-    cliques::sample_uniform_biased(orange_graph,num_samples, 1, sampled_partitions, log_uniform);
+    cliques::sample_uniform_biased(orange_graph,num_samples, 1000, sampled_partitions, log_uniform);
     //cliques::sample_uniform_metropolis(orange_graph,num_samples, 1, sampled_partitions, log_uniform);
     cliques::output("size:",sampled_partitions.size());
-
-    cliques::output("Finding Connected Partitions");
-    cliques::Logging<VecPartition> log_all;
-    VecPartitionSet all_partitions;
-    cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
-    cliques::output("size all:",all_partitions.size());
 
 //    // Sample Partitions
 //    cliques::output("Finding Louvain Partitions");
