@@ -40,49 +40,49 @@ arma::umat save_walk (V &vec, S &all_partitions) {
     return walk_mat;
 }
 
-int main(int ac, char* av[]) {
-    int num_samples = 100000;
-	// Declare the supported options.
-	po::options_description desc("Allowed options");
-	desc.add_options()
-	    ("help", "produce help message")
-	    ("graph,G", po::value<std::string>(),"input graph")
+template <typename G, typename M>
+void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples) {
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help", "produce help message")
+        ("graph,G", po::value<std::string>(),"input graph")
         ("num-samples,S", po::value<int>(),"number of samples")
-	;
+    ;
 
-	po::variables_map vm;
-	po::store(po::parse_command_line(ac, av, desc), vm);
-	po::notify(vm);
+    po::variables_map vm;
+    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::notify(vm);
 
-	if (vm.count("help")) {
-	    std::cout << desc << "\n";
-	    return 1;
-	}
+    if (vm.count("help")) {
+        std::cout << desc << "\n";
+        //return 1; - exit
+    }
 
     if (vm.count("num-samples")) {
         num_samples = vm["num-samples"].as<int>();
     }
 
-    lemon::SmartGraph orange_graph;
-    lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
-
     cliques::output("making graph");
-	if (vm.count("graph")) {
-		std::string filename = vm["graph"].as<std::string>();
-	    cliques::read_edgelist_weighted(filename, orange_graph, weights);
-	} else {
-		cliques::make_path_graph(orange_graph, 8, weights);
-//	    cliques::make_ring_graph(orange_graph, 12, weights);
-//		cliques::make_complete_graph(orange_graph, 6, weights);
-	}
+    if (vm.count("graph")) {
+        std::string filename = vm["graph"].as<std::string>();
+        cliques::read_edgelist_weighted(filename, graph, weights);
+    } else {
+        cliques::make_path_graph(graph, 8, weights);
+//      cliques::make_ring_graph(graph, 12, weights);
+//      cliques::make_complete_graph(graph, 6, weights);
+    }
+}
 
+int main(int ac, char* av[]) {
     typedef cliques::VectorPartition VecPartition;
     typedef boost::unordered_set<VecPartition, cliques::partition_hash,
                 cliques::partition_equal> VecPartitionSet;
 
-    // Find small enough problem where deviate
-    // For each one in full landscape, find num neigh using function
-    // if disagree, compare
+    lemon::SmartGraph orange_graph;
+    lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
+    int num_samples = 100000;
+    parse_arguments(ac, av, orange_graph, weights, num_samples);
 
     cliques::output("Sampling Partitions Uniformly");
     cliques::NoLogging log_uniform;
@@ -144,14 +144,14 @@ int main(int ac, char* av[]) {
 ////			maxima,
 ////			log_around_maxima);
 //
-	VecPartitionSet all_sampled_partitions = sampled_partitions;
+
+    VecPartitionSet all_sampled_partitions = sampled_partitions;
 //    for (auto set_itr = maxima.begin(); set_itr != maxima.end(); ++set_itr) {
 //        all_sampled_partitions.insert(*set_itr);
 //        cliques::print_partition_list(*set_itr);
 //        cliques::output("\n");
 //    }
 
-////
 //    arma::vec stabs_mat(stabilities.size());
 //
 //    int jj = 0;
@@ -174,19 +174,26 @@ int main(int ac, char* av[]) {
 //		}
 //    }
 //    stabs_mat.save("stabs.mat", arma::raw_ascii);
-//
-//	// Distances
-//    cliques::output("Finding distances - maxima");
-////    cliques::output("Finding distances - maxima", maxima.size());
-//    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
-//    cliques::output("Finding distances - rest");
-//    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
-//    cliques::output("finding embedding");
-//    arma::mat L = cliques::embed_mds(D_n, 3);
-//    arma::mat L_t = arma::trans(L);
-//    L_t.save("trilaterated.mat", arma::raw_ascii);
 
-      int i=0;
+
+	// Distances
+    cliques::output("Finding distances - maxima");
+    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
+
+    cliques::output("Finding distances - rest");
+    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
+
+    cliques::output("finding embedding");
+    arma::mat L = cliques::embed_mds(D_n, 3);
+    arma::mat L_t = arma::trans(L);
+
+    cliques::output("saving");
+    L_t.save("coords.mat", arma::raw_ascii);
+
+    auto D_y = cliques::euclid_pairwise_dists(L_t);
+    cliques::output("residual variance", cliques::residual_variance(D_n, D_y));
+
+//    int i=0;
 //    int num_max = maxima.size();
 //    arma::uvec maxima_mat(num_max);
 //    for (auto itr = maxima.begin(); itr != maxima.end(); ++itr) {
@@ -211,24 +218,13 @@ int main(int ac, char* av[]) {
 //	for (auto itr = all_sampled_partitions.begin(); itr != all_sampled_partitions.end(); ++itr) {
 //		cliques::print_partition_line(*itr);
 //	}
-////
-////    arma::colvec stabs_mat(stabilities.size());
-////    for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
-////        stabs_mat(itr->first) = itr->second;
-////    }
-////    stabs_mat.save("stabs.mat", arma::raw_ascii);
 //
-//    cliques::output("Finding distances");
-//    auto X = cliques::find_edit_dists(sampled_partitions);
-//
-//    cliques::output("finding embedding");
-//    auto L = cliques::find_embedding_mds_smacof(X, 2);
-//    arma::mat L_t = arma::trans(L);
-//
-//    cliques::output("saving");
-//    L_t.save("coords.mat", arma::raw_ascii);
-//
-//    auto D_y = cliques::euclid_pairwise_dists(L_t);
-//    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+//    arma::colvec stabs_mat(stabilities.size());
+//    for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
+//        stabs_mat(itr->first) = itr->second;
+//    }
+//    stabs_mat.save("stabs.mat", arma::raw_ascii);
+
+
     return 0;
 }

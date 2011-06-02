@@ -16,6 +16,8 @@
 
 namespace cliques {
 
+// TODO - check num neighbours of space corresponds to algorithm exactly
+
 /**
  @brief  Find all (single node moveset) neighbours of a partition
 */
@@ -53,6 +55,8 @@ bool will_move_break_partition(G &graph, const P &partition_const, NO &node_to_m
         int source_id = queue.back();
         Node source = graph.nodeFromId(source_id);
         queue.pop_back();
+        // TODO: This only needs to be done once, for first source
+        // the rest is unncessary computation
         seen_nodes.insert(source_id);
 
         // If you remove a node once it has been seen then this
