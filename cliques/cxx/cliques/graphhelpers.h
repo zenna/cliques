@@ -178,6 +178,11 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 		typename G::Edge edge = graph.addEdge(node1, node2);
 		weights.set(edge, weight);
 	}
+
+	cliques::output("map!");
+	for (auto itr = id_to_node.begin(); itr != id_to_node.end(); ++itr) {
+	    cliques::output(itr->first, graph.id(itr->second));
+	}
 	maxima_file.close();
 }
 

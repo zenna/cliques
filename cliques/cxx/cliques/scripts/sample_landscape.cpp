@@ -3,18 +3,20 @@
 #include <algorithm>
 
 #include <lemon/smart_graph.h>
+#include <boost/program_options.hpp>
 
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/algorithms/stability.h>
 #include <cliques/algorithms/louvain.h>
-
 #include <cliques/nldr/nldr.h>
 #include <cliques/structures/make_graphs.h>
 #include <cliques/algorithms/space.h>
 #include <cliques/algorithms/maxima.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/logger.h>
+
+namespace po = boost::program_options;
 
 template <typename V, typename S>
 arma::umat save_walk (V &vec, S &all_partitions) {
@@ -38,28 +40,63 @@ arma::umat save_walk (V &vec, S &all_partitions) {
     return walk_mat;
 }
 
-int main() {
+int main(int ac, char* av[]) {
+    int num_samples = 100000;
+	// Declare the supported options.
+	po::options_description desc("Allowed options");
+	desc.add_options()
+	    ("help", "produce help message")
+	    ("graph,G", po::value<std::string>(),"input graph")
+        ("num-samples,S", po::value<int>(),"number of samples")
+	;
+
+	po::variables_map vm;
+	po::store(po::parse_command_line(ac, av, desc), vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+	    std::cout << desc << "\n";
+	    return 1;
+	}
+
+    if (vm.count("num-samples")) {
+        num_samples = vm["num-samples"].as<int>();
+    }
+
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
+
+    cliques::output("making graph");
+	if (vm.count("graph")) {
+		std::string filename = vm["graph"].as<std::string>();
+	    cliques::read_edgelist_weighted(filename, orange_graph, weights);
+	} else {
+		cliques::make_path_graph(orange_graph, 8, weights);
+//	    cliques::make_ring_graph(orange_graph, 12, weights);
+//		cliques::make_complete_graph(orange_graph, 6, weights);
+	}
+
     typedef cliques::VectorPartition VecPartition;
     typedef boost::unordered_set<VecPartition, cliques::partition_hash,
                 cliques::partition_equal> VecPartitionSet;
 
-    cliques::output("making graph");
-//    cliques::make_path_graph(orange_graph, 8, weights);
-//    cliques::make_ring_graph(orange_graph, 12, weights);
-
-//    cliques::make_complete_graph(orange_graph, 6, weights);
-    cliques::read_edgelist_weighted(
-            "/home/zenna/repos/graph-codes/cliques/data/graphs/renaud_n16.edj",
-            orange_graph, weights);
+    // Find small enough problem where deviate
+    // For each one in full landscape, find num neigh using function
+    // if disagree, compare
 
     cliques::output("Sampling Partitions Uniformly");
-    cliques::Logging<VecPartition> log_uniform;
+    cliques::NoLogging log_uniform;
+    //cliques::Logging<VecPartition> log_uniform;
     VecPartitionSet sampled_partitions;
-    cliques::sample_uniform_metropolis(orange_graph,20000, 1, sampled_partitions, log_uniform);
-
+    cliques::sample_uniform_biased(orange_graph,num_samples, 1, sampled_partitions, log_uniform);
+    //cliques::sample_uniform_metropolis(orange_graph,num_samples, 1, sampled_partitions, log_uniform);
     cliques::output("size:",sampled_partitions.size());
+
+    cliques::output("Finding Connected Partitions");
+    cliques::Logging<VecPartition> log_all;
+    VecPartitionSet all_partitions;
+    cliques::find_connected_partitions(orange_graph, all_partitions, log_all);
+    cliques::output("size all:",all_partitions.size());
 
 //    // Sample Partitions
 //    cliques::output("Finding Louvain Partitions");
@@ -138,16 +175,16 @@ int main() {
 //    }
 //    stabs_mat.save("stabs.mat", arma::raw_ascii);
 //
-	// Distances
-    cliques::output("Finding distances - maxima");
-//    cliques::output("Finding distances - maxima", maxima.size());
-    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
-    cliques::output("Finding distances - rest");
-    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
-    cliques::output("finding embedding");
-    arma::mat L = cliques::embed_mds(D_n, 3);
-    arma::mat L_t = arma::trans(L);
-    L_t.save("trilaterated.mat", arma::raw_ascii);
+//	// Distances
+//    cliques::output("Finding distances - maxima");
+////    cliques::output("Finding distances - maxima", maxima.size());
+//    arma::mat D_n = cliques::find_edit_dists(all_sampled_partitions);
+//    cliques::output("Finding distances - rest");
+//    //arma::mat D_l = cliques::find_edit_landmark_dists(all_sampled_partitions, maxima);
+//    cliques::output("finding embedding");
+//    arma::mat L = cliques::embed_mds(D_n, 3);
+//    arma::mat L_t = arma::trans(L);
+//    L_t.save("trilaterated.mat", arma::raw_ascii);
 
       int i=0;
 //    int num_max = maxima.size();

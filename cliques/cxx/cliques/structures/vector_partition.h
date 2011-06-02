@@ -16,7 +16,7 @@ namespace cliques {
  and removal of a node from a set
  */
 class VectorPartition {
-public:
+private:
     int num_nodes;
     std::vector<int> partition_vector;
     bool is_normalised;

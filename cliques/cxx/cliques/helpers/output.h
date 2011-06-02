@@ -74,9 +74,9 @@ template<typename P>
 void print_partition_line(P &partition) {
     int length = partition.element_count();
     for (int i = 0; i < length; i++) {
-        std::cerr << partition.find_set(i) << " ";
+        std::cout << partition.find_set(i) << " ";
     }
-    std::cerr << std::endl;
+    std::cout << std::endl;
 }
 
 }
