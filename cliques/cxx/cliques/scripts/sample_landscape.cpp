@@ -182,7 +182,7 @@ int main(int ac, char* av[]) {
     arma::mat L_t = arma::trans(L);
 
     cliques::output("saving");
-    L_t.save("coords.mat", arma::raw_ascii);
+    L_t.save("coords-sampled.mat", arma::raw_ascii);
 
     auto D_y = cliques::euclid_pairwise_dists(L_t);
     cliques::output("residual variance", cliques::residual_variance(D_n, D_y));
