@@ -17,8 +17,7 @@ $(document).ready(function() {
                     }
                     vectors.push(float_vector);
                 }
-                console.log(e.target.result);
-                setup2();
+                app.setup();
             }
             reader.readAsText(f);
         }
@@ -45,7 +44,36 @@ $(document).ready(function() {
                     }
                     energy_vectors.push(float_vector);
                 }
-                add_colours();
+                app.add_colours();
+                //$(document).bind('render', { 'bar' : 'bam' }, add_colour);
+            }
+            reader.readAsText(f);
+        }
+        else {
+            alert("no file");
+        }
+    }
+    
+    function handle_edges_files(evt) {
+        edges_vectors = []
+        var files = evt.target.files; // FileList object
+        f = files[0];
+        if (f) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                coords = e.target.result.split("\n");
+                for (var i=0;i<coords.length;++i) {
+                    var vector = coords[i].split(" ");
+                    var float_vector = [];
+                    for (var j=0;j<vector.length;++j) {
+                        if (vector[j] != " " && vector[j] != "") {
+                            float_vector.push(parseInt(vector[j]));
+                        } 
+                    }
+                    edges_vectors.push(float_vector);
+                }
+                app.add_edges(edges_vectors);
+                //add_colours();
                 //$(document).bind('render', { 'bar' : 'bam' }, add_colour);
             }
             reader.readAsText(f);
@@ -60,4 +88,7 @@ $(document).ready(function() {
         
     document.getElementById('energy_files').addEventListener('change',
         handle_energy_files, false);
+        
+    document.getElementById('edges_files').addEventListener('change',
+        handle_edges_files, false);
     })

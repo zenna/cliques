@@ -46,9 +46,9 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples)
         std::string filename = vm["graph"].as<std::string>();
         cliques::read_edgelist_weighted(filename, graph, weights);
     } else {
-//        cliques::make_path_graph(graph, 8, weights);
+        cliques::make_path_graph(graph, 7, weights);
 //      cliques::make_ring_graph(graph, 12, weights);
-      cliques::make_complete_graph(graph, 8, weights);
+//      cliques::make_complete_graph(graph, 6, weights);
     }
 }
 
@@ -95,6 +95,29 @@ int main(int ac, char* av[]) {
     cliques::output("Finding distances");
     //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
     auto X = cliques::find_edit_dists(all_partitions);
+
+    // From edit matrix: find only ones. output into two_d matrix
+    cliques::output(X.n_cols, X.n_rows);
+    std::vector<std::vector<int> > edges;
+    for (int i=0;i<X.n_rows;++i) {
+        for (int j=i+1;j<X.n_cols;++j) {
+            if (X(i,j) == 1) {
+                std::vector<int> edge;
+                edge.push_back(i);
+                edge.push_back(j);
+                edges.push_back(edge);
+            }
+        }
+    }
+    arma::umat edges_mat(edges.size(), 2);
+    int i = 0;
+    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
+        edges_mat(i,0) = (*itr)[0];
+        edges_mat(i,1) = (*itr)[1];
+        ++i;
+    }
+    edges_mat.save("edges.mat", arma::raw_ascii);
+
 
     cliques::output("finding embedding");
     auto L = cliques::embed_mds(X, 3);
