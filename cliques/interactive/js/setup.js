@@ -1,7 +1,9 @@
 app = {
 	points:[],
 
-	setup: function() {
+	setup: function(vectors) {
+		ok = 10;
+		this.vectors = vectors;
 
 		if (!Detector.webgl)
 			Detector.addGetWebGLMessage();
@@ -26,6 +28,7 @@ app = {
 
 	},
 	init: function() {
+		var vectors = this.vectors;
 		var mean_position = {
 			x:0.0,
 			y:0.0,
@@ -36,10 +39,7 @@ app = {
 		document.body.appendChild(container);
 
 		scene = new THREE.Scene();
-				this.scene = scene;
-		//scene.fog = new THREE.FogExp2(0x000000, 0.0007);
-
-		//var geometry = new THREE.Geometry();
+		this.scene = scene;
 
 		for ( var i = 0; i < vectors.length; ++i) {
 			vector = new THREE.Vector3(vectors[i][0] * 2000 - 1000,
@@ -109,10 +109,16 @@ app = {
 		camera.target.position.z = mean_position.z;
 	},
 	render: function() {
+		for (var i=0; i<scene.objects.length;++i) {
+			scene.objects[i].geometry.vertices[0].position.x += 1.0;
+			scene.objects[i].geometry.vertices[0].position.y += 1.0;
+			scene.objects[i].geometry.vertices[0].position.z += 1.0;
+			scene.objects[i].geometry.__dirtyVertices = true;
+		}
 		$(document).trigger('render');
 		this.renderer.render(scene, camera);
 	},
-	add_colours: function() {
+	add_colours: function(energy_vectors) {
 		var min_value = 1e9;
 		var max_value = -1e9;
 		// Find range
@@ -129,7 +135,7 @@ app = {
 		var	shift = 0.0 - min_value;
 		var	range = max_value - min_value;
 
-		for ( var i = 0; i < vectors.length; ++i) {
+		for ( var i = 0; i < this.vectors.length; ++i) {
 			var energy = energy_vectors[0][i];
 			var hue = (energy + shift) / range;
 			materials[i].color.setHSV(hue, 1.0, 1.0);
@@ -138,7 +144,7 @@ app = {
 	add_edges: function(edges_vectors) {
 		var points = this.points;
 		var scene = this.scene;
-					
+
 		for (var i=0;i< edges_vectors.length; ++i) {
 			var u = edges_vectors[i][0];
 			var v = edges_vectors[i][1];
