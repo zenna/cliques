@@ -62,9 +62,12 @@ def file_to_nested_list(filename, cast_type):
 def main():
     output = {}
     coords_file, edges_file, energy_file, output_file = parse_args()
-    output['coords'] = file_to_nested_list(coords_file, float)
-    output['edges'] = file_to_nested_list(edges_file, int)
-    output['energies'] = file_to_nested_list(energy_file, float)
+    if coords_file:
+        output['coords'] = file_to_nested_list(coords_file, float)
+    if edges_file:
+        output['edges'] = file_to_nested_list(edges_file, int)
+    if energy_file:
+        output['energies'] = file_to_nested_list(energy_file, float)
     
     f = open(output_file, 'w')
     simplejson.dump(output, f)

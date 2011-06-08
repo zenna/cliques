@@ -68,16 +68,30 @@ $(document).ready( function() {
 		// animate
 		
 		app.setup();
-		
-		landscape = new Graph(data);
+// 		
+		landscape = new Graph(data, app.scene);
 		landscape.place_nodes();
+		app.camera.target.position.x = landscape.mean_position.x;
+		app.camera.target.position.y = landscape.mean_position.y;
+		app.camera.target.position.z = landscape.mean_position.z;
+		app.camera.position.z = 4000;
+		
 		landscape.colour_nodes();
 		landscape.add_edges();
-		landscape.add_to_scene(app.scene);
 		
-  		app.setup(data.coords);
-  		app.add_edges(data.edges);
-  		app.add_colours(data.energies);
+		// 
+		// camera.position.z = 4000;
+		// camera.target.position.x = mean_position.x;
+		// camera.target.position.y = mean_position.y;
+		// camera.target.position.z = mean_position.z;
+		
+		// landscape.colour_nodes();
+		// landscape.add_edges();
+		// landscape.add_to_scene(app.scene);
+// 		
+  		// app.setup(data.coords);
+  		// app.add_edges(data.edges);
+  		// app.add_colours(data.energies);
 	})
 	
 })
