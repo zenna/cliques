@@ -5,7 +5,6 @@
 #include <lemon/smart_graph.h>
 #include <boost/program_options.hpp>
 
-
 #include <cliques/helpers.h>
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/stability.h>
@@ -18,15 +17,15 @@
 
 namespace po = boost::program_options;
 
-template <typename G, typename M>
-void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples) {
+template<typename G, typename M>
+void parse_arguments(int ac, char *av[], G &graph, M &weights,
+        int &num_samples, int &num_dim) {
     // Declare the supported options.
     po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help", "produce help message")
-        ("graph,G", po::value<std::string>(),"input graph")
-        ("num-samples,S", po::value<int>(),"number of samples")
-    ;
+    desc.add_options()("help", "produce help message")("graph,G",
+            po::value<std::string>(), "input graph")("num-samples,S",
+            po::value<int>(), "number of samples")("dimensions,d",
+            po::value<int>(), "number of dimensions");
 
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
@@ -38,42 +37,47 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples)
     }
 
     if (vm.count("num-samples")) {
-        num_samples = vm["num-samples"].as<int>();
+        num_samples = vm["num-samples"].as<int> ();
+    }
+
+    if (vm.count("dimensions")) {
+        num_dim = vm["dimensions"].as<int> ();
     }
 
     cliques::output("making graph");
     if (vm.count("graph")) {
-        std::string filename = vm["graph"].as<std::string>();
+        std::string filename = vm["graph"].as<std::string> ();
         cliques::read_edgelist_weighted(filename, graph, weights);
     } else {
         cliques::make_path_graph(graph, 7, weights);
-//      cliques::make_ring_graph(graph, 12, weights);
-//      cliques::make_complete_graph(graph, 6, weights);
+        //      cliques::make_ring_graph(graph, 12, weights);
+        //      cliques::make_complete_graph(graph, 6, weights);
     }
 }
 
 int main(int ac, char* av[]) {
     typedef cliques::VectorPartition VecPartition;
     typedef boost::unordered_set<VecPartition, cliques::partition_hash,
-                cliques::partition_equal> VecPartitionSet;
+            cliques::partition_equal> VecPartitionSet;
 
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
     int num_samples = 100000;
-    parse_arguments(ac, av, orange_graph, weights, num_samples);
+    int num_dim = 3;
+    parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim);
 
     cliques::output("Finding Connected Partitions");
     cliques::NoLogging no_logging;
     cliques::Logging<VecPartition> log_all;
     VecPartitionSet all_partitions;
     cliques::find_connected_partitions(orange_graph, all_partitions, no_logging);
-    cliques::output("complete size:",all_partitions.size());
+    cliques::output("complete size:", all_partitions.size());
 
     cliques::output("Creating space graph");
     lemon::SmartGraph space;
     auto map = cliques::create_space(orange_graph, all_partitions, space);
     lemon::SmartGraph::EdgeMap<float> space_weights(space);
-    cliques::make_weights_from_edges(space,space_weights);
+    cliques::make_weights_from_edges(space, space_weights);
 
     cliques::output("Finding stabilities");
     std::vector<double> markov_times = { 1.0 };
@@ -99,9 +103,9 @@ int main(int ac, char* av[]) {
     // From edit matrix: find only ones. output into two_d matrix
     cliques::output(X.n_cols, X.n_rows);
     std::vector<std::vector<int> > edges;
-    for (int i=0;i<X.n_rows;++i) {
-        for (int j=i+1;j<X.n_cols;++j) {
-            if (X(i,j) == 1) {
+    for (int i = 0; i < X.n_rows; ++i) {
+        for (int j = i + 1; j < X.n_cols; ++j) {
+            if (X(i, j) == 1) {
                 std::vector<int> edge;
                 edge.push_back(i);
                 edge.push_back(j);
@@ -112,15 +116,14 @@ int main(int ac, char* av[]) {
     arma::umat edges_mat(edges.size(), 2);
     int i = 0;
     for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-        edges_mat(i,0) = (*itr)[0];
-        edges_mat(i,1) = (*itr)[1];
+        edges_mat(i, 0) = (*itr)[0];
+        edges_mat(i, 1) = (*itr)[1];
         ++i;
     }
     edges_mat.save("edges.mat", arma::raw_ascii);
 
-
     cliques::output("finding embedding");
-    auto L = cliques::embed_mds(X, 3);
+    auto L = cliques::embed_mds(X, num_dim);
     arma::mat L_t = arma::trans(L);
     L_t.save("coords-full.mat", arma::raw_ascii);
 
