@@ -52,7 +52,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 	P partition = input_partition;
 	P buffer_partition = partition;
     auto internals = cliques::gen(compute_quality, graph, weights, partition);
-	double minimum_improve = 0.000001;
+	double minimum_improve = 0.000000001;
 	double original_quality, best_quality, current_quality;
 	original_quality = best_quality = current_quality = compute_quality(
 			internals);

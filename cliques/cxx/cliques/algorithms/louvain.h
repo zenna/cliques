@@ -50,7 +50,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	auto internals = cliques::gen(compute_quality, graph, weights);
 	P partition(lemon::countNodes(graph));
 	partition.initialise_as_singletons();
-	double minimum_improve = 0.001;
+	double minimum_improve = 0.000000001;
 	double current_quality = compute_quality(internals);
 	bool one_level_end = false;
 	double old_quality = current_quality;
