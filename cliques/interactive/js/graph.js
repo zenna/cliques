@@ -17,23 +17,53 @@ function Graph(data, scene) {
 		var coords = this.coords;
 		var mean_position = this.mean_position;
 
-		for ( var i = 0; i < coords.length; ++i) {
-			var vector = new THREE.Vector3(0.0,0.0,0.0);
-			var geometry = new THREE.Geometry();
-			geometry.vertices.push(new THREE.Vertex(vector));
+		// for ( var i = 0; i < coords.length; ++i) {
+		// var vector = new THREE.Vector3(0.0,0.0,0.0);
+		// var geometry = new THREE.Geometry();
+		// geometry.vertices.push(new THREE.Vertex(vector));
+		//
+		// var hue  = 0.1 * (i % 9);
+		// var color = [hue, 1.0, 1.0];
+		// var material = new THREE.ParticleBasicMaterial({
+		// size:40
+		// });
+		// material.color.setHSV(color[0], color[1], color[2]);
+		// var node = new THREE.ParticleSystem(geometry, material);
+		// nodes.push(node);
+		// materials.push(material);
+		// }
 
+		var geometry = new THREE.Geometry();
+		var colours = [];
+
+		for ( var i = 0; i < coords.length; ++i) {
+			x = 2000 * Math.random() - 1000;
+			y = 2000 * Math.random() - 1000;
+			z = 2000 * Math.random() - 1000;
+			vector = new THREE.Vector3( x, y, z );
+			geometry.vertices.push( new THREE.Vertex( vector ) );
+			colours[i] = new THREE.Color( 0xffffff );
 			var hue  = 0.1 * (i % 9);
-			var color = [hue, 1.0, 1.0];
-			var material = new THREE.ParticleBasicMaterial({
-				size:40
-			});
-			material.color.setHSV(color[0], color[1], color[2]);
-			var node = new THREE.ParticleSystem(geometry, material);
-			nodes.push(node);
-			materials.push(material);
+			colours[ i ].setHSV(hue, 1.0, 1.0 );
 		}
+
+		// sprite = THREE.ImageUtils.loadTexture( "textures/sprites/ball.png" );//
+		geometry.colors = colours;
+
+		var material = new THREE.ParticleBasicMaterial({
+			size: 40,
+			vertexColors: true
+		} );
+		material.color.setHSV( 1.0, 0.2, 0.8 );
+
+		var particles = new THREE.ParticleSystem( geometry, material );
+		particles.sortParticles = true;
+		particles.updateMatrix();
+		this.nodes = geometry;
+		this.particles = particles;
+
 		this.move_nodes();
-		this.add_to_scene(nodes);
+		this.add_to_scene([particles]);
 	}
 	this.move_nodes = function( dim1, dim2, dim3) {
 
@@ -51,24 +81,23 @@ function Graph(data, scene) {
 		var coords = this.coords;
 		var mean_position = this.mean_position;
 
-		for ( var i = 0; i < nodes.length; ++i) {
+		for ( var i = 0; i < nodes.vertices.length; ++i) {
 			var x = coords[i][dim1] * 2000 - 1000;
 			var y = coords[i][dim2] * 2000 - 1000;
 			var z;
 			if (typeof dim3  == "undefined") {
 				z = coords[0][dim1] * 2000 - 1000;
-			}
-			else {
+			} else {
 				z = coords[i][dim3] * 2000 - 1000;
 			}
-			nodes[i].geometry.vertices[0].position.x = x;
-			nodes[i].geometry.vertices[0].position.y = y;
-			nodes[i].geometry.vertices[0].position.z = z;
-			nodes[i].geometry.__dirtyVertices = true;
+			nodes.vertices[i].position.x = x;
+			nodes.vertices[i].position.y = y;
+			nodes.vertices[i].position.z = z;
+			nodes.__dirtyVertices = true;
 
-			mean_position.x = mean_position.x + nodes[i].geometry.vertices[0].position.x
-			mean_position.y = mean_position.y + nodes[i].geometry.vertices[0].position.y;
-			mean_position.z = mean_position.z + nodes[i].geometry.vertices[0].position.z;
+			mean_position.x = mean_position.x + nodes.vertices[i].position.x
+			mean_position.y = mean_position.y + nodes.vertices[i].position.y;
+			mean_position.z = mean_position.z + nodes.vertices[i].position.z;
 		}
 
 		mean_position.x = mean_position.x / coords.length;
@@ -97,7 +126,7 @@ function Graph(data, scene) {
 		for ( var i = 0; i < this.coords.length; ++i) {
 			var energy = energy_vectors[0][i];
 			var hue = (energy + shift) / range;
-			this.materials[i].color.setHSV(hue, 1.0, 1.0); //*
+			this.nodes.colors[i].setHSV(hue, 1.0, 1.0); //*
 		}
 	}
 	this.add_edges = function(edges_vectors) {
@@ -105,34 +134,48 @@ function Graph(data, scene) {
 		var edges = this.edges;
 		var lines = this.lines;
 
-		for (var i=0;i< edges.length; ++i) {
-			var u = edges[i][0];
-			var v = edges[i][1];
-			console.log(u + "-" + v);
-			var line_geometry = new THREE.Geometry();
-			line_geometry.vertices.push(nodes[u].geometry.vertices[0]);
-			line_geometry.vertices.push(nodes[v].geometry.vertices[0]);
-			colors = [];
+		line_material = new THREE.LineBasicMaterial({
+			color: 0xffaa00,
+			opacity: 0.5,
+			linewidth: 2
+		} );
 
-			var position, index;
-			for (var j = 0; j < line_geometry.vertices.length; j ++ ) {
+		var line = new THREE.Line( this.nodes, line_material, THREE.LinePieces );
+		var colour = new THREE.Color( 0xffffff );
+		line.colors = colour;
+		line.updateMatrix();
+		this.line = line;
+		line.geometry.__dirtyVertices = true;
 
-				colors[ j ] = new THREE.Color( 0xffffff );
-				colors[ j ].setHSV( 0.6, 1.0, 1.0 );
-			}
-			line_geometry.colors = colors;
+// 
+		// for (var i=0;i< edges.length; ++i) {
+			// var u = edges[i][0];
+			// var v = edges[i][1];
+			// console.log(u + "-" + v);
+			// var line_geometry = new THREE.Geometry();
+			// line_geometry.vertices.push(nodes[u].geometry.vertices[0]);
+			// line_geometry.vertices.push(nodes[v].geometry.vertices[0]);
+			// colors = [];
+// 
+			// var position, index;
+			// for (var j = 0; j < line_geometry.vertices.length; j ++ ) {
+// 
+				// colors[ j ] = new THREE.Color( 0xffffff );
+				// colors[ j ].setHSV( 0.6, 1.0, 1.0 );
+			// }
+			// line_geometry.colors = colors;
+// 
+			// line_material = new THREE.LineBasicMaterial({
+				// color: 0xffffff,
+				// opacity: 0.5,
+				// linewidth: 2
+			// } );
+			// line_material.vertexColors = true;
+			// var line = new THREE.Line( line_geometry, line_material );
+			// lines.push(line);
+		// }
 
-			line_material = new THREE.LineBasicMaterial({
-				color: 0xffffff,
-				opacity: 0.5,
-				linewidth: 2
-			} );
-			line_material.vertexColors = true;
-			var line = new THREE.Line( line_geometry, line_material );
-			lines.push(line);
-		}
-
-		this.add_to_scene(lines);
+		this.add_to_scene([line]);
 
 	}
 	this.move_edges = function() {
@@ -146,7 +189,7 @@ function Graph(data, scene) {
 			lines[i].geometry.vertices[0].position.x = nodes[u].geometry.vertices[0].position.x;
 			lines[i].geometry.vertices[0].position.y = nodes[u].geometry.vertices[0].position.y;
 			lines[i].geometry.vertices[0].position.z = nodes[u].geometry.vertices[0].position.z;
-			
+
 			lines[i].geometry.vertices[1].position.x = nodes[v].geometry.vertices[0].position.x;
 			lines[i].geometry.vertices[1].position.y = nodes[v].geometry.vertices[0].position.y;
 			lines[i].geometry.vertices[1].position.z = nodes[v].geometry.vertices[0].position.z;
