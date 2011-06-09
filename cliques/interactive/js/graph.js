@@ -8,7 +8,7 @@ function Graph(data, scene) {
 		z:0.0
 	};
 	this.scene = scene;
-	this.materials = [], this.nodes = [], this.lines = [];
+	this.materials = [], this.nodes = []
 	this.num_dim = this.coords[0].length;
 
 	this.place_nodes = function(dim1, dim2, dim3) {
@@ -16,22 +16,6 @@ function Graph(data, scene) {
 		var nodes = this.nodes;
 		var coords = this.coords;
 		var mean_position = this.mean_position;
-
-		// for ( var i = 0; i < coords.length; ++i) {
-		// var vector = new THREE.Vector3(0.0,0.0,0.0);
-		// var geometry = new THREE.Geometry();
-		// geometry.vertices.push(new THREE.Vertex(vector));
-		//
-		// var hue  = 0.1 * (i % 9);
-		// var color = [hue, 1.0, 1.0];
-		// var material = new THREE.ParticleBasicMaterial({
-		// size:40
-		// });
-		// material.color.setHSV(color[0], color[1], color[2]);
-		// var node = new THREE.ParticleSystem(geometry, material);
-		// nodes.push(node);
-		// materials.push(material);
-		// }
 
 		var geometry = new THREE.Geometry();
 		var colours = [];
@@ -42,9 +26,16 @@ function Graph(data, scene) {
 			z = 2000 * Math.random() - 1000;
 			vector = new THREE.Vector3( x, y, z );
 			geometry.vertices.push( new THREE.Vertex( vector ) );
-			colours[i] = new THREE.Color( 0xffffff );
+			colours[i] = new THREE.Color( 0x0084BD );
 			var hue  = 0.1 * (i % 9);
-			colours[ i ].setHSV(hue, 1.0, 1.0 );
+			//colours[ i ].setHSV(hue, 1.0, 1.0 );
+		}
+
+		this.node_id_colours = [];
+		for ( var i = 0; i < coords.length; ++i) {
+			this.node_id_colours[i] = new THREE.Color( 0x0084BD );
+			var hue  = 0.1 * (i % 9);
+			this.node_id_colours[i].setHSV(hue, 1.0, 1.0 );
 		}
 
 		// sprite = THREE.ImageUtils.loadTexture( "textures/sprites/ball.png" );//
@@ -54,7 +45,7 @@ function Graph(data, scene) {
 			size: 40,
 			vertexColors: true
 		} );
-		material.color.setHSV( 1.0, 0.2, 0.8 );
+		material.color.setHSV( 0.0, 0.0, 1.0 );
 
 		var particles = new THREE.ParticleSystem( geometry, material );
 		particles.sortParticles = true;
@@ -103,7 +94,9 @@ function Graph(data, scene) {
 		mean_position.x = mean_position.x / coords.length;
 		mean_position.y = mean_position.y / coords.length;
 		mean_position.z = mean_position.z / coords.length;
-		this.move_edges();
+		if (this.lines) {
+			this.move_edges();
+		}
 	}
 	this.colour_nodes = function() {
 		var energy_vectors = this.energies;
@@ -134,48 +127,33 @@ function Graph(data, scene) {
 		var edges = this.edges;
 		var lines = this.lines;
 
+		var geometry = new THREE.Geometry();
+
+		for ( var i = 0; i < edges.length; ++i) {
+			var a = new THREE.Vertex( new THREE.Vector3( 0.0, 0.0, 0.0) )
+			var b = new THREE.Vertex( new THREE.Vector3( 0.0, 0.0, 0.0) )
+
+			geometry.vertices.push( a );
+			geometry.vertices.push( b );
+		}
+
 		line_material = new THREE.LineBasicMaterial({
 			color: 0xffaa00,
-			opacity: 0.5,
-			linewidth: 2
+			opacity: 0.2,
+			linewidth: 1
 		} );
 
-		var line = new THREE.Line( this.nodes, line_material, THREE.LinePieces );
-		var colour = new THREE.Color( 0xffffff );
-		line.colors = colour;
+		var line = new THREE.Line( geometry, line_material, THREE.LinePieces );
+		// var colour = new THREE.Color( 0xffffff );
+		// line.colors = colour;
+		line.scale.x = line.scale.y = line.scale.z = 1.0;
+
 		line.updateMatrix();
-		this.line = line;
 		line.geometry.__dirtyVertices = true;
-
-// 
-		// for (var i=0;i< edges.length; ++i) {
-			// var u = edges[i][0];
-			// var v = edges[i][1];
-			// console.log(u + "-" + v);
-			// var line_geometry = new THREE.Geometry();
-			// line_geometry.vertices.push(nodes[u].geometry.vertices[0]);
-			// line_geometry.vertices.push(nodes[v].geometry.vertices[0]);
-			// colors = [];
-// 
-			// var position, index;
-			// for (var j = 0; j < line_geometry.vertices.length; j ++ ) {
-// 
-				// colors[ j ] = new THREE.Color( 0xffffff );
-				// colors[ j ].setHSV( 0.6, 1.0, 1.0 );
-			// }
-			// line_geometry.colors = colors;
-// 
-			// line_material = new THREE.LineBasicMaterial({
-				// color: 0xffffff,
-				// opacity: 0.5,
-				// linewidth: 2
-			// } );
-			// line_material.vertexColors = true;
-			// var line = new THREE.Line( line_geometry, line_material );
-			// lines.push(line);
-		// }
-
+		line.geometry.__dirtyColors = true;
 		this.add_to_scene([line]);
+		this.lines = line;
+		this.move_edges();
 
 	}
 	this.move_edges = function() {
@@ -183,18 +161,21 @@ function Graph(data, scene) {
 		var edges = this.edges;
 		var lines = this.lines;
 
-		for ( var i = 0; i < lines.length; ++i) {
+		for ( var i = 0; i < edges.length -1; ++i) {
 			var u = edges[i][0];
 			var v = edges[i][1];
-			lines[i].geometry.vertices[0].position.x = nodes[u].geometry.vertices[0].position.x;
-			lines[i].geometry.vertices[0].position.y = nodes[u].geometry.vertices[0].position.y;
-			lines[i].geometry.vertices[0].position.z = nodes[u].geometry.vertices[0].position.z;
+			var a = nodes.vertices[u];
+			var b = nodes.vertices[v];
+			lines.geometry.vertices[2*i].position.x = a.position.x;
+			lines.geometry.vertices[2*i].position.y = a.position.y;
+			lines.geometry.vertices[2*i].position.z = a.position.z;
 
-			lines[i].geometry.vertices[1].position.x = nodes[v].geometry.vertices[0].position.x;
-			lines[i].geometry.vertices[1].position.y = nodes[v].geometry.vertices[0].position.y;
-			lines[i].geometry.vertices[1].position.z = nodes[v].geometry.vertices[0].position.z;
-			lines[i].geometry.__dirtyVertices = true;
+			lines.geometry.vertices[2*i+1].position.x = b.position.x;
+			lines.geometry.vertices[2*i+1].position.y = b.position.y;
+			lines.geometry.vertices[2*i+1].position.z = b.position.z;
 		}
+		lines.geometry.__dirtyVertices = true;
+
 	}
 	this.add_to_scene = function(objects) {
 		var scope = this;
