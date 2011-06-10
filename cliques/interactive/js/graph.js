@@ -28,21 +28,24 @@ function Graph(data, scene) {
 			geometry.vertices.push( new THREE.Vertex( vector ) );
 			colours[i] = new THREE.Color( 0x0084BD );
 			var hue  = 0.1 * (i % 9);
-			//colours[ i ].setHSV(hue, 1.0, 1.0 );
+			colours[ i ].setHSV(hue, 1.0, 1.0 );
 		}
 
 		this.node_id_colours = [];
 		for ( var i = 0; i < coords.length; ++i) {
-			this.node_id_colours[i] = new THREE.Color( 0x0084BD );
-			var hue  = 0.1 * (i % 9);
-			this.node_id_colours[i].setHSV(hue, 1.0, 1.0 );
+			var colour = this.int_to_rgb(i);
+			var hex_r = colour[0].toString(16);
+			var hex_g = colour[1].toString(16);
+			var hex_b = colour[2].toString(16);
+			
+			var colour_hex = hex_r + hex_g + hex_b;
+			this.node_id_colours[i] = new THREE.Color( parseInt(colour_hex, 16));
 		}
 
-		// sprite = THREE.ImageUtils.loadTexture( "textures/sprites/ball.png" );//
 		geometry.colors = colours;
 
 		var material = new THREE.ParticleBasicMaterial({
-			size: 40,
+			size: 40	,
 			vertexColors: true
 		} );
 		material.color.setHSV( 0.0, 0.0, 1.0 );
@@ -56,6 +59,20 @@ function Graph(data, scene) {
 		this.move_nodes();
 		this.add_to_scene([particles]);
 	}
+	
+	this.int_to_rgb = function(integer) {
+		var n = Math.floor(integer / 256);
+		var r = integer % 256;
+		var n2 = Math.floor(n / 256);
+		var r2 = n % 256;
+		return [n2,r2,r];
+	}
+	
+	this.rgb_to_int = function(rgb) {
+		return rgb[0] * 256 * 256 + rgb[1] * 256 + rgb[2];
+	}
+	
+	
 	this.move_nodes = function( dim1, dim2, dim3) {
 
 		var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
@@ -137,7 +154,7 @@ function Graph(data, scene) {
 			geometry.vertices.push( b );
 		}
 
-		line_material = new THREE.LineBasicMaterial({
+		var line_material = new THREE.LineBasicMaterial({
 			color: 0xffaa00,
 			opacity: 0.2,
 			linewidth: 1

@@ -1,16 +1,12 @@
-app = {
-	setup: function() {
+function App(width, height) {
+	var	width = typeof width  == "undefined" ? window.innerWidth : width;
+	var	height = typeof height  == "undefined" ? window.innerWidth : height;
+
+	this.setup = function() {
 		if (!Detector.webgl)
 			Detector.addGetWebGLMessage();
 
-		var container, stats;
-		var camera, scene, renderer, particles, geometry, parameters, i, h, color;
-		var mouseX = 0, mouseY = 0;
-		materials = [];
-
-		var windowHalfX = window.innerWidth / 2;
-		var windowHalfY = window.innerHeight / 2;
-		parent = this;
+		var parent = this;
 
 		this.init();
 		animate();
@@ -21,16 +17,16 @@ app = {
 			parent.stats.update();
 		}
 
-	},
-	init: function() {
-		container = document.createElement('div');
+	}
+	this.init = function() {
+		var container = document.createElement('div');
 		document.body.appendChild(container);
 		this.scene = new THREE.Scene();
 		this.renderer = new THREE.WebGLRenderer({
 			antialias : true
 		});
 		var renderer = this.renderer;
-		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setSize(width, height);
 		container.appendChild(renderer.domElement);
 
 		this.stats = new Stats();
@@ -58,7 +54,7 @@ app = {
 
 			keys: [ 65, 83, 68 ], // [ rotateKey, zoomKey, panKey ],
 
-			//domElement: renderer.domElement,
+			domElement: renderer.domElement,
 
 		});
 
@@ -68,10 +64,10 @@ app = {
 		// camera.target.position.x = mean_position.x;
 		// camera.target.position.y = mean_position.y;
 		// camera.target.position.z = mean_position.z;
-	},
-	onDocumentMouseClick: function(event) {
+	}
+	this.onDocumentMouseClick = function(event) {
 		var renderer = app.renderer;
-		render_target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
+		var render_target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.NearestFilter,
 			format: THREE.RGBFormat
@@ -79,9 +75,10 @@ app = {
 
 		var original_colours = landscape.nodes.colors;
 		landscape.nodes.colors = landscape.node_id_colours;
+		landscape.nodes.__dirtyColors = true;
 		renderer.render( app.scene, app.camera, render_target, true );
 		landscape.nodes.colors = original_colours;
-		
+
 		var mouseX = event.clientX;
 		var mouseY = event.clientY;
 		// readPixels returns coords with bottom_left as origin
@@ -91,9 +88,10 @@ app = {
 		var context = renderer.context;
 		var arr = new Uint8Array(4);
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
-		console.log(arr[0],arr[1],arr[2]);
-	},
-	render: function() {
+		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
+		//console.log(arr[0],arr[1],arr[2], arr);
+	}
+	this.render = function() {
 		// for (var i=0; i<this.scene.objects.length;++i) {
 		// scene.objects[i].geometry.vertices[0].position.x += 1.0;
 		// scene.objects[i].geometry.vertices[0].position.y += 1.0;
@@ -103,5 +101,5 @@ app = {
 		$(document).trigger('render');
 		this.renderer.render(this.scene, this.camera);
 
-	},
+	}
 }
