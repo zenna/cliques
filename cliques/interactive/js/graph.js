@@ -1,4 +1,5 @@
 function Graph(data, scene) {
+	this.partitions = data.partitions;
 	this.coords = data.coords;
 	this.energies = data.energies;
 	this.edges = data.edges;
@@ -37,7 +38,7 @@ function Graph(data, scene) {
 			var hex_r = colour[0].toString(16);
 			var hex_g = colour[1].toString(16);
 			var hex_b = colour[2].toString(16);
-			
+
 			var colour_hex = hex_r + hex_g + hex_b;
 			this.node_id_colours[i] = new THREE.Color( parseInt(colour_hex, 16));
 		}
@@ -59,7 +60,6 @@ function Graph(data, scene) {
 		this.move_nodes();
 		this.add_to_scene([particles]);
 	}
-	
 	this.int_to_rgb = function(integer) {
 		var n = Math.floor(integer / 256);
 		var r = integer % 256;
@@ -67,12 +67,9 @@ function Graph(data, scene) {
 		var r2 = n % 256;
 		return [n2,r2,r];
 	}
-	
 	this.rgb_to_int = function(rgb) {
 		return rgb[0] * 256 * 256 + rgb[1] * 256 + rgb[2];
 	}
-	
-	
 	this.move_nodes = function( dim1, dim2, dim3) {
 
 		var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
@@ -139,30 +136,36 @@ function Graph(data, scene) {
 			this.nodes.colors[i].setHSV(hue, 1.0, 1.0); //*
 		}
 	}
-	this.add_edges = function(edges_vectors) {
+	this.add_edges = function() {
 		var nodes = this.nodes;
 		var edges = this.edges;
 		var lines = this.lines;
 
 		var geometry = new THREE.Geometry();
+		var colours = [];
 
 		for ( var i = 0; i < edges.length; ++i) {
 			var a = new THREE.Vertex( new THREE.Vector3( 0.0, 0.0, 0.0) )
 			var b = new THREE.Vertex( new THREE.Vector3( 0.0, 0.0, 0.0) )
-
 			geometry.vertices.push( a );
 			geometry.vertices.push( b );
 		}
 
+		for (var i =0; i < geometry.vertices.length; ++i) {
+			colours[ i ] = new THREE.Color( 0xffffff );
+			colours[ i ].setHSV( i / geometry.vertices.length, 1.0, 1.0 );
+		}
+
+		geometry.colors = colours;
+
 		var line_material = new THREE.LineBasicMaterial({
-			color: 0xffaa00,
-			opacity: 0.2,
-			linewidth: 1
+			color: 0xffffff,
+			opacity: 0.5,
+			linewidth: 2
 		} );
+		line_material.vertexColors = true;
 
 		var line = new THREE.Line( geometry, line_material, THREE.LinePieces );
-		// var colour = new THREE.Color( 0xffffff );
-		// line.colors = colour;
 		line.scale.x = line.scale.y = line.scale.z = 1.0;
 
 		line.updateMatrix();
@@ -172,6 +175,48 @@ function Graph(data, scene) {
 		this.lines = line;
 		this.move_edges();
 
+	}
+	this.update_edge_colours = function() {
+		var edges = this.edges;
+		var energies = this.energies[0];
+		var colours = this.lines.geometry.colors;
+
+		var min_value = 1e9;
+		var max_value = -1e9;
+
+
+		for ( var i = 0; i < edges.length -1; ++i) {
+			var u = edges[i][0];
+			var v = edges[i][1];
+
+			var e_u = energies[u];
+			var e_v = energies[v];
+			var diff = Math.abs(e_u - e_v);
+			var energy = diff;
+			if (energy > max_value) {
+				max_value = energy;
+			}
+			if (energy < min_value) {
+				min_value = energy;
+			}
+		}
+
+		var	shift = 0.0 - min_value;
+		var	range = max_value - min_value;
+
+		for ( var i = 0; i < edges.length -1; ++i) {
+			var u = edges[i][0];
+			var v = edges[i][1];
+
+			var e_u = energies[u];
+			var e_v = energies[v];
+			var diff = Math.abs(e_u - e_v);
+			var hue = (diff + shift) / range;
+			console.log(hue);
+			colours[2*i].setRGB(hue, hue, hue);
+			colours[2*i+1].setRGB(hue, hue, hue);
+		}
+		this.lines.geometry.__dirtyColors = true;
 	}
 	this.move_edges = function() {
 		var nodes = this.nodes;

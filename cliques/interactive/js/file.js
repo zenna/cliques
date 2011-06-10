@@ -61,12 +61,12 @@ $(document).ready( function() {
 	document.getElementById('edges_files').addEventListener('change',
 	handle_edges_files, false);
 	
-	$.getJSON('js/data/example.js', function(data) {
+	$.getJSON('js/data/barbell_example.js', function(data) {
 		// need to be able to
 		// change coordinates
 		// render in just two coordinates
 		// animate
-		app = new App(300,300);
+		app = new App();
 		app.setup();
 // 		
 		landscape = new Graph(data, app.scene);
@@ -78,6 +78,7 @@ $(document).ready( function() {
 		
 		landscape.colour_nodes();
 		landscape.add_edges();
+		landscape.update_edge_colours();
 	})
 	
 	$.getJSON('js/data/complete_example.js', function(data) {
@@ -86,18 +87,18 @@ $(document).ready( function() {
 		// render in just two coordinates
 		// animate
 		
-		app2 = new App();
-		app2.setup();
-// 		
-		landscape2 = new Graph(data, app2.scene);
-		landscape2.place_nodes();
-		app2.camera.target.position.x = landscape2.mean_position.x;
-		app2.camera.target.position.y = landscape2.mean_position.y;
-		app2.camera.target.position.z = landscape2.mean_position.z;
-		app2.camera.position.z = 4000;
-// 		
-		landscape2.colour_nodes();
-		landscape2.add_edges();
+		// app2 = new App();
+		// app2.setup();
+// // 		
+		// landscape2 = new Graph(data, app2.scene);
+		// landscape2.place_nodes();
+		// app2.camera.target.position.x = landscape2.mean_position.x;
+		// app2.camera.target.position.y = landscape2.mean_position.y;
+		// app2.camera.target.position.z = landscape2.mean_position.z;
+		// app2.camera.position.z = 4000;
+// // 		
+		// landscape2.colour_nodes();
+		// landscape2.add_edges();
 	})
 
 	

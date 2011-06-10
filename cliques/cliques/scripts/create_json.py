@@ -12,7 +12,7 @@ def usage():
 
 def parse_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "r:c:e:h:o:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "p:r:c:e:h:o:", ["help", "output="])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err)
@@ -22,6 +22,7 @@ def parse_args():
     coords_file = None
     edges_file = None
     energy_file = None
+    partitions_file = None
     
     for o, a in opts:
         if o in ("-i", "--input"):
@@ -39,13 +40,15 @@ def parse_args():
             energy_file = a
         elif o in ("-o", "--output"):
             output_file = a
+        elif o in ("-p", "--partitions"):
+            partitions_file = a
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
         else:
             assert False, "unhandled option"
    
-    return coords_file, edges_file, energy_file, output_file
+    return coords_file, edges_file, energy_file, output_file, partitions_file
             
 def file_to_nested_list(filename, cast_type):
     """Convert file to matrix"""
@@ -61,13 +64,15 @@ def file_to_nested_list(filename, cast_type):
 
 def main():
     output = {}
-    coords_file, edges_file, energy_file, output_file = parse_args()
+    coords_file, edges_file, energy_file, output_file, partitions_file = parse_args()
     if coords_file:
         output['coords'] = file_to_nested_list(coords_file, float)
     if edges_file:
         output['edges'] = file_to_nested_list(edges_file, int)
     if energy_file:
         output['energies'] = file_to_nested_list(energy_file, float)
+    if partitions_file:
+        output['partitions'] = file_to_nested_list(partitions_file, int)
     
     f = open(output_file, 'w')
     simplejson.dump(output, f)

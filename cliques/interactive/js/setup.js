@@ -1,6 +1,6 @@
 function App(width, height) {
 	var	width = typeof width  == "undefined" ? window.innerWidth : width;
-	var	height = typeof height  == "undefined" ? window.innerWidth : height;
+	var	height = typeof height  == "undefined" ? window.innerHeight : height;
 
 	this.setup = function() {
 		if (!Detector.webgl)
@@ -88,7 +88,9 @@ function App(width, height) {
 		var context = renderer.context;
 		var arr = new Uint8Array(4);
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
+		var id = landscape.rgb_to_int(arr);
 		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
+		console.log(landscape.partitions[id]);
 		//console.log(arr[0],arr[1],arr[2], arr);
 	}
 	this.render = function() {

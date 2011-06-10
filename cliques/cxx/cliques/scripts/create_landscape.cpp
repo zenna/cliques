@@ -83,6 +83,7 @@ int main(int ac, char* av[]) {
     std::vector<double> markov_times = { 1.0 };
     cliques::find_weighted_linearised_stability func(markov_times);
     std::map<int, double> stabilities;
+//    for (auto itr = all_partitions.begin(); itr != all_partitons.end() ++itr) {
     for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
         std::vector<double> stabs;
         VecPartition p = map.right.at(itr);
@@ -129,6 +130,10 @@ int main(int ac, char* av[]) {
 
     auto D_y = cliques::euclid_pairwise_dists(L_t);
     cliques::output("residual variance", cliques::residual_variance(X, D_y));
+
+    for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
+        cliques::print_partition_line(*itr);
+    }
 
     cliques::output("number of nodes", lemon::countNodes(space));
     cliques::output("number of edges", lemon::countEdges(space));
