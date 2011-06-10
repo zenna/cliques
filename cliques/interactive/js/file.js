@@ -61,7 +61,7 @@ $(document).ready( function() {
 	document.getElementById('edges_files').addEventListener('change',
 	handle_edges_files, false);
 	
-	$.getJSON('js/data/barbell_example.js', function(data) {
+	$.getJSON('js/data/complete_example.js', function(data) {
 		// need to be able to
 		// change coordinates
 		// render in just two coordinates

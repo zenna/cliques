@@ -76,6 +76,9 @@ function App(width, height) {
 		var original_colours = landscape.nodes.colors;
 		landscape.nodes.colors = landscape.node_id_colours;
 		landscape.nodes.__dirtyColors = true;
+		// var id_scene = new Three.scene()
+		// id_scene.addObject( lanscape.nodes );
+		
 		renderer.render( app.scene, app.camera, render_target, true );
 		landscape.nodes.colors = original_colours;
 

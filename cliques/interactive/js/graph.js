@@ -212,7 +212,6 @@ function Graph(data, scene) {
 			var e_v = energies[v];
 			var diff = Math.abs(e_u - e_v);
 			var hue = (diff + shift) / range;
-			console.log(hue);
 			colours[2*i].setRGB(hue, hue, hue);
 			colours[2*i+1].setRGB(hue, hue, hue);
 		}
