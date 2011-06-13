@@ -136,10 +136,26 @@ function Graph(data, scene) {
 			this.nodes.colors[i].setHSV(hue, 1.0, 1.0); //*
 		}
 	}
-	this.add_edges = function() {
+	this.paint_nodes = function(rgb) {
+		for ( var i = 0; i < this.nodes.colors.length; ++i) {
+			this.nodes.colors[i].setRGB(rgb[i][0], rgb[i][1], rgb[i][2]); //*
+		}
+	}
+	this.add_edges = function(params) {
 		var nodes = this.nodes;
 		var edges = this.edges;
 		var lines = this.lines;
+
+		var params_ = {
+			color:0xfffff,
+			opacity:0.2,
+			linewidth:2
+		};
+		if (params) {
+			for (param in params) {
+				params_[param] = params[param]
+			}
+		}
 
 		var geometry = new THREE.Geometry();
 		var colours = [];
@@ -159,9 +175,9 @@ function Graph(data, scene) {
 		geometry.colors = colours;
 
 		var line_material = new THREE.LineBasicMaterial({
-			color: 0xffffff,
-			opacity: 0.5,
-			linewidth: 2
+			color: params_['color'],
+			opacity: params_['opacity'],
+			linewidth: params_['linewidth']
 		} );
 		line_material.vertexColors = true;
 
@@ -183,7 +199,6 @@ function Graph(data, scene) {
 
 		var min_value = 1e9;
 		var max_value = -1e9;
-
 
 		for ( var i = 0; i < edges.length -1; ++i) {
 			var u = edges[i][0];
@@ -217,12 +232,32 @@ function Graph(data, scene) {
 		}
 		this.lines.geometry.__dirtyColors = true;
 	}
+	this.match_edge_colours_to_node = function() {
+		var edges = this.edges;
+		var colours = this.lines.geometry.colors;
+
+		for ( var i = 0; i < edges.length -1; ++i) {
+			var u = edges[i][0];
+			var v = edges[i][1];
+
+			var color_u = this.nodes.colors[u];
+			var color_v = this.nodes.colors[v];
+			if (color_u == color_v) {
+				colours[2*i].setRGB(1,1,1);
+				colours[2*i+1].setRGB(1,1,1);
+			} else {
+				colours[2*i] = color_u;
+				colours[2*i+1] = color_v;
+			}
+		}
+		this.lines.geometry.__dirtyColors = true;
+	}
 	this.move_edges = function() {
 		var nodes = this.nodes;
 		var edges = this.edges;
 		var lines = this.lines;
 
-		for ( var i = 0; i < edges.length -1; ++i) {
+		for ( var i = 0; i < edges.length; ++i) {
 			var u = edges[i][0];
 			var v = edges[i][1];
 			var a = nodes.vertices[u];

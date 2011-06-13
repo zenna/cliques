@@ -1,4 +1,4 @@
-function App(width, height) {
+function App(width, height, name) {
 	var	width = typeof width  == "undefined" ? window.innerWidth : width;
 	var	height = typeof height  == "undefined" ? window.innerHeight : height;
 
@@ -8,7 +8,7 @@ function App(width, height) {
 
 		var parent = this;
 
-		this.init();
+		this.init(name);
 		animate();
 
 		function animate() {
@@ -18,7 +18,7 @@ function App(width, height) {
 		}
 
 	}
-	this.init = function() {
+	this.init = function(name) {
 		var container = document.createElement('div');
 		document.body.appendChild(container);
 		this.scene = new THREE.Scene();
@@ -34,6 +34,7 @@ function App(width, height) {
 		stats.domElement.style.position = 'absolute';
 		stats.domElement.style.top = '0px';
 		container.appendChild(stats.domElement);
+		$(container).addClass(name);
 
 		this.camera = new THREE.TrackballCamera({
 
@@ -94,17 +95,18 @@ function App(width, height) {
 		var id = landscape.rgb_to_int(arr);
 		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
 		
-		var partition = "";
-		console.log(id);
-		for (var i = 0; i < landscape.partitions[id].length; ++i) {
-			partition = partition + landscape.partitions[id][i] + " ";
-		}
+		var partition = landscape.partitions[id];
+		// console.log(id);
+		// for (var i = 0; i < landscape.partitions[id].length; ++i) {
+			// partition = partition + landscape.partitions[id][i] + " ";
+		// }
 		console.log(landscape.partitions[id]);
+		var colorMap = new cliques.PartititionColorMap()
+		var partition_colors = colorMap.getColors(partition);
+		orig_graph.paint_nodes(partition_colors);
+		orig_graph.match_edge_colours_to_node();
+		//$('#partition').text(partition)
 		
-		
-		$('#partition').text(partition)
-		
-		//console.log(arr[0],arr[1],arr[2], arr);
 	}
 	this.render = function() {
 		// for (var i=0; i<this.scene.objects.length;++i) {

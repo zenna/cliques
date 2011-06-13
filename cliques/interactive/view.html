@@ -9,6 +9,8 @@
 	<script src="js/graph.js"></script>
 	<script src="js/setup.js"></script>
 	<script src="js/file.js"></script>
+	<script src="../cliques.js/src/scalers.js"></script>
+	<script src="../cliques.js/src/color_map.js"></script>
 	<style type="text/css">
 		body, canvas, * {
 			border:0;
@@ -20,7 +22,10 @@
 			top:50px;
 			position:absolute;
 		}
-		canvas {
+		.graph_view {
+			position: fixed;
+			bottom: 30px;
+			left: 30px;
 			border: 1px solid black;
 		}
 		

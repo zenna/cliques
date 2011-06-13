@@ -12,7 +12,7 @@ def usage():
 
 def parse_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:r:c:e:h:o:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "g:p:r:c:e:h:o:", ["help", "output="])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err)
@@ -23,6 +23,7 @@ def parse_args():
     edges_file = None
     energy_file = None
     partitions_file = None
+    graph_file = None
     
     for o, a in opts:
         if o in ("-i", "--input"):
@@ -42,13 +43,15 @@ def parse_args():
             output_file = a
         elif o in ("-p", "--partitions"):
             partitions_file = a
+        elif o in ("-g", "--graph"):
+            graph_file = a
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
         else:
             assert False, "unhandled option"
    
-    return coords_file, edges_file, energy_file, output_file, partitions_file
+    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file
             
 def file_to_nested_list(filename, cast_type):
     """Convert file to matrix"""
@@ -64,7 +67,7 @@ def file_to_nested_list(filename, cast_type):
 
 def main():
     output = {}
-    coords_file, edges_file, energy_file, output_file, partitions_file = parse_args()
+    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file = parse_args()
     if coords_file:
         output['coords'] = file_to_nested_list(coords_file, float)
     if edges_file:
@@ -73,7 +76,13 @@ def main():
         output['energies'] = file_to_nested_list(energy_file, float)
     if partitions_file:
         output['partitions'] = file_to_nested_list(partitions_file, int)
-    
+    if graph_file:
+        import networkx as nx
+        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
+        pos = nx.spring_layout(graph,iterations=100)
+        output['graph'] = {}
+        output['graph']['coords'] = [x.tolist() for x in pos.values()]
+        output['graph']['edges'] = file_to_nested_list(graph_file, float)
     f = open(output_file, 'w')
     simplejson.dump(output, f)
 

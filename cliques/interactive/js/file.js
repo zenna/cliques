@@ -60,48 +60,35 @@ $(document).ready( function() {
 
 	document.getElementById('edges_files').addEventListener('change',
 	handle_edges_files, false);
-	
-	$.getJSON('js/data/barbell_example.js', function(data) {
+
+	$.getJSON('js/data/renaud_example.js', function(data) {
 		// need to be able to
 		// change coordinates
 		// render in just two coordinates
 		// animate
 		app = new App();
 		app.setup();
-// 		
-		landscape = new Graph(data, app.scene);
+		landscape = new Graph(data, app.scene, 'landscape');
 		landscape.place_nodes();
 		app.camera.target.position.x = landscape.mean_position.x;
 		app.camera.target.position.y = landscape.mean_position.y;
 		app.camera.target.position.z = landscape.mean_position.z;
 		app.camera.position.z = 4000;
-		
+
 		landscape.colour_nodes();
 		landscape.add_edges();
 		landscape.update_edge_colours();
-	})
-	
-	$.getJSON('js/data/complete_example.js', function(data) {
-		// need to be able to
-		// change coordinates
-		// render in just two coordinates
-		// animate
-		
-		// app2 = new App();
-		// app2.setup();
-// // 		
-		// landscape2 = new Graph(data, app2.scene);
-		// landscape2.place_nodes();
-		// app2.camera.target.position.x = landscape2.mean_position.x;
-		// app2.camera.target.position.y = landscape2.mean_position.y;
-		// app2.camera.target.position.z = landscape2.mean_position.z;
-		// app2.camera.position.z = 4000;
-// // 		
-		// landscape2.colour_nodes();
-		// landscape2.add_edges();
-	})
 
-	
+		graph_view = new App(500,500, 'graph_view');
+		graph_view.setup();
+		orig_graph = new Graph(data.graph, graph_view.scene);
+		orig_graph.place_nodes();
+		graph_view.camera.target.position.x = orig_graph.mean_position.x;
+		graph_view.camera.target.position.y = orig_graph.mean_position.y;
+		graph_view.camera.target.position.z = orig_graph.mean_position.z;
+		graph_view.camera.position.z = 1300;
+		orig_graph.add_edges({opacity:0.5});
+	})
 	function int_to_rgb(integer) {
 		var rgb = [];
 		var n = Math.floor(integer / 256);
@@ -110,9 +97,9 @@ $(document).ready( function() {
 		var r2 = n % 256;
 		return [n2,r2,r];
 	}
-	
+
 	function rgb_to_int(rgb) {
 		return rgb[0] * 256 * 256 + rgb[1] * 256 + rgb[2];
 	}
-	
+
 })
