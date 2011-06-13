@@ -93,7 +93,17 @@ function App(width, height) {
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
 		var id = landscape.rgb_to_int(arr);
 		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
+		
+		var partition = "";
+		console.log(id);
+		for (var i = 0; i < landscape.partitions[id].length; ++i) {
+			partition = partition + landscape.partitions[id][i] + " ";
+		}
 		console.log(landscape.partitions[id]);
+		
+		
+		$('#partition').text(partition)
+		
 		//console.log(arr[0],arr[1],arr[2], arr);
 	}
 	this.render = function() {
