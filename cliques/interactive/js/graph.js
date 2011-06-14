@@ -147,7 +147,7 @@ function Graph(data, scene) {
 		var lines = this.lines;
 
 		var params_ = {
-			color:0xfffff,
+			color:0xffffff,
 			opacity:0.2,
 			linewidth:2
 		};
@@ -165,13 +165,9 @@ function Graph(data, scene) {
 			var b = new THREE.Vertex( new THREE.Vector3( 0.0, 0.0, 0.0) )
 			geometry.vertices.push( a );
 			geometry.vertices.push( b );
+			colours[ 2*i ] = new THREE.Color( 0x000000 );
+			colours[ 2*i+1 ] = new THREE.Color( 0x000000 );
 		}
-
-		for (var i =0; i < geometry.vertices.length; ++i) {
-			colours[ i ] = new THREE.Color( 0xffffff );
-			colours[ i ].setHSV( i / geometry.vertices.length, 1.0, 1.0 );
-		}
-
 		geometry.colors = colours;
 
 		var line_material = new THREE.LineBasicMaterial({
@@ -190,7 +186,6 @@ function Graph(data, scene) {
 		this.add_to_scene([line]);
 		this.lines = line;
 		this.move_edges();
-
 	}
 	this.update_edge_colours = function() {
 		var edges = this.edges;
@@ -200,7 +195,7 @@ function Graph(data, scene) {
 		var min_value = 1e9;
 		var max_value = -1e9;
 
-		for ( var i = 0; i < edges.length -1; ++i) {
+		for ( var i = 0; i < edges.length; ++i) {
 			var u = edges[i][0];
 			var v = edges[i][1];
 
@@ -219,7 +214,7 @@ function Graph(data, scene) {
 		var	shift = 0.0 - min_value;
 		var	range = max_value - min_value;
 
-		for ( var i = 0; i < edges.length -1; ++i) {
+		for ( var i = 0; i < edges.length; ++i) {
 			var u = edges[i][0];
 			var v = edges[i][1];
 
@@ -236,7 +231,7 @@ function Graph(data, scene) {
 		var edges = this.edges;
 		var colours = this.lines.geometry.colors;
 
-		for ( var i = 0; i < edges.length -1; ++i) {
+		for ( var i = 0; i < edges.length; ++i) {
 			var u = edges[i][0];
 			var v = edges[i][1];
 

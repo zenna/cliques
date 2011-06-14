@@ -87,9 +87,17 @@ $(document).ready( function() {
 		graph_view.camera.target.position.y = orig_graph.mean_position.y;
 		graph_view.camera.target.position.z = orig_graph.mean_position.z;
 		graph_view.camera.position.z = 1300;
-		orig_graph.add_edges({opacity:0.5});
-		
+		orig_graph.add_edges({
+			opacity:1.0
+		});
+
 		box = new cliques.SelectionBox(graph_view.camera.domElement);
+
+		toolbox = new ProcessToolbox(app);
+		toolbox.addProcess(new NodeProcess(stabilities, landscape));
+		toolbox.addProcess(new NodeProcess(louvain, landscape));
+		toolbox.addProcess(new NodeProcess(louvain2, landscape));
+
 	})
 	function int_to_rgb(integer) {
 		var rgb = [];

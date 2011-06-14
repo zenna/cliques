@@ -4,7 +4,7 @@
 
 cliques.ColorMap = function() {
 	this.scaler = new cliques.LinearScaler();
-	this.mapType = 'grey';
+	this.mapType = 'hsv';
 	// string argument vs inherited
 	// string means will need case statement but can switch type easily
 }
@@ -19,6 +19,8 @@ cliques.ColorMap.prototype.mapColor = function(value) {
 		break;
 		case 'reds':
 		return [value, 1.0, 1.0];
+		case 'hsv':
+		return cliques.hsvToRgb([value, 1.0, 1.0]);
 	}
 }
 
@@ -81,4 +83,27 @@ cliques.intToRgb = function(integer) {
 }
 cliques.rgbToInt = function(rgb) {
 	return rgb[0] * 256 * 256 + rgb[1] * 256 + rgb[2];
+}
+
+cliques.hsvToRgb = function(hsv) {
+	var h = hsv[0] * 360;
+	var s = hsv[1];
+	var v = hsv[2]
+	// var chroma = hsv[2] * hsv[1];
+	// var h_d = hsv[0] * 6.0;
+	  // import math
+    var hi = Math.floor(h / 60.0) % 6;
+    var f =  (h / 60.0) - Math.floor(h / 60.0)
+    var p = v * (1.0 - s)
+    var q = v * (1.0 - (f*s))
+    var t = v * (1.0 - ((1.0 - f) * s))
+    var rgb = {
+        0: [v, t, p],
+        1: [q, v, p],
+        2: [p, v, t],
+        3: [p, q, v],
+        4: [t, p, v],
+        5: [v, p, q]
+    };
+    return rgb[hi];	
 }
