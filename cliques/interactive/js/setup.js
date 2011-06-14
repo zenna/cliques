@@ -90,8 +90,11 @@ function App(width, height, name) {
 		var invertedMouseY = $(app.renderer.domElement).height() - mouseY;
 
 		var context = renderer.context;
-		var arr = new Uint8Array(4);
-		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
+		var arr = new Uint8Array(400);
+		// for (var i =0;i<100;++i) {
+			// arr[i] = new Uint8Array(4);
+		// }
+		context.readPixels(mouseX, invertedMouseY, 10, 10, context.RGBA, context.UNSIGNED_BYTE, arr);
 		var id = landscape.rgb_to_int(arr);
 		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
 		
@@ -100,6 +103,9 @@ function App(width, height, name) {
 		// for (var i = 0; i < landscape.partitions[id].length; ++i) {
 			// partition = partition + landscape.partitions[id][i] + " ";
 		// }
+		if (typeof partition == 'undefined') {
+			return;
+		}
 		console.log(landscape.partitions[id]);
 		var colorMap = new cliques.PartititionColorMap()
 		var partition_colors = colorMap.getColors(partition);

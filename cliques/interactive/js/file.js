@@ -61,7 +61,7 @@ $(document).ready( function() {
 	document.getElementById('edges_files').addEventListener('change',
 	handle_edges_files, false);
 
-	$.getJSON('js/data/renaud_example.js', function(data) {
+	$.getJSON('js/data/barbell_example.js', function(data) {
 		// need to be able to
 		// change coordinates
 		// render in just two coordinates
@@ -88,6 +88,8 @@ $(document).ready( function() {
 		graph_view.camera.target.position.z = orig_graph.mean_position.z;
 		graph_view.camera.position.z = 1300;
 		orig_graph.add_edges({opacity:0.5});
+		
+		box = new cliques.SelectionBox(graph_view.camera.domElement);
 	})
 	function int_to_rgb(integer) {
 		var rgb = [];
