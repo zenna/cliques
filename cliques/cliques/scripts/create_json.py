@@ -7,6 +7,8 @@ def usage():
     -e edges_file
     -r energy_file (e.g. stability)
     -c coordinates
+	-g graph_file
+	-p partitions
     -o output_file
     """
 
@@ -65,15 +67,29 @@ def file_to_nested_list(filename, cast_type):
     f.close()
     return nested_list
 
+def file_to_energy_process(filename, cast_type):
+	""""""
+	f = open(filename, 'r')
+	data = []
+	for line in f:
+		if line:
+			l = [cast_type(x) for x in line.split() if x]
+			data_point = {'time':l[0], 'values':l[1:]}
+			data.append(data_point)
+			
+	return {'type':'stability', 'data':data}
+	
 def main():
-    output = {}
+    output = {'processes':[]}
     coords_file, edges_file, energy_file, output_file, partitions_file, graph_file = parse_args()
     if coords_file:
         output['coords'] = file_to_nested_list(coords_file, float)
     if edges_file:
         output['edges'] = file_to_nested_list(edges_file, int)
     if energy_file:
-        output['energies'] = file_to_nested_list(energy_file, float)
+        # output['energies'] = file_to_nested_list(energy_file, float)
+		process = file_to_energy_process(energy_file, float)
+		output['processes'].append(process)
     if partitions_file:
         output['partitions'] = file_to_nested_list(partitions_file, int)
     if graph_file:

@@ -99,10 +99,6 @@ function App(width, height, name) {
 		console.log(arr[0], arr[1],arr[2],landscape.rgb_to_int(arr));
 		
 		var partition = landscape.partitions[id];
-		// console.log(id);
-		// for (var i = 0; i < landscape.partitions[id].length; ++i) {
-			// partition = partition + landscape.partitions[id][i] + " ";
-		// }
 		if (typeof partition == 'undefined') {
 			return;
 		}
@@ -111,16 +107,9 @@ function App(width, height, name) {
 		var partition_colors = colorMap.getColors(partition);
 		orig_graph.paint_nodes(partition_colors);
 		orig_graph.match_edge_colours_to_node();
-		//$('#partition').text(partition)
 		
 	}
 	this.render = function() {
-		// for (var i=0; i<this.scene.objects.length;++i) {
-		// scene.objects[i].geometry.vertices[0].position.x += 1.0;
-		// scene.objects[i].geometry.vertices[0].position.y += 1.0;
-		// scene.objects[i].geometry.vertices[0].position.z += 1.0;
-		// scene.objects[i].geometry.__dirtyVertices = true;
-		// }
 		$(document).trigger('render');
 		this.renderer.render(this.scene, this.camera);
 

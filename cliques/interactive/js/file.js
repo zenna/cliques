@@ -75,9 +75,9 @@ $(document).ready( function() {
 		app.camera.target.position.z = landscape.mean_position.z;
 		app.camera.position.z = 4000;
 
-		landscape.colour_nodes();
+		//landscape.colour_nodes();
 		landscape.add_edges();
-		landscape.update_edge_colours();
+		//landscape.update_edge_colours();
 
 		graph_view = new App(500,500, 'graph_view');
 		graph_view.setup();
@@ -94,9 +94,10 @@ $(document).ready( function() {
 		box = new cliques.SelectionBox(graph_view.camera.domElement);
 
 		toolbox = new ProcessToolbox(app);
+		var stabilities = data.processes[0];
 		toolbox.addProcess(new NodeProcess(stabilities, landscape));
-		toolbox.addProcess(new NodeProcess(louvain, landscape));
-		toolbox.addProcess(new NodeProcess(louvain2, landscape));
+		// toolbox.addProcess(new NodeProcess(louvain, landscape));
+		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
 
 	})
 	function int_to_rgb(integer) {

@@ -81,22 +81,22 @@ int main(int ac, char* av[]) {
     cliques::make_weights_from_edges(space, space_weights);
 
     cliques::output("Finding stabilities");
-    std::vector<double> markov_times = { 1.0 };
+    std::ofstream stabs_file;
+    stabs_file.open("stabs.mat");
+    std::vector<double> markov_times = { 0.1, 0.3, 0.5, 0.8, 0.9, 0.95, 1.0, 1.05, 1.1, 1.2, 2, 5, 10 };
     cliques::find_weighted_linearised_stability func(markov_times);
-    std::map<int, double> stabilities;
-    //    for (auto itr = all_partitions.begin(); itr != all_partitons.end() ++itr) {
-    for (lemon::SmartGraph::NodeIt itr(space); itr != lemon::INVALID; ++itr) {
-        std::vector<double> stabs;
-        VecPartition p = map.right.at(itr);
-        cliques::LinearisedInternals internals(orange_graph, weights, p);
-        double stability = func(internals);
-        stabilities[orange_graph.id(itr)] = stability;
+    for (int i =0; i<markov_times.size(); ++i) {
+    	stabs_file << markov_times[i] << " ";
+        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
+        	cliques::LinearisedInternals internals(orange_graph, weights, *itr);
+        	double stability = func(internals, i);
+        	stabs_file << stability << " ";
+        }
+        if (i+1 != markov_times.size()) {
+        	stabs_file << std::endl;
+        }
     }
-    arma::rowvec stabs_mat(stabilities.size());
-    for (auto itr = stabilities.begin(); itr != stabilities.end(); ++itr) {
-        stabs_mat(itr->first) = itr->second;
-    }
-    stabs_mat.save("stabs.mat", arma::raw_ascii);
+    stabs_file.close();
 
     cliques::output("Finding distances");
     //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
@@ -135,7 +135,7 @@ int main(int ac, char* av[]) {
     std::ofstream vector_file;
     vector_file.open("partitions.mat");
     for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-        int length = itr->  element_count();
+        int length = itr->element_count();
         for (int i = 0; i < length; i++) {
             vector_file << itr->find_set(i) << " ";
         }

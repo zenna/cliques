@@ -8,6 +8,10 @@ cliques.ColorMap = function() {
 	// string argument vs inherited
 	// string means will need case statement but can switch type easily
 }
+
+cliques.ColorMap.prototype.updateExtrema = function(value) {
+	this.scaler.updateExtrema(value);
+}
 cliques.ColorMap.prototype.render = function() {
 	// Render this colourmap to html object
 }
@@ -65,6 +69,17 @@ cliques.PartititionColorMap.prototype.getColors = function(partition) {
 	}
 	return colors;
 }
+
+cliques.EnergyColorMap = function() {
+	cliques.ColorMap.call(this);
+}
+cliques.EnergyColorMap.prototype = new cliques.ColorMap;
+cliques.EnergyColorMap.prototype.constructor = cliques.EnergyColorMap;
+
+cliques.EnergyColorMap.prototype.getColor = function(value) {
+	return this.mapColor(this.scaler.scaleValue(value));
+}
+
 cliques.convertColorSpace = function() {
 
 }
