@@ -1,0 +1,56 @@
+<html>
+	<head>
+	</head>
+		<script src="../src/scalers.js"></script>
+	<script src="../src/color_map.js"></script>
+	<script src="../src/selection_box.js"></script>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/Detector.js"></script>
+	<script src="js/Three.js"></script>
+	<script src="js/RequestAnimationFrame.js"></script>
+	<script src="js/Stats.js"></script>
+	<script src="js/graph.js"></script>
+	<script src="js/process.js"></script>
+	<script src="js/view.js"></script>
+	<script src="js/setup.js"></script>
+	<style type="text/css">
+		body, canvas, * {
+			border:0;
+			margin:0;
+			padding:0;
+		}
+		body {
+			background-color:black;
+		}
+		.file_open {
+			width:300px;
+			top:50px;
+			position:absolute;
+		}
+		.graph_view {
+			position: fixed;
+			right: 30px;
+			top: 30px;
+			border: 1px solid black;
+		}
+		.toolbox {
+			position:absolute;
+			height:200px;
+			width:100%;
+			bottom:0px;
+			margin:0;
+			border:0px;
+			border-top:1px solid grey;
+			background-color:rgba(255,255,255,0.8);
+		}
+		.toolbox input {
+			width:80%;
+			margin:0 auto;
+		}
+	</style>
+	<body>
+		<div class = "file_open">
+			<input type="file" id="files" name="files[]"/>
+		</div>
+	</body>
+</html>

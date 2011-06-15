@@ -4,7 +4,7 @@
 
 cliques.ColorMap = function() {
 	this.scaler = new cliques.LinearScaler();
-	this.mapType = 'hsv';
+	this.mapType = 'michael';
 	// string argument vs inherited
 	// string means will need case statement but can switch type easily
 }
@@ -21,8 +21,41 @@ cliques.ColorMap.prototype.mapColor = function(value) {
 		case 'grey':
 		return [value, value, value]
 		break;
+		case 'michael':
+		var r,g,b;
+		if (value < 0.25) {
+			b = 1.0;
+			g = 4*value;
+			r = 0.0;
+		} else if (value < 0.5) {
+			b = 2 - 4 * value;
+			g = 1.0;
+			r = 0.0;
+		} else if (value < 0.75) {
+			g = 1.0;
+			r = 4 * value - 2;
+			b = 0.0;
+		}
+		else {
+			r = 1.0;
+			g = 4 - 4*value;
+			b = 0.0;
+		}
+		return [r, g, b];
+		break;
 		case 'reds':
-		return [value, 1.0, 1.0];
+		var r,g,b;
+		if (value < 0.5) {
+			b = 1- 2*value;
+			g = 2*value;
+			r = 0.0;
+		} else {
+			g = 2 - 2 * value;
+			r = 2* value -1 ;
+			b = 0.0
+		}
+		return [r, g, b];
+		break;
 		case 'hsv':
 		return cliques.hsvToRgb([value, 1.0, 1.0]);
 	}
@@ -46,13 +79,14 @@ cliques.PartititionColorMap.prototype.getColors = function(partition) {
 	var groups = [];
 	var colors = [];
 	this.scaler.updateExtrema(0);
-	this.scaler.updateExtrema(partition.length);
+	//this.scaler.updateExtrema(partition.length);
 	for (var i =0;i<partition.length;++i) {
 		if (!(groups[partition[i]] instanceof Array)) {
 			groups[partition[i]] = [];
 		}
 		groups[partition[i]].push(i);
 	}
+	this.scaler.updateExtrema(groups.length);
 	groups.sort(sortBySize)
 
 	function sortBySize(a,b) {
