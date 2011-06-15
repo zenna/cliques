@@ -21,7 +21,7 @@ namespace cliques {
  @tparam G graph type
  */
 template<typename G>
-std::set<int> find_maxima(G &graph, float *stabilities) {
+std::set<int> find_maxima(G &graph, double *stabilities) {
     std::set<int> maxima;
     int num_iterations = 0;
     for (typename G::NodeIt n(graph); n != lemon::INVALID; ++n) {
@@ -35,7 +35,7 @@ std::set<int> find_maxima(G &graph, float *stabilities) {
         typename G::Node best_neighbour = n;
         while (1) {
             bool has_improved = false;
-            float best_score = stabilities[graph.id(best_neighbour)];
+            double best_score = stabilities[graph.id(best_neighbour)];
             for (typename G::OutArcIt a(graph, best_neighbour); a
                     != lemon::INVALID; ++a) {
                 if (best_score < stabilities[graph.id(graph.target(a))]) {
@@ -78,9 +78,14 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
             != sampled_partitions.end(); ++set_itr) {
         auto best_neighbour = *set_itr;
         while (true) {
+        	std::vector<int> v1 = {0, 0, 1, 2, 2, 3, 3, 3 };
+        	cliques::VectorPartition p1(v1);
+        	if (best_neighbour == p1) {
+        		cliques::output("I'm here!");
+        	}
             bool has_improved = false;
             partition_set neighs;
-            cliques::find_neighbours(graph, *set_itr, neighs);
+            cliques::find_neighbours(graph, best_neighbour, neighs);
             auto internals = cliques::gen(compute_quality, graph, weights, best_neighbour);
             double best_quality = compute_quality(internals);
             for (auto neigh_itr = neighs.begin(); neigh_itr != neighs.end(); ++neigh_itr) {
@@ -94,6 +99,7 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
                 }
             }
             if (has_improved == false) {
+            	best_neighbour.normalise_ids();
                 maxima.insert(best_neighbour);
                 break;
             }

@@ -69,12 +69,11 @@ struct find_weighted_linearised_stability {
 
 		for (int i = 0; i < size; i++) {
 			if (internals.comm_w_tot[i] > 0) {
-				q += double(internals.comm_w_in[i]
+				q += markov_time * double(internals.comm_w_in[i]
 						/ internals.two_m) - ((double(internals.comm_w_tot[i])
 						/ internals.two_m) * (double(internals.comm_w_tot[i])
 						/ internals.two_m));
 			}
-			q = q * markov_time;
 		}
 
 		return q;
