@@ -42,116 +42,164 @@ namespace cliques {
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF>
 double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
-		QFDIFF compute_quality_diff, P &input_partition, P &output_partition) {
-	typedef typename T::Node Node;
-	typedef typename T::NodeIt NodeIt;
-	typedef typename T::IncEdgeIt IncEdgeIt;
+        QFDIFF compute_quality_diff, P const &input_partition,
+        P &output_partition) {
+    typedef typename T::Node Node;
+    typedef typename T::NodeIt NodeIt;
+    typedef typename T::IncEdgeIt IncEdgeIt;
 
-	// Initialisations..
-	int num_nodes = lemon::countNodes(graph);
-	P partition = input_partition;
-	P buffer_partition = partition;
+    // Initialisations..
+    int num_nodes = lemon::countNodes(graph);
+    P partition = input_partition;
+    P buffer_partition = partition;
     auto internals = cliques::gen(compute_quality, graph, weights, partition);
-	double minimum_improve = 0.000000001;
-	double original_quality, best_quality, current_quality;
-	original_quality = best_quality = current_quality = compute_quality(
-			internals);
+    double minimum_improve = 0.000000001;
+    double original_quality, best_quality, current_quality;
+    original_quality = best_quality = current_quality = compute_quality(
+            internals);
 
-	// keep track of nodes that have moved before
-	std::set<Node> moved_nodes; //TODO change to unordered_set
+    cliques::output("beginning", best_quality);
+    cliques::print_partition_line(partition);
 
-	// Loop over number of nodes -- each node has to move once
-	for (int i = 0; i < num_nodes; ++i) {
+    // keep track of nodes that have moved before
+    std::set<Node> moved_nodes; //TODO change to unordered_set
 
-		// Initializations
-		double best_gain = -std::numeric_limits<float>::max();
-		Node node_to_move;
-		unsigned int comm_to_move_to;
-		double absolute_gain;
+    // Loop over number of nodes -- each node has to move once
+    for (int i = 0; i < num_nodes; ++i) {
 
-		bool is_trapped_node = true;
-		for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
+        // Initializations
+        double best_gain = -std::numeric_limits<float>::max();
+        Node node_to_move;
+        unsigned int comm_to_move_to;
+        double absolute_gain;
 
-			// Don't move already moved nodes
-			if (moved_nodes.find(n1) != moved_nodes.end()) {
-				continue;
-			}
+        //		bool is_trapped_node = true;
+        for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
 
-			// get id of considered node and node community
-			int n1_id = graph.id(n1);
-			int n1_comm_id = partition.find_set(n1_id);
+            // Don't move already moved nodes
+            if (moved_nodes.find(n1) != moved_nodes.end()) {
+                continue;
+            }
 
-			//TODO check if there is a faster way of computing this as there are lots of updates involved here..
-			// temporarily isolate node to compute the absolute gain via gain - loss
+            // get id of considered node and node community
+            int n1_id = graph.id(n1);
+            int n1_comm_id = partition.find_set(n1_id);
 
-			isolate_and_update_internals(graph, weights, n1, internals,
-					partition);
+            //TODO check if there is a faster way of computing this as there are lots of updates involved here..
+            // temporarily isolate node to compute the absolute gain via gain - loss
 
-			double isolation_loss = compute_quality_diff(internals, n1_comm_id,
-					n1_id);
+            double current_quality3 = compute_quality(internals);
 
-			// consider all possible other nodes
-			// TODO: Don't we just have to look at all possible other communities the node could move to (at most all neighbouring nodes?)
-			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
-				Node n2 = graph.oppositeNode(n1, e);
-				int n2_id = graph.id(n2);
-				int n2_comm_id = partition.find_set(n2_id);
+            isolate_and_update_internals(graph, weights, n1, internals,
+                    partition);
 
-				if (n1_comm_id == n2_comm_id) {
-					continue;
-				}
-				is_trapped_node = false;
+            double isolation_loss = compute_quality_diff(internals, n1_comm_id,
+                    n1_id);
 
-				double gain =
-						compute_quality_diff(internals, n2_comm_id, n1_id);
+//            auto internals3 = cliques::gen(compute_quality, graph, weights, partition);
+            double current_quality4 = compute_quality(internals);
+            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss);
 
-				absolute_gain = gain - isolation_loss;
+            absolute_gain = -isolation_loss;
+            if (absolute_gain > best_gain) {
+                best_gain = absolute_gain;
+                node_to_move = n1;
+                int number_nodes = partition.element_count();
+                std::vector<int> comm_existance(number_nodes, 0);
+                for (int i = 0; i < partition.element_count(); ++i) {
+                    int comm_id = partition.find_set(i);
+                    if (comm_id != -1) {
+                        comm_existance[comm_id] = comm_existance[comm_id] + 1;
+                    }
+                }
+                for (int i = 0; i < partition.element_count(); ++i) {
+                    if (comm_existance[i] == 0) {
+                        comm_to_move_to = i;
+                        break;
+                    }
+                }
+            }
 
-				// keep track of best possible move
-				if (absolute_gain > best_gain) {
-					best_gain = absolute_gain;
-					node_to_move = n1;
-					comm_to_move_to = n2_comm_id;
-				}
-			}
-			// Put node back - we don't want to move yet
-			insert_and_update_internals(graph, weights, n1, internals,
-					partition, n1_comm_id);
-		}
-		//TODO adapt this  to deal with trapped case better
-		if (is_trapped_node) {
-			continue;
-		}
+            // consider all possible other nodes
+            // TODO: Don't we just have to look at all possible other communities the node could move to (at most all neighbouring nodes?)
+            for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+                Node n2 = graph.oppositeNode(n1, e);
+                int n2_id = graph.id(n2);
+                int n2_comm_id = partition.find_set(n2_id);
 
-		// TODO: check if this can be done more efficient, see above
-		// move node from old community to other
-		isolate_and_update_internals(graph, weights, node_to_move, internals,
-				partition);
-		insert_and_update_internals(graph, weights, node_to_move, internals,
-				partition, comm_to_move_to);
-		// keep track of moved nodes
-		moved_nodes.insert(node_to_move);
+                if (n1_comm_id == n2_comm_id) {
+                    continue;
+                }
+                //				is_trapped_node = false;
 
-		// keep track of quality
-		current_quality = current_quality + best_gain;
+                double gain =
+                        compute_quality_diff(internals, n2_comm_id, n1_id);
 
-		if (current_quality > best_quality) {
-			buffer_partition = partition;
-			best_quality = current_quality;
-		}
-	}
+                absolute_gain = gain - isolation_loss;
+                cliques::output("gain", gain, "loss",isolation_loss);
+                cliques::output("move",n1_id, n2_comm_id);
 
-	double total_quality_improvement = best_quality - original_quality;
+                // keep track of best possible move
+                if (absolute_gain > best_gain) {
+                    best_gain = absolute_gain;
+                    node_to_move = n1;
+                    comm_to_move_to = n2_comm_id;
+                }
+            }
+            // Put node back - we don't want to move yet
+            insert_and_update_internals(graph, weights, n1, internals,
+                    partition, n1_comm_id);
+        }
+        //TODO adapt this  to deal with trapped case better
+        //		if (is_trapped_node) {
+        //		    cliques::output("stuck");
+        //			continue;
+        //		}
 
-	// TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
-	if (total_quality_improvement > minimum_improve) {
-		return total_quality_improvement + refine_partition_kernighan_lin(
-				graph, weights, compute_quality, compute_quality_diff,
-				buffer_partition, output_partition);
-	} else {
-		output_partition = buffer_partition;
-		return total_quality_improvement;
-	}
+        // TODO: check if this can be done more efficient, see above
+        // move node from old community to other
+        cliques::print_partition_line(partition);
+        cliques::output("ACTUALLY MOVING", graph.id(node_to_move),comm_to_move_to);
+        isolate_and_update_internals(graph, weights, node_to_move, internals,
+                partition);
+        insert_and_update_internals(graph, weights, node_to_move, internals,
+                partition, comm_to_move_to);
+        // keep track of moved nodes
+        moved_nodes.insert(node_to_move);
+        partition.normalise_ids();
+        cliques::print_partition_line(partition);
+
+        // keep track of quality
+        current_quality = current_quality + best_gain;
+        auto internals2 = cliques::gen(compute_quality, graph, weights, partition);
+        double current_quality2 = compute_quality(internals2);
+        cliques::output("qualities", current_quality, current_quality2);
+
+
+        if (current_quality > best_quality) {
+            //            cliques::output(current_quality, best_quality);
+            buffer_partition = partition;
+            best_quality = current_quality;
+        }
+    }
+
+
+
+    double total_quality_improvement = best_quality - original_quality;
+    //    cliques::print_partition_line(buffer_partition);
+    //    cliques::output(current_quality,total_quality_improvement, best_quality, original_quality);
+
+    // TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
+    if (total_quality_improvement > minimum_improve) {
+        cliques::output("end",best_quality);
+        cliques::print_partition_line(buffer_partition);
+        return total_quality_improvement + refine_partition_kernighan_lin(
+                graph, weights, compute_quality, compute_quality_diff,
+                buffer_partition, output_partition);
+    } else {
+        output_partition = buffer_partition;
+        return total_quality_improvement;
+    }
 }
 
 }

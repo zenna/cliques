@@ -66,7 +66,7 @@ function App(width, height, name) {
 		var context = landscape_view.renderer.context;
 		var mouseX = event.clientX;
 		var mouseY = event.clientY;
-		var invertedMouseY = $(app.renderer.domElement).height() - mouseY;
+		var invertedMouseY = $(landscape_view.renderer.domElement).height() - mouseY;
 
 		var arr = new Uint8Array(4);
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
@@ -90,12 +90,16 @@ function App(width, height, name) {
 
 		var original_colours = landscape.nodes.colors;
 		landscape.nodes.colors = landscape.node_id_colours;
+		var opacity = landscape.lines.materials[0].opacity;
+		landscape.lines.materials[0].opacity = 0.0;
 		landscape.nodes.__dirtyColors = true;
 		// var id_scene = new Three.scene()
 		// id_scene.addObject( lanscape.nodes );
 
 		renderer.render( app.scene, app.camera, render_target, true );
+		// Return to normal
 		landscape.nodes.colors = original_colours;
+		landscape.lines.materials[0].opacity = opacity;
 
 		var mouseX = event.clientX;
 		var mouseY = event.clientY;
