@@ -79,6 +79,7 @@ struct find_weighted_linearised_stability {
 	}
 };
 
+
 /**
  @brief  Functor for finding stability gain for weighted graph
  */
