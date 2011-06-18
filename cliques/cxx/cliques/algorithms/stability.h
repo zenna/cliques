@@ -75,7 +75,6 @@ struct find_weighted_linearised_stability {
 						/ internals.two_m));
 			}
 		}
-
 		return q;
 	}
 };

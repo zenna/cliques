@@ -10,7 +10,7 @@ $(document).ready( function() {
 		// High light nodes
 		
 	
-	$.getJSON('js/data/ring4_example.json', function(data) {
+	$.getJSON('js/data/complete_example.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');

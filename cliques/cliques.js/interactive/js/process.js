@@ -88,7 +88,7 @@ NodeProcess.prototype.render = function(dataId) {
     this.graph.match_edge_colours_to_node();
     var norm_values = [];
     for (var i=0;i<data.values.length;++i) {
-    	norm_values.push(this.colorMaps[dataId].scaler.scaleValue(data.values[i]));
+    	norm_values.push(this.colorMaps[dataId].scaler.scaleValue(data.values[i]) * 2.0);
     }
     this.graph.move_nodes(norm_values, 0, 1);
 }
