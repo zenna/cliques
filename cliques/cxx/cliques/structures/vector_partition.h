@@ -54,9 +54,31 @@ public:
         return partition_vector[node_id];
     }
 
-    void isolate_node(int node_id) {
-        partition_vector[node_id] = -1;
-        is_normalised = false;
+//    void isolate_node(int node_id) {
+//        partition_vector[node_id] = -1;
+//        is_normalised = false;
+//    }
+
+    int isolate_node(int node_id) {
+        int num_nodes = element_count();
+        std::vector<int> comm_existance(num_nodes, 0);
+        for (int i = 0; i < num_nodes; ++i) {
+            int comm_id = find_set(i);
+            if (comm_id != -1 && i != node_id) {
+                comm_existance[comm_id] = comm_existance[comm_id] + 1;
+            }
+        }
+        int unused_comm_id = -1;
+        for (int i = 0; i < num_nodes; ++i) {
+            if (comm_existance[i] == 0) {
+                unused_comm_id = i;
+                break;
+            }
+        }
+        if (unused_comm_id != -1) {
+            add_node_to_set(node_id, unused_comm_id);
+            return unused_comm_id;
+        } // else could not find suitable partition
     }
 
     void add_node_to_set(int node_id, int set_id) {
@@ -71,7 +93,8 @@ public:
             for (std::vector<int>::iterator itr = partition_vector.begin(); itr
                     != partition_vector.end(); ++itr) {
 
-                std::map<int, int>::iterator old_set = set_old_to_new.find(*itr);
+                std::map<int, int>::iterator old_set =
+                        set_old_to_new.find(*itr);
                 if (old_set == set_old_to_new.end()) {
                     set_old_to_new[*itr] = start_num;
                     *itr = start_num;
@@ -103,8 +126,7 @@ public:
     bool operator==(const VectorPartition& other) const {
         if (this->is_normalised && other.is_normalised) {
             return (other.partition_vector == this->partition_vector);
-        }
-        else {
+        } else {
             VectorPartition a(*this);
             VectorPartition b(other);
 

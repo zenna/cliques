@@ -80,6 +80,23 @@ std::map<int, double> find_weight_node_to_communities(G &graph, P &partition,
 	return community_to_weight;
 }
 
+template<typename G, typename P, typename W, typename NO>
+double find_weight_node_to_community(G &graph, P &partition,
+        W &weights, NO node, int comm_id) {
+
+    double summed_weight = 0.0;
+    for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
+        double edge_weight = weights[e];
+        NO opposite_node = graph.oppositeNode(node, e);
+        int comm_node = partition.find_set(graph.id(opposite_node));
+        if (comm_node == comm_id) {
+            summed_weight += edge_weight;
+        }
+    }
+
+    return summed_weight;
+}
+
 template<typename G>
 void read_edgelist(G &graph, std::string filename) {
 	std::ifstream maxima_file(filename.c_str());

@@ -1,14 +1,3 @@
-stabilities = {
-    type:'stability',
-    data:[{
-        time:0.1,
-        values:[1.3,-2.3,-0.2]
-    },{
-        time:0.6,
-        values:[9.3,-0.3,-1.2]
-    }]
-};
-
 louvain = {
     type:'louvain',
     dependencies: {
@@ -97,6 +86,11 @@ NodeProcess.prototype.render = function(dataId) {
     }
     this.graph.paint_nodes(rgbs);
     this.graph.match_edge_colours_to_node();
+    var norm_values = [];
+    for (var i=0;i<data.values.length;++i) {
+    	norm_values.push(this.colorMaps[dataId].scaler.scaleValue(data.values[i]));
+    }
+    this.graph.move_nodes(norm_values, 0, 1);
 }
 
 NodeProcess.prototype.hide = function(time) {

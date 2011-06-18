@@ -1,5 +1,16 @@
 $(document).ready( function() {
-	$.getJSON('js/data/ring2_example.json', function(data) {
+	// Selection toolbox
+		// Need to disable camera
+		// Need to scan scan box for ids
+		// Need to be able to search
+			// Store partitions as keys
+			// Normalise selection, convert to string and search object
+		// Move camera to target, and highlight target
+		
+		// High light nodes
+		
+	
+	$.getJSON('js/data/ring4_example.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -10,7 +21,9 @@ $(document).ready( function() {
 		landscape_view.camera.position.z = 4000;
 
 		//landscape.colour_nodes();
-		landscape.add_edges();
+		landscape.add_edges({
+			opacity:0.2
+		});
 		//landscape.update_edge_colours();
 
 		graph_view = new App(300,300, 'graph_view');

@@ -99,9 +99,9 @@ struct linearised_stability_gain_louvain {
 	double operator ()(I &internals, int comm_id_neighbour, int node_id) {
 		double tot_w_comm = internals.comm_w_tot[comm_id_neighbour];
 		double w_node_to_comm =
-				internals.node_weight_to_communities[comm_id_neighbour];
+				internals.comm_to_sum_inc_weight[comm_id_neighbour];
 		double w_deg_node = internals.node_to_w[node_id];
-		return (markov_time *w_node_to_comm - tot_w_comm * w_deg_node
+		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node
 				/ internals.two_m)*2/internals.two_m;
 	}
 };

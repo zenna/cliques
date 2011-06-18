@@ -89,16 +89,32 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
             // temporarily isolate node to compute the absolute gain via gain - loss
 
             double current_quality3 = compute_quality(internals);
+            auto new_internals = cliques::gen(compute_quality, graph, weights, partition);
+            double quality_new = compute_quality(new_internals);
+
+            cliques::output("before");
+            cliques::print_partition_line(partition);
+            internals.print();
+            new_internals.print();
 
             isolate_and_update_internals(graph, weights, n1, internals,
                     partition);
+            internals.print();
+
+
+            cliques::print_partition_line(partition);
+
 
             double isolation_loss = compute_quality_diff(internals, n1_comm_id,
                     n1_id);
-
 //            auto internals3 = cliques::gen(compute_quality, graph, weights, partition);
+            auto new_internals2 = cliques::gen(compute_quality, graph, weights, partition);
+            new_internals2.print();
+            double quality_new2 = compute_quality(new_internals2);
             double current_quality4 = compute_quality(internals);
-            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss);
+            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss, "new internals", quality_new - quality_new2);
+            cliques::output("quals", current_quality3, current_quality4, quality_new, quality_new2);
+
 
             absolute_gain = -isolation_loss;
             if (absolute_gain > best_gain) {
@@ -130,7 +146,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
                 if (n1_comm_id == n2_comm_id) {
                     continue;
                 }
-                //				is_trapped_node = false;
 
                 double gain =
                         compute_quality_diff(internals, n2_comm_id, n1_id);
@@ -150,11 +165,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
             insert_and_update_internals(graph, weights, n1, internals,
                     partition, n1_comm_id);
         }
-        //TODO adapt this  to deal with trapped case better
-        //		if (is_trapped_node) {
-        //		    cliques::output("stuck");
-        //			continue;
-        //		}
 
         // TODO: check if this can be done more efficient, see above
         // move node from old community to other

@@ -58,7 +58,7 @@ function Graph(data, scene) {
 	/**
 	 Move nodes into coordinates in given dimension.
 	 */
-	this.move_nodes = function( dim1, dim2, dim3) {
+	this.move_nodes = function( coords_, dim1, dim2, dim3) {
 
 		var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
 		var dim2 = typeof dim2  == "undefined" ? 1 : dim2;
@@ -71,7 +71,8 @@ function Graph(data, scene) {
 
 		var materials = this.materials;
 		var nodes = this.nodes;
-		var coords = this.coords;
+		var coords =  this.coords;
+		var coords3 = typeof coords  == "undefined" ? this.coords : coords_;
 		var mean_position = this.mean_position;
 
 		for ( var i = 0; i < nodes.vertices.length; ++i) {
@@ -79,9 +80,14 @@ function Graph(data, scene) {
 			var y = coords[i][dim2] * 2000 - 1000;
 			var z;
 			if (typeof dim3  == "undefined") {
+				if (coords3) {
+					z = coords3[i] * 2000 - 1000;
+				}
+				else {
 				z = coords[0][dim1] * 2000 - 1000;
+				}
 			} else {
-				z = coords[i][dim3] * 2000 - 1000;
+					z = coords[i][dim3] * 2000 - 1000;
 			}
 			nodes.vertices[i].position.x = x;
 			nodes.vertices[i].position.y = y;
@@ -238,6 +244,13 @@ function Graph(data, scene) {
 		lines.geometry.__dirtyVertices = true;
 
 	}
+	/**
+	 Highlight nodes on graph
+	 */
+	this.highlight_nodes = function(nodes) {
+		// 
+	}
+	
 	this.add_to_scene = function(objects) {
 		var scope = this;
 		$.each(objects, function(index, value) {
