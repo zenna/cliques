@@ -111,8 +111,12 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
                 for (int i = 0; i < partition.element_count(); ++i) {
                     int comm_id = partition.find_set(i);
                     if (comm_id != -1) {
-                        comm_existance[comm_id] = comm_existance[comm_id] + 1;
+                        comm_existance[comm_id]++;
                     }
+                }
+                // node was actually a singleton => gain = 0
+                if(comm_existance[n1_comm_id] == 0){
+                    best_gain =0;
                 }
                 for (int i = 0; i < partition.element_count(); ++i) {
                     if (comm_existance[i] == 0) {
@@ -169,7 +173,6 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
         // keep track of moved nodes
         moved_nodes.insert(node_to_move);
         cliques::print_partition_line(partition);
-        partition.normalise_ids();
 
         // keep track of quality
         current_quality = current_quality + best_gain;
