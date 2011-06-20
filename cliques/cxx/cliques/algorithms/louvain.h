@@ -38,7 +38,7 @@ namespace cliques {
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
 double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
-		QF compute_quality, QFDIFF compute_quality_diff,
+		QF compute_quality, QFDIFF compute_quality_diff, P initial_partition,
 		std::vector<P> &optimal_partitions, Logger &log) {
 
 	typedef typename T::Node Node;
@@ -47,10 +47,11 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 	typedef typename T::EdgeIt EdgeIt;
 	typedef typename T::IncEdgeIt IncEdgeIt;
 
-	auto internals = cliques::gen(compute_quality, graph, weights);
 	P partition(lemon::countNodes(graph));
-	partition.initialise_as_singletons();
-	double minimum_improve = 0.000000001;
+	partition = initial_partition;
+    auto internals = cliques::gen(compute_quality, graph, weights, partition);
+
+    double minimum_improve = 0.000000001;
 	double current_quality = compute_quality(internals);
 	bool one_level_end = false;
 	double old_quality = current_quality;
@@ -217,9 +218,11 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 			}
 		}
 
+	    P singleton_partition(lemon::countNodes(reduced_graph));
+	    singleton_partition.initialise_as_singletons();
 		return cliques::find_optimal_partition_louvain_with_gain<P>(
 				reduced_graph, reduced_weight_map, compute_quality,
-				compute_quality_diff, optimal_partitions, log);
+				compute_quality_diff, singleton_partition, optimal_partitions, log);
 	}
 	if (hierarchy == 0) {
 		optimal_partitions.push_back(partition);

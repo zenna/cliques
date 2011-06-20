@@ -88,20 +88,12 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
             //TODO check if there is a faster way of computing this as there are lots of updates involved here..
             // temporarily isolate node to compute the absolute gain via gain - loss
 
-            double current_quality3 = compute_quality(internals);
-
             isolate_and_update_internals(graph, weights, n1, internals,
                     partition);
-
             
             double isolation_loss = compute_quality_diff(internals, n1_comm_id,
                     n1_id);
             
-
-            double current_quality4 = compute_quality(internals) - internals.node_to_w[n1_id]*internals.node_to_w[n1_id]/(internals.two_m*internals.two_m);
-
-//            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss);
-
             absolute_gain = -isolation_loss;
             if (absolute_gain > best_gain) {
                 best_gain = absolute_gain;
@@ -136,14 +128,11 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
                 if (n1_comm_id == n2_comm_id) {
                     continue;
                 }
-                //				is_trapped_node = false;
 
                 double gain =
                         compute_quality_diff(internals, n2_comm_id, n1_id);
 
                 absolute_gain = gain - isolation_loss;
-//                cliques::output("gain", gain, "loss",isolation_loss);
-//                cliques::output("move",n1_id, n2_comm_id);
 
                 // keep track of best possible move
                 if (absolute_gain > best_gain) {
@@ -156,30 +145,18 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
             insert_and_update_internals(graph, weights, n1, internals,
                     partition, n1_comm_id);
         }
-        //TODO adapt this  to deal with trapped case better
-        //		if (is_trapped_node) {
-        //		    cliques::output("stuck");
-        //			continue;
-        //		}
 
         // TODO: check if this can be done more efficient, see above
         // move node from old community to other
-//        cliques::print_partition_line(partition);
-//        cliques::output("ACTUALLY MOVING", graph.id(node_to_move),comm_to_move_to);
         isolate_and_update_internals(graph, weights, node_to_move, internals,
                 partition);
         insert_and_update_internals(graph, weights, node_to_move, internals,
                 partition, comm_to_move_to);
         // keep track of moved nodes
         moved_nodes.insert(node_to_move);
-//        cliques::print_partition_line(partition);
 
         // keep track of quality
         current_quality = current_quality + best_gain;
-        auto internals2 = cliques::gen(compute_quality, graph, weights, partition);
-        double current_quality2 = compute_quality(internals2);
-//        cliques::output("qualities", current_quality, current_quality2);
-
 
         if (current_quality > best_quality) {
             //            cliques::output(current_quality, best_quality);

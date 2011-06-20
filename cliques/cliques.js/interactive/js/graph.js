@@ -63,11 +63,11 @@ function Graph(data, scene) {
 		var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
 		var dim2 = typeof dim2  == "undefined" ? 1 : dim2;
 		var dim3;
-		if (this.num_dim > 2) {
-			dim3 = typeof dim3  == "undefined" ? 2 : dim3;
-		} else {
-			dim3 = undefined;
-		}
+		// if (this.num_dim > 2) {
+			// dim3 = typeof dim3  == "undefined" ? 2 : dim3;
+		// } else {
+			// dim3 = undefined;
+		// }
 
 		var materials = this.materials;
 		var nodes = this.nodes;
@@ -214,6 +214,7 @@ function Graph(data, scene) {
 			var color_u = this.nodes.colors[u];
 			var color_v = this.nodes.colors[v];
 			if (color_u == color_v) {
+				console.log("same color");
 				colours[2*i].setRGB(1,1,1);
 				colours[2*i+1].setRGB(1,1,1);
 			} else {
