@@ -124,36 +124,44 @@ int main(int ac, char* av[]) {
     }
     graph_file.close();
 
-//    cliques::output("Kernighan Lin Basin of attractions");
-//    std::ofstream basin_file;
-//    basin_file.open("basin.mat");
-//    // Format: time optima_node basin_node basin_value basin_node basin_value
-//    std::map<int, std::vector<int> > optima_to_basin;
-//    int num_nodes = lemon::countNodes(orange_graph);
-//    for (unsigned int i = 0; i < markov_times.size(); ++i) {
-//        cliques::output("time: ", markov_times[i]);
-//        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-//            cliques::VectorPartition optima(num_nodes);
-//            std::vector<double> mkov_times;
-//            mkov_times.push_back(markov_times[i]);
-//            double mkov = markov_times[i];
-//            cliques::refine_partition_kernighan_lin(orange_graph, weights,
-//                    cliques::find_weighted_linearised_stability(mkov_times),
-//                    cliques::linearised_stability_gain_louvain(mkov), *itr,
-//                    optima);
-//            int optima_id =  orange_graph.id(map.left.at(optima));
-//            int partition_id = orange_graph.id(map.left.at(*itr));
-//            optima_to_basin[optima_id].push_back(partition_id);
-//        }
-//        for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
-//            basin_file << markov_times[i] << " " << itr->first << " ";
-//            for (auto b_itr = itr->second.begin(); b_itr != itr->second.end(); ++b_itr) {
-//                basin_file << *b_itr << " " << "1.0 ";
-//            }
-//            basin_file << std::endl;
-//        }
-//    }
-//    basin_file.close();
+    cliques::output("Kernighan Lin Basin of attractions");
+    std::ofstream basin_file;
+    basin_file.open("basin.mat");
+    // Format: time optima_node basin_node basin_value basin_node basin_value
+    int num_nodes = lemon::countNodes(orange_graph);
+    for (unsigned int i = 0; i < markov_times.size(); ++i) {
+        std::map<int, std::vector<int> > optima_to_basin;
+        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
+            cliques::VectorPartition optima(num_nodes);
+            std::vector<double> mkov_times;
+            mkov_times.push_back(markov_times[i]);
+            double mkov = markov_times[i];
+//            cliques::output("input");
+//            cliques::print_partition_line(*itr);
+            cliques::refine_partition_kernighan_lin(orange_graph, weights,
+                    cliques::find_weighted_linearised_stability(mkov_times),
+                    cliques::linearised_stability_gain_louvain(mkov), *itr,
+                    optima);
+//            cliques::output("optima");
+            optima.normalise_ids();
+//            cliques::print_partition_line(optima);
+            int optima_id =  orange_graph.id(map.left.at(optima));
+            int partition_id = orange_graph.id(map.left.at(*itr));
+            optima_to_basin[optima_id].push_back(partition_id);
+        }
+        cliques::output("num_basins", optima_to_basin.size());
+        for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
+            lemon::SmartGraph::Node n = orange_graph.nodeFromId(itr->first);
+            cliques::print_partition_line(map.right.at(n));
+            cliques::output("time: ", markov_times[i], "num in basin", itr->second.size());
+            basin_file << markov_times[i] << " " << itr->first << " ";
+            for (auto b_itr = itr->second.begin(); b_itr != itr->second.end(); ++b_itr) {
+                basin_file << *b_itr << " " << "1.0 ";
+            }
+            basin_file << std::endl;
+        }
+    }
+    basin_file.close();
 
     for (auto p = all_maxima.begin(); p != all_maxima.end(); ++p) {
         cliques::print_partition_line(*p);

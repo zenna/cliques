@@ -32,8 +32,8 @@
 	},
 	{
 		type:'basin',
-		dependencies:{type:'stability', time:0.234},
-		data:[{basin:0,nodes:[0,2,3]},
+		dependencies:{type:'stability'},
+		data:[{basin:0,nodes:[0,2,3],time:0.234},
 		{basin:1,nodes:[3,4,5]}]
 	},
 	{

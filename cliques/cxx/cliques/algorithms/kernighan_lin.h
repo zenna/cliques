@@ -58,15 +58,15 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
     original_quality = best_quality = current_quality = compute_quality(
             internals);
 
-    cliques::output("beginning", best_quality);
-    cliques::print_partition_line(partition);
+//    cliques::output("beginning", best_quality);
+//    cliques::print_partition_line(partition);
 
     // keep track of nodes that have moved before
     std::set<Node> moved_nodes; //TODO change to unordered_set
 
     // Loop over number of nodes -- each node has to move once
     for (int i = 0; i < num_nodes; ++i) {
-        std::cout << "\nROUND  " << i << std::endl; 
+//        std::cout << "\nROUND  " << i << std::endl;
         // Initializations
         double best_gain = -std::numeric_limits<float>::max();
         Node node_to_move;
@@ -100,7 +100,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
             double current_quality4 = compute_quality(internals) - internals.node_to_w[n1_id]*internals.node_to_w[n1_id]/(internals.two_m*internals.two_m);
 
-            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss);
+//            cliques::output("int loss",current_quality3 - current_quality4, "loss by gain", isolation_loss);
 
             absolute_gain = -isolation_loss;
             if (absolute_gain > best_gain) {
@@ -142,8 +142,8 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
                         compute_quality_diff(internals, n2_comm_id, n1_id);
 
                 absolute_gain = gain - isolation_loss;
-                cliques::output("gain", gain, "loss",isolation_loss);
-                cliques::output("move",n1_id, n2_comm_id);
+//                cliques::output("gain", gain, "loss",isolation_loss);
+//                cliques::output("move",n1_id, n2_comm_id);
 
                 // keep track of best possible move
                 if (absolute_gain > best_gain) {
@@ -164,21 +164,21 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
         // TODO: check if this can be done more efficient, see above
         // move node from old community to other
-        cliques::print_partition_line(partition);
-        cliques::output("ACTUALLY MOVING", graph.id(node_to_move),comm_to_move_to);
+//        cliques::print_partition_line(partition);
+//        cliques::output("ACTUALLY MOVING", graph.id(node_to_move),comm_to_move_to);
         isolate_and_update_internals(graph, weights, node_to_move, internals,
                 partition);
         insert_and_update_internals(graph, weights, node_to_move, internals,
                 partition, comm_to_move_to);
         // keep track of moved nodes
         moved_nodes.insert(node_to_move);
-        cliques::print_partition_line(partition);
+//        cliques::print_partition_line(partition);
 
         // keep track of quality
         current_quality = current_quality + best_gain;
         auto internals2 = cliques::gen(compute_quality, graph, weights, partition);
         double current_quality2 = compute_quality(internals2);
-        cliques::output("qualities", current_quality, current_quality2);
+//        cliques::output("qualities", current_quality, current_quality2);
 
 
         if (current_quality > best_quality) {
@@ -196,8 +196,8 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
     // TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
     if (total_quality_improvement > minimum_improve) {
-        cliques::output("end",best_quality);
-        cliques::print_partition_line(buffer_partition);
+//        cliques::output("end",best_quality);
+//        cliques::print_partition_line(buffer_partition);
         return total_quality_improvement + refine_partition_kernighan_lin(
                 graph, weights, compute_quality, compute_quality_diff,
                 buffer_partition, output_partition);

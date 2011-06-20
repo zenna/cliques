@@ -47,9 +47,12 @@ var NodeProcess = function(process, graph, dynamicColors) {
     this.data = process.data;
     this.graph = graph;
 
+	// if true, scale coloring to data at particular point
+	// as opposed to absolute range over all data points
     var dynamicColors = true;
     this.dynamicColors = dynamicColors;
 
+	// Initialse range of scalers in color maps to data
     if (dynamicColors == true) {
         this.colorMaps = [];
         for (var i=0;i<this.data.length;++i) {
@@ -94,6 +97,38 @@ NodeProcess.prototype.render = function(dataId) {
 }
 
 NodeProcess.prototype.hide = function(time) {
+
+}
+
+var BasinProcess = function(process, graph) {
+    this.type = process.type;
+    this.data = process.data;
+    this.graph = graph;
+}
+
+BasinProcess.prototype.render = function(dataId) {
+	var values = this.data[dataId].values;
+	var colorMap = new cliques.EnergyColorMap();
+    colorMap.updateExtrema(0);
+    colorMap.updateExtrema(values.length - 1);
+    var rgbs = [];
+
+	var basinColor = colorMap.getColor(values['basin']);
+    // graph.highlight_node(values['basin'], basinColor));
+    for (var i = 0;i<values.nodes.length;++i) {
+    	var node_id = values.nodes[i]
+    	rgbs[node_id] = basinColor;
+    }
+    this.graph.paint_nodes(rgbs);
+    this.graph.match_edge_colours_to_node();
+
+ 	// var alpha = {
+		// type:'basin',
+		// dependencies:['stability'],
+		// data:[{time:0.234, values:[{basin:0,nodes:[0,2,3]},
+		// {basin:1,nodes:[3,4,5]}];
+		// this.graph.match_edge_colours_to_node();
+	// }
 
 }
 

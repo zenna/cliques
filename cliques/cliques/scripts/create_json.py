@@ -1,5 +1,7 @@
 import getopt, sys
 import simplejson
+from collections import defaultdict
+from ipdb import set_trace
 
 def usage():
     print """-i input prefix e.g. ~/path_graph (where files ~/path_graph_coords.mat etc have been generated
@@ -10,11 +12,12 @@ def usage():
 	-g graph_file
 	-p partitions
     -o output_file
+    -b basin_file
     """
 
 def parse_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "g:p:r:c:e:h:o:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "b:g:p:r:c:e:h:o:", ["help", "output="])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err)
@@ -26,6 +29,7 @@ def parse_args():
     energy_file = None
     partitions_file = None
     graph_file = None
+    basins_file = None
     
     for o, a in opts:
         if o in ("-i", "--input"):
@@ -41,6 +45,8 @@ def parse_args():
             edges_file = a
         elif o in ("-r", "--energy"):
             energy_file = a
+        elif o in ("-b", "--basins"):
+            basins_file = a
         elif o in ("-o", "--output"):
             output_file = a
         elif o in ("-p", "--partitions"):
@@ -53,7 +59,7 @@ def parse_args():
         else:
             assert False, "unhandled option"
    
-    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file
+    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file
             
 def file_to_nested_list(filename, cast_type):
     """Convert file to matrix"""
@@ -79,9 +85,33 @@ def file_to_energy_process(filename, cast_type):
 			
 	return {'type':'stability', 'data':data}
 	
+def file_to_basin_process(filename, cast_type):
+	""""""
+	f = open(filename, 'r')
+	data = []
+	time_to_values = defaultdict(list)
+	for line in f:
+		if line:
+			l = [x for x in line.strip().split(" ") if x]
+			nodes = []
+			metas = []
+			#set_trace()
+			for index, val in enumerate(l[2:]):
+			    if index % 2 == 0:
+			        nodes.append(int(val))
+			    else:
+			        metas.append(cast_type(val))
+						
+			time_to_values[l[0]].append({'basin':l[1],'nodes':nodes,'metas':metas})
+		
+	for time in sorted(time_to_values.keys()):
+	    data.append({'time':float(time), 'values':time_to_values[time]})
+		    
+	return {'type':'basins', 'data':data}
+	
 def main():
     output = {'processes':[]}
-    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file = parse_args()
+    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file = parse_args()
     if coords_file:
         output['coords'] = file_to_nested_list(coords_file, float)
     if edges_file:
@@ -99,6 +129,10 @@ def main():
         output['graph'] = {}
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
+    if basins_file:
+        process = file_to_basin_process(basins_file, float)
+        output['processes'].append(process)
+        
     f = open(output_file, 'w')
     simplejson.dump(output, f)
 

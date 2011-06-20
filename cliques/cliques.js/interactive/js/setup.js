@@ -1,16 +1,5 @@
 $(document).ready( function() {
-	// Selection toolbox
-		// Need to disable camera
-		// Need to scan scan box for ids
-		// Need to be able to search
-			// Store partitions as keys
-			// Normalise selection, convert to string and search object
-		// Move camera to target, and highlight target
-		
-		// High light nodes
-		
-	
-	$.getJSON('js/data/complete_example.json', function(data) {
+	$.getJSON('js/data/barbell8_example.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -20,7 +9,6 @@ $(document).ready( function() {
 		landscape_view.camera.target.position.z = landscape.mean_position.z;
 		landscape_view.camera.position.z = 4000;
 
-		//landscape.colour_nodes();
 		landscape.add_edges({
 			opacity:0.2
 		});
@@ -42,22 +30,11 @@ $(document).ready( function() {
 
 		toolbox = new ProcessToolbox(landscape_view);
 		stabilities = data.processes[0];
-		toolbox.addProcess(new NodeProcess(stabilities, landscape));
+		basins = data.processes[1];
+		//toolbox.addProcess(new NodeProcess(stabilities, landscape));
+		toolbox.addProcess(new BasinProcess(basins, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
 
 	})
-	function int_to_rgb(integer) {
-		var rgb = [];
-		var n = Math.floor(integer / 256);
-		var r = integer % 256;
-		var n2 = Math.floor(n / 256);
-		var r2 = n % 256;
-		return [n2,r2,r];
-	}
-
-	function rgb_to_int(rgb) {
-		return rgb[0] * 256 * 256 + rgb[1] * 256 + rgb[2];
-	}
-
 })
