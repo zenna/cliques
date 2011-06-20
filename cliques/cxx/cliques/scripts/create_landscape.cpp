@@ -182,12 +182,10 @@ int main(int ac, char* av[]) {
             optima = optimal_partitions.back();
 
             optima.normalise_ids();
+            cliques::print_partition_line(*itr);
             cliques::print_partition_line(optima);
-
             int optima_id =  orange_graph.id(map.left.at(optima));
             cliques::output("between");
-            cliques::print_partition_line(*itr);
-
             int partition_id = orange_graph.id(map.left.at(*itr));
             optima_to_basin[optima_id].push_back(partition_id);
 

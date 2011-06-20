@@ -106,7 +106,7 @@ BasinProcess.prototype.render = function(dataId) {
 	var values = this.data[dataId].values;
 	var colorMap = new cliques.EnergyColorMap();
 	colorMap.updateExtrema(0);
-	colorMap.updateExtrema(values.length - 1);
+	colorMap.updateExtrema(values.length);
 	var rgbs = [];
 
 	var norm_values = [];
@@ -118,13 +118,13 @@ BasinProcess.prototype.render = function(dataId) {
 			rgbs[node_id] = basinColor;
 			norm_values[node_id] = colorMap.scaler.scaleValue(i);
 		}
-		rgbs[values['basin']] = colorMap.getColor(i*0.8);
+		rgbs[values[i]['basin']] = colorMap.getColor((i+1)*0.6);
 
 	}
 	
 	this.graph.paint_nodes(rgbs);
-	this.graph.move_nodes(norm_values, 0, 1);
-	this.graph.match_edge_colours_to_node();
+	// this.graph.move_nodes(norm_values, 0, 1);
+	// this.graph.match_edge_colours_to_node();
 
 
 	// var alpha = {

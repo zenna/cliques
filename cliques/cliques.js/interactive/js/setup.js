@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/ringx_example.json', function(data) {
+	$.getJSON('js/data/barbellx_example.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
