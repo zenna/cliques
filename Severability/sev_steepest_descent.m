@@ -1,9 +1,17 @@
 function [community sev] = sev_steepest_descent(A, community, t, max_size)
 %SEV_STEEPEST_DESCENT Finds the local maximum of severability
-%   A = adjacency matrix
-%   community = [v_1 v_2 ... v_k], where v_1 is the number of the node
-%   t = scalar integer time
-%   sev = scalar integer
+%   [community sev] = sev_steepest_descent(A, community, t, max_size)
+%   
+%           A: adjacency matrix
+%   community: [v_1 v_2 ... v_k], where v_1 is the number of the node
+%           t: Markov time
+%    max_size: size limit of the community in the search algorithm
+%         sev: severability of "community"
+%
+%   NB: output variable "community" will have maximum length max_size
+%
+%   Copyright (c) 2010-2011 Yun William Yu
+%   Revision 2011-06-22
 
 
 % Doesn't make sense for the max size to be greater than the community size
@@ -53,7 +61,7 @@ while increase==true
     % Stops the process if the community goes beyond the max_size
     if (length(community)>max_size)
         increase = false;
-        community =community(1);
+        community =community(1:max_size);
     elseif (length(community)==1)
         increase = false;
     end

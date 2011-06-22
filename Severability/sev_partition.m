@@ -1,14 +1,31 @@
-function [ commrun node commsize sev output commrun_small separated missing overlap ...
-    foundcomm] = sev_multi_level( adj_matrix, realcomm, time, radius )
-%SEV_MULTI_LEVEL Iterates sev_one_subcomm to optimise severability
-%   Very similar in spirit to the Louvain aggregation algorithm for
-%   modularity. Calls "sev_one_subcomm" repeatedly to get a covering of the
-%   graph by communities. Then collapses all of the communities, and
-%   repeats.
+function [ commrun commsize sev commrun_small ...
+    missing overlap foundcomm] = ...
+    sev_multi_level( adj_matrix, realcomm, time, max_size )
+%SEV_MULTI_LEVEL Softly "partitions" a graph
+%   [commrun commsize sev commrun_small ...
+%      missing overlap foundcomm] = ...
+%   sev_multi_level( adj_matrix, realcomm, time, max_size)
 %
-%   adj_matrix: symmetric n*n matrix detailing connectivity of graph
-%   time:   can be singleton
-%   realcomm:   community.dat file specifying the "actual" communities
+%   adj_matrix: adjacency matrix
+%     realcomm: community.dat file specifying the "actual" communities
+%         time: Markov time
+%     max_size: size limit in the community of the search algorithm
+%
+
+%      commrun: k by [graph_size] matrix, specifying the communities
+%               commrun(i,1:commsize(i)) gives you all community members
+%               in community i.
+%     commsize: the sizes of the community found (length k vector)
+%          sev: severability of the found communities (length k vector)
+%commrun_small: Reduced commrun, taking out communities unused in the
+%               partitioning.
+%      missing: All the nodes that do not belong to a found community (orphans)
+%      overlap: All the nodes that belong to more than one community in the list
+%    foundcomm: The partition scheme.
+%   
+%   Copyright (c) 2010-2011 Yun William Yu
+%   Revision 2011-06-22
+
 
 %% Main "simulation"
 graph_size=length(adj_matrix);
@@ -21,22 +38,30 @@ sev=zeros(1,graph_size);    % Severabilities of the communities found
 
 curr_entry = 0;
 for i=1:graph_size;
-    if covered(i)==0
+
+    % if the node i is on average more connected to the already covered, then skip.
+    edges_out=adj_matrix(i,:);
+    if sum(edges_out(covered==0))<sum(edges_out(covered~=0))
+        forceorphan=true;
+    else
+        forceorphan=false;
+    end
+    if (covered(i)==0) && (forceorphan==false)
         curr_entry=curr_entry+1;
         node(curr_entry)=i;
-        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,radius);
+        [comm commsize(curr_entry) sev(curr_entry)]=sev_node(i,adj_matrix,time,max_size);
 
-    % Put entries in covered
-    if commsize(curr_entry)~=graph_size
-        for j=1:(commsize(curr_entry))
-            covered(comm(j))=covered(comm(j))+1;
+        % Put entries in covered
+        if commsize(curr_entry)~=graph_size
+            for j=1:(commsize(curr_entry))
+                covered(comm(j))=covered(comm(j))+1;
+            end
         end
-    end
-    
-    %comm
-    commrun(curr_entry,:)=comm;
-    fprintf('\t: %4d %4d %4d %4f \n', ...
-        [sum((covered~=0)) i commsize(curr_entry) sev(curr_entry)]);
+        
+        %comm
+        commrun(curr_entry,:)=comm;
+        fprintf('\t: %4d %4d %4d %4f \n', ...
+            [sum((covered~=0)) i commsize(curr_entry) sev(curr_entry)]);
 
     end    
 end;
