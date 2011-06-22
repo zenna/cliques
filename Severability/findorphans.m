@@ -16,10 +16,22 @@ if any(prospectives<1)||any(prospectives>length(A))
 end
 
 orphans=[];
+covered=false(1,length(A));
 for i=1:length(prospectives)
-    [commrun commsize sev]=sev_node(prospectives(i), A, t, max_size);
-    if any(commrun==prospectives(i)) && commsize>1
-        orphans(end+1)=prospectives(i);
+    if ~covered(prospectives(i))
+        [commrun commsize sev]=sev_node(prospectives(i), A, t, max_size);
+        if any(commrun==prospectives(i)) && commsize>1
+            fprintf('\t[%d is not an orphan]\t[%d of %d] \n', ...
+                prospectives(i), i, length(prospectives));
+        else
+            fprintf('\t[%d is an orphan]\t[%d of %d] \n', ...
+                prospectives(i), i, length(prospectives));
+            orphans(end+1)=prospectives(i);
+        end
+        covered(commrun(1:commsize))=true;
+    else
+        fprintf('\t[%d is not an orphan]\t[%d of %d] \n', ...
+            prospectives(i), i, length(prospectives));
     end
 end
 
