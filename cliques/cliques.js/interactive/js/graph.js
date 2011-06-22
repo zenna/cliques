@@ -63,11 +63,11 @@ function Graph(data, scene) {
 		var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
 		var dim2 = typeof dim2  == "undefined" ? 1 : dim2;
 		var dim3;
-		// if (this.num_dim > 2) {
-			// dim3 = typeof dim3  == "undefined" ? 2 : dim3;
-		// } else {
-			// dim3 = undefined;
-		// }
+		if (this.num_dim > 2) {
+			dim3 = typeof dim3  == "undefined" ? 2 : dim3;
+		} else {
+			dim3 = undefined;
+		}
 
 		var materials = this.materials;
 		var nodes = this.nodes;

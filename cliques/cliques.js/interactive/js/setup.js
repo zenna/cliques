@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/barbellx_example.json', function(data) {
+	$.getJSON('js/data/ringx_example.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -32,7 +32,7 @@ $(document).ready( function() {
 		stabilities = data.processes[0];
 		basins = data.processes[1];
 		toolbox.addProcess(new NodeProcess(stabilities, landscape));
-		toolbox.addProcess(new BasinProcess(basins, landscape));
+		// toolbox.addProcess(new BasinProcess(basins, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
 
