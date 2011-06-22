@@ -1,10 +1,10 @@
 function [ commrun commsize sev commrun_small ...
     missing overlap foundcomm] = ...
-    sev_multi_level( adj_matrix, realcomm, time, max_size )
-%SEV_MULTI_LEVEL Softly "partitions" a graph
+    sev_partition( adj_matrix, realcomm, time, max_size )
+%SEV_PARTITION Softly "partitions" a graph using severability
 %   [commrun commsize sev commrun_small ...
 %      missing overlap foundcomm] = ...
-%   sev_multi_level( adj_matrix, realcomm, time, max_size)
+%   sev_partition( adj_matrix, realcomm, time, max_size)
 %
 %   adj_matrix: adjacency matrix
 %     realcomm: community.dat file specifying the "actual" communities
