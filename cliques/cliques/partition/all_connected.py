@@ -52,6 +52,8 @@ G.add_edge(8,9)
 #G = G = nx.dorogovtsev_goltsev_mendes_graph(4)
 #G = nx.readwrite
 #a = fast_part.part_wrapper()
+
+G = nx.read_edgelist('/home/zenna/repos/graph-codes/cliques/data/graphs/barbell_n8.edj', data=(('weight',float),))
 sys.stdout.write(find_all_connected_partitions(G))
 #a.find_partitions
     

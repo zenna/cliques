@@ -78,11 +78,6 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
             != sampled_partitions.end(); ++set_itr) {
         auto best_neighbour = *set_itr;
         while (true) {
-        	std::vector<int> v1 = {0, 0, 1, 2, 2, 3, 3, 3 };
-        	cliques::VectorPartition p1(v1);
-        	if (best_neighbour == p1) {
-        		cliques::output("I'm here!");
-        	}
             bool has_improved = false;
             partition_set neighs;
             cliques::find_neighbours(graph, best_neighbour, neighs);

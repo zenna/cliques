@@ -32,7 +32,7 @@ $(document).ready( function() {
 		stabilities = data.processes[0];
 		basins = data.processes[1];
 		toolbox.addProcess(new NodeProcess(stabilities, landscape));
-		// toolbox.addProcess(new BasinProcess(basins, landscape));
+		toolbox.addProcess(new BasinProcess(basins, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
 

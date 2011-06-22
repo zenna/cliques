@@ -66,8 +66,9 @@ function App(width, height, name) {
 		var context = landscape_view.renderer.context;
 		var mouseX = event.clientX;
 		var mouseY = event.clientY;
-		var invertedMouseY = $(landscape_view.renderer.domElement).height() - mouseY;
-
+		var invertedMouseY = $(landscape_view.renderer.domElement).height() - mouseY;alert
+		
+		landscape_view.renderer.render(landscape_view.scene, landscape_view.camera);
 		var arr = new Uint8Array(4);
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
 		var id = cliques.rgbToInt(arr);
