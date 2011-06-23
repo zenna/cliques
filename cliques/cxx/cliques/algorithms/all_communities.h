@@ -125,15 +125,5 @@ std::vector<std::vector<int> > find_community_neighbours(G &graph,
 	}
 	return neighbours;
 }
-//
-//template <typename G>
-//bool is_maximal_community(G &graph, C const comm) {
-//
-//}
-//
-//template <typename G, typename C>
-//void find_maximal_communities(G &graph, C const comm) {
-//	find_neighbours
-//}
 
 }
