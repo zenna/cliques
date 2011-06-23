@@ -20,6 +20,8 @@
 #include <cliques/nldr/nldr.h>
 #include <cliques/structures/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
+#include <cliques/algorithms/aglob.h>
+
 
 namespace po = boost::program_options;
 
@@ -78,10 +80,23 @@ int main(int ac, char* av[]) {
     auto a = cliques::find_connected_communities(orange_graph);
     cliques::print_2d_vector(a);
     cliques::output(a.size());
-    auto b = cliques::find_community_neighbours(orange_graph, a[3]);
     cliques::output("neighbours of ");
-    cliques::print_collection(a[3]);
+    cliques::print_collection(a[0]);
+    std::vector<double> markov_times = {1.0};
+    auto b = cliques::find_community_neighbours(orange_graph, a[0]);
+    cliques::find_weighted_linearised_stability func(markov_times);
+
     cliques::print_2d_vector(b);
+    for (auto comm = a.begin(); comm != a.end(); ++comm) {
+        double stability;
+//        cliques::print_collection(*comm);
+        bool is_max = cliques::is_community_maxima(orange_graph,  weights, *comm, func, stability);
+        if (is_max) {
+            cliques::output("maxima:", stability);
+            cliques::print_collection(*comm);
+        }
+    }
+
 //    cliques::output("Finding Connected Partitions");
 //    cliques::NoLogging no_logging;
 //    cliques::Logging<VecPartition> log_all;

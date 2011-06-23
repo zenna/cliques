@@ -304,6 +304,7 @@ int find_connected_partitions(G &graph, boost::unordered_set<P,
     int num_partitions = 0;
 
     nodes_to_place = empty_set();
+    // Add all nodes to a set -> nodes_to_place
     for (int i = 1; i < g->n; i++)
         nodes_to_place = add_to_set(i, nodes_to_place);
     part = create_partition(g->n);
@@ -312,6 +313,9 @@ int find_connected_partitions(G &graph, boost::unordered_set<P,
     comp_tmp = empty_set();
     comp_tmp = add_to_set(0, comp_tmp);
     neighbours = empty_set();
+
+    // For all neighbours of first node (node 0):
+    // add to neighbours set
     for (int i = 0; i < g->degrees[0]; i++)
         neighbours = add_to_set(g->links[0][i], neighbours);
     forbidden = empty_set();

@@ -32,6 +32,13 @@ public:
                 is_normalised(false) {
     }
 
+    // construct partition with initial_set
+    explicit VectorPartition(int num_nodes, int initial_set) :
+        num_nodes(num_nodes),
+                partition_vector(std::vector<int>(num_nodes, initial_set)),
+                is_normalised(false) {
+    }
+
     // construct partition from vector
     explicit VectorPartition(std::vector<int> partition) :
         partition_vector(partition), is_normalised(false) {
