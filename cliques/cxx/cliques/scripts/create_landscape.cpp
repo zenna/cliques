@@ -78,6 +78,10 @@ int main(int ac, char* av[]) {
     auto a = cliques::find_connected_communities(orange_graph);
     cliques::print_2d_vector(a);
     cliques::output(a.size());
+    auto b = cliques::find_community_neighbours(orange_graph, a[3]);
+    cliques::output("neighbours of ");
+    cliques::print_collection(a[3]);
+    cliques::print_2d_vector(b);
 //    cliques::output("Finding Connected Partitions");
 //    cliques::NoLogging no_logging;
 //    cliques::Logging<VecPartition> log_all;
