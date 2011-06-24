@@ -77,8 +77,8 @@ int main(int ac, char* av[]) {
     int num_dim = 3;
     parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim, filename_prefix);
 
-    for (double t = 0.1; t < 5.0; t = t * 1.01) {
-        double robustness = cliques::variance_of_vi(orange_graph, weights, 1.0, 100);
+    for (double t = 0.0; t < 5.0; t = t + 0.1) {
+        double robustness = cliques::variance_of_vi(orange_graph, weights, t, 3);
         cliques::output(t, robustness);
     }
     return 0;
