@@ -1,11 +1,7 @@
 import getopt, sys
 import simplejson
 from collections import defaultdict
-
-# Problems
-# Can't handle missing files
-# output timestamp
-# Can't handle multiple basins
+import matplotlib.pyplot as plt
 
 def usage():
     print """-i input prefix e.g. ~/path_graph (where files ~/path_graph_coords.mat etc have been generated
@@ -89,77 +85,15 @@ def file_to_nested_list(filename, cast_type):
             
     f.close()
     return nested_list
-
-def file_to_energy_process(filename, cast_type):
-    """"""
-    f = open(filename, 'r')
-    data = []
-    for line in f:
-        if line:
-            l = [cast_type(x) for x in line.split() if x]
-            data_point = {'time':l[0], 'values':l[1:]}
-            data.append(data_point)
-            
-    f.close()
-    return {'type':'stability', 'data':data}
-    
-def file_to_basin_process(filename, cast_type):
-    """"""
-    f = open(filename, 'r')
-    data = []
-    time_to_values = defaultdict(list)
-    for line in f:
-        if line:
-            l = [x for x in line.strip().split(" ") if x]
-            nodes = []
-            metas = []
-            #set_trace()
-            for index, val in enumerate(l[2:]):
-                if index % 2 == 0:
-                    nodes.append(int(val))
-                else:
-                    metas.append(cast_type(val))
-                        
-            time_to_values[l[0]].append({'basin':l[1],'nodes':nodes,'metas':metas})
-        
-    for time in sorted(time_to_values.keys()):
-        data.append({'time':float(time), 'values':time_to_values[time]})
-            
-    f.close()
-    return {'type':'basins', 'data':data}
     
 def main():
     coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file = parse_args()
     
-    if input_file:
-        f = open(input_file, 'r')
-        output = json.load(f)
-        f.close()
-    else:
-        output = defaultdict(list)
+    data = {}
+    plt.semilogx([1,10,100,1000], [1,2,3, 4], 'go-', label='variation of information', linewidth=2)
+    plt.semilogx([1,10,100,1000], [1,2,5, 10], 'ro-', label='robustness', linewidth=2)
+    plt.legend()
+    plt.show()
     
-    if coords_file:
-        output['coords'] = file_to_nested_list(coords_file, float)
-    if edges_file:
-        output['edges'] = file_to_nested_list(edges_file, int)
-    if energy_file:
-        process = file_to_energy_process(energy_file, float)
-        output['processes'].append(process)
-    if partitions_file:
-        output['partitions'] = file_to_nested_list(partitions_file, int)
-    if graph_file:
-        import networkx as nx
-        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
-        pos = nx.spring_layout(graph,iterations=100)
-        output['graph'] = {}
-        output['graph']['coords'] = [x.tolist() for x in pos.values()]
-        output['graph']['edges'] = file_to_nested_list(graph_file, float)
-    if basins_file:
-        process = file_to_basin_process(basins_file, float)
-        output['processes'].append(process)
-        
-    f = open(output_file, 'w')
-    simplejson.dump(output, f)
-
 if __name__ == "__main__":
     main()
