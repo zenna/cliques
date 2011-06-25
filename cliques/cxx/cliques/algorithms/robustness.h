@@ -14,6 +14,7 @@ double variance_of_vi(G &graph, M &weights, double markov_time, int num_iteratio
 	VectorPartition singleton_partition(lemon::countNodes(graph));
 	singleton_partition.initialise_as_singletons();
 
+    // Find optima with louvain
 	for (int i = 0;i< num_iterations;++i) {
 		double current_markov_time = markov_time;
 		std::vector<double> markov_times(1, markov_time);
@@ -38,9 +39,6 @@ double variance_of_vi(G &graph, M &weights, double markov_time, int num_iteratio
 	int num_elements = (all_optima.size() * (all_optima.size() - 1)) / 2;
 	for (auto p1 = all_optima.begin(); p1 != all_optima.end(); ++p1) {
 		for (auto p2 = p1; ++p2 != all_optima.end();) {
-//			cliques::output("comparing");
-//			cliques::print_partition_line(*p1);
-//			cliques::print_partition_line(*p2);
 			double vi = find_variation_of_information(*p1, *p2);
 			var_of_infs.push_back(vi);
 			total += vi / num_elements;
