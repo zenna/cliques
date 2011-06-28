@@ -130,6 +130,8 @@ int main(int ac, char* av[]) {
 //    cliques::make_weights_from_edges(space, space_weights);
 ////
 
+    cliques::output(communities.size(), "communities");
+
     cliques::output("Finding stabilities");
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
@@ -149,59 +151,59 @@ int main(int ac, char* av[]) {
     }
     stabs_file.close();
 
-    std::ofstream graph_file;
-    graph_file.open(filename_prefix + "_graph_edgelist.edj");
-    for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-        auto n1 = orange_graph.u(e);
-        auto n2 = orange_graph.v(e);
-        graph_file << orange_graph.id(n1) << " " << orange_graph.id(n2)
-                << std::endl;
-    }
-    graph_file.close();
-
-    cliques::output("Finding distances");
-    auto X = cliques::find_community_edit_dists(orange_graph,communities);
-
-    // From edit matrix: find only ones. output into two_d matrix
-    cliques::output(X.n_cols, X.n_rows);
-    std::vector<std::vector<int> > edges;
-    for (unsigned int i = 0; i < X.n_rows; ++i) {
-        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
-            if (X(i, j) == 1) {
-                std::vector<int> edge;
-                edge.push_back(i);
-                edge.push_back(j);
-                edges.push_back(edge);
-            }
-        }
-    }
-    arma::umat edges_mat(edges.size(), 2);
-    int i = 0;
-    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-        edges_mat(i, 0) = (*itr)[0];
-        edges_mat(i, 1) = (*itr)[1];
-        ++i;
-    }
-    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
-
-    cliques::output("finding embedding");
-    auto L = cliques::embed_mds(X, num_dim);
-    arma::mat L_t = arma::trans(L);
-    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
-
-    auto D_y = cliques::euclid_pairwise_dists(L_t);
-    cliques::output("residual variance", cliques::residual_variance(X, D_y));
-
-    std::ofstream vector_file;
-    vector_file.open(filename_prefix + "_partitions.mat");
-    for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
-    	cliques::VectorPartition p = cliques::community_to_partition(orange_graph,*itr,0);
-        int length = p.element_count();
-        for (int i = 0; i < length; i++) {
-            vector_file << p.find_set(i) << " ";
-        }
-        vector_file << std::endl;
-    }
+//    std::ofstream graph_file;
+//    graph_file.open(filename_prefix + "_graph_edgelist.edj");
+//    for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
+//        auto n1 = orange_graph.u(e);
+//        auto n2 = orange_graph.v(e);
+//        graph_file << orange_graph.id(n1) << " " << orange_graph.id(n2)
+//                << std::endl;
+//    }
+//    graph_file.close();
+//
+//    cliques::output("Finding distances");
+//    auto X = cliques::find_community_edit_dists(orange_graph,communities);
+//
+//    // From edit matrix: find only ones. output into two_d matrix
+//    cliques::output(X.n_cols, X.n_rows);
+//    std::vector<std::vector<int> > edges;
+//    for (unsigned int i = 0; i < X.n_rows; ++i) {
+//        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
+//            if (X(i, j) == 1) {
+//                std::vector<int> edge;
+//                edge.push_back(i);
+//                edge.push_back(j);
+//                edges.push_back(edge);
+//            }
+//        }
+//    }
+//    arma::umat edges_mat(edges.size(), 2);
+//    int i = 0;
+//    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
+//        edges_mat(i, 0) = (*itr)[0];
+//        edges_mat(i, 1) = (*itr)[1];
+//        ++i;
+//    }
+//    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
+//
+//    cliques::output("finding embedding");
+//    auto L = cliques::embed_mds(X, num_dim);
+//    arma::mat L_t = arma::trans(L);
+//    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
+//
+//    auto D_y = cliques::euclid_pairwise_dists(L_t);
+//    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+//
+//    std::ofstream vector_file;
+//    vector_file.open(filename_prefix + "_partitions.mat");
+//    for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
+//    	cliques::VectorPartition p = cliques::community_to_partition(orange_graph,*itr,0);
+//        int length = p.element_count();
+//        for (int i = 0; i < length; i++) {
+//            vector_file << p.find_set(i) << " ";
+//        }
+//        vector_file << std::endl;
+//    }
 
     //    cliques::output("number of nodes", lemon::countNodes(space));
     //    cliques::output("number of edges", lemon::countEdges(space));

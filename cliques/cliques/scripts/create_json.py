@@ -35,7 +35,7 @@ def parse_args():
     graph_file = None
     basins_file = None
     timestamp_output = False
-    input_data = None
+    input_file = None
     output_file = "out"
       
     for o, a in opts:
@@ -72,11 +72,13 @@ def parse_args():
             partitions_file = a
         elif o in ("-g", "--graph"):
             graph_file = a
+        elif o in ("-i", "--input"):
+            input_file = a
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
    
-    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_data
+    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file
 
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
@@ -132,17 +134,20 @@ def main():
     coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file = parse_args()
     
     if input_file:
+        print "we have input coords"
         f = open(input_file, 'r')
-        output = json.load(f)
+        output = simplejson.load(f)
         f.close()
     else:
         output = defaultdict(list)
     
     if coords_file:
+        print "processing coords"
         output['coords'] = file_to_nested_list(coords_file, float)
     if edges_file:
         output['edges'] = file_to_nested_list(edges_file, int)
     if energy_file:
+        print "processing energy"
         process = file_to_energy_process(energy_file, float)
         output['processes'].append(process)
     if partitions_file:
@@ -163,7 +168,7 @@ def main():
             output['processes'].append(process)
         except:
             print "no basin file"
-        
+
     f = open(output_file, 'w')
     simplejson.dump(output, f)
 

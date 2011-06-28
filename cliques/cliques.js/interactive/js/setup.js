@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/ring_comm2_n6.json', function(data) {
+	$.getJSON('js/data/renaud_comm_n12.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
