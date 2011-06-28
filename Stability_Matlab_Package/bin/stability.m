@@ -286,7 +286,7 @@ plotStability = false;
 verbose = false;
 M = 100;
 prefix = '';
-attributes={'noVI', 'L', 'M', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v'};
+attributes={'novi', 'l', 'm', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v'};
 
 if options > 0
     
@@ -303,7 +303,7 @@ if options > 0
             if strcmpi(varargin{i},'full')
                 Full = true;
                 i = i+1;
-            elseif strcmpi(varargin{i},'noVI')
+            elseif strcmpi(varargin{i},'novi')
                 ComputeVI = false;
                 i = i+1;
             elseif strcmpi(varargin{i},'nocheck')
@@ -319,8 +319,8 @@ if options > 0
                 %Check to make sure that there is a pair to go with
                 %this argument.
                 if length(varargin) < i + 1
-                    error('MATLAB:dlmwrite:AttributeList', ...
-                        'Attribute %s requires a matching value', varargin{i})
+                    error('MATLAB:stability:AttributeList', ...
+                        'Attribute %s requires a matching value', varargin{i});
                 elseif strcmpi(varargin{i},'laplacian')
                     if ischar(varargin{i+1})
                         Laplacian = varargin{i+1};
@@ -328,7 +328,7 @@ if options > 0
                         error('MATLAB:stability:laplacian',...
                             'Please provide a matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
                     end
-                elseif strcmpi(varargin{i},'L')
+                elseif strcmpi(varargin{i},'l')
                     if isnumeric(varargin{i+1})
                         NbLouvain = round(varargin{i+1});
                         M = round(varargin{i+1});
@@ -337,7 +337,7 @@ if options > 0
                     if isnumeric(varargin{i+1})
                         Precision = varargin{i+1};
                     end
-                elseif strcmpi(varargin{i},'M')
+                elseif strcmpi(varargin{i},'m')
                     if isnumeric(varargin{i+1})
                         M = varargin{i+1};
                     end
@@ -350,21 +350,19 @@ if options > 0
                             'Please provide a matching value for attribute out. It must be a string.');
                     end
                 else
-                    error('MATLAB:dlmwrite:Attribute',...
-                        'Invalid attribute tag: %s', varargin{i})
+                    error('MATLAB:stability:Attribute',...
+                        'Invalid attribute tag: %s', varargin{i});
                 end
                 i = i+2;
             end
         end
-    else % arguments are in fixed parameter order
-        if options > 0  
-            Full = varargin{1};
-        end
-        if options > 1 && ~isempty(varargin{2})
-            ComputeVI = varargin{2};
-        end
-        if options > 2 && ~isempty(varargin{3})
-            NbLouvain = varargin{3};
+    else 
+        if ischar(varargin{1})
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %s', varargin{1});
+        else
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %d', varargin{1});
         end
     end
 end
@@ -499,7 +497,7 @@ stability_best = -1;
 for l=1:NbLouvain
     [stability, nb_comm, communities] = stability_louvain_LCL(Graph, time, precision, weighted);
     lnk(:,l) = communities;
-    lnkS(l) = stability;
+    lnkS(l) = stability;Play
     if stability>stability_best
         S = stability;
         C = communities;
