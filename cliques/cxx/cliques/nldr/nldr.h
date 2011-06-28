@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <algorithm>
 
 #include "armadillo"
 #include <lemon/dijkstra.h>
@@ -12,6 +13,7 @@
 
 #include <cliques/helpers.h>
 #include <cliques/helpers/edit_distance.h>
+#include <cliques/structures/make_graphs.h>
 
 //Issues
     // Sampling depends on order of nodes considered
@@ -147,6 +149,110 @@ arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
     return X;
 }
 
+//[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+//view.js:1080 0 44 44
+//view.js:114[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0]
+
+template <typename G, typename M, typename C>
+float find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) {
+    int size1 = comm1.size();
+    int size2 = comm2.size();
+
+    std::sort(comm1.begin(),comm1.end());
+    std::sort(comm2.begin(),comm2.end());
+
+	auto end = std::set_symmetric_difference(comm1.begin(),
+			comm1.end(), comm2.begin(),
+			comm2.end(), diff_itr.begin());
+	int difference_size = int(end - diff_itr.begin());
+
+    float shortest_inter_comm_distance = 0.0;
+
+    if (difference_size == 0) {
+    	difference_size = size1 + size2 - 1;
+    	shortest_inter_comm_distance = std::numeric_limits<int>::max();
+        for (auto n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
+        	for (auto n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
+                auto d = lemon::Dijkstra<lemon::SmartGraph,lemon::SmartGraph::EdgeMap<float> >(graph, weights);
+                typename G::Node node1 = graph.nodeFromId(*n1);
+                typename G::Node node2 = graph.nodeFromId(*n2);
+                d.run(node1, node2);
+                float dist = d.dist(node2);
+                if (shortest_inter_comm_distance > dist) {
+                	shortest_inter_comm_distance = dist;
+                }
+        	}
+        }
+    }
+
+    float edit_distance = shortest_inter_comm_distance + difference_size;
+    return edit_distance;
+}
+
+template <typename G, typename S>
+arma::mat find_community_edit_dists(G &graph, S &communities) {
+//	typedef typename G::EdgeMap<float> EdgeMap;
+//	EdgeMap eights(graph);
+	lemon::SmartGraph::EdgeMap<float> weights(graph);
+	cliques::make_weights_from_edges(graph, weights);
+
+	int N = communities.size();
+	arma::mat X(N,N);
+	X.zeros();
+    lemon::concepts::ReadWriteMap<typename G::Node, int> dist_map;
+	int total = (N * (N - 1)) / 2;
+    std::vector<int> diff_itr(lemon::countNodes(graph));
+
+    int i=0;
+    int j=0;
+    int num = 0;
+    for (auto comm1 = communities.begin(); comm1 != communities.end(); ++comm1) {
+    	j = i+1;
+        for (auto comm2 = comm1; ++comm2 != communities.end();) {
+//            int size1 = comm1->size();
+//            int size2 = comm2->size();
+//
+//            std::sort(comm1->begin(),comm1->end());
+//            std::sort(comm2->begin(),comm2->end());
+//
+//			auto end = std::set_difference(comm1->begin(),
+//					comm1->end(), comm2->begin(),
+//					comm2->end(), diff_itr.begin());
+//			int difference_size = int(end - diff_itr.begin());
+//
+//            float shortest_inter_comm_distance = 0.0;
+//
+//            if (difference_size == 0) {
+//            	difference_size = size1 + size2 - 1;
+//            	shortest_inter_comm_distance = std::numeric_limits<int>::max();
+//                for (auto n1 = comm1->begin(); n1 != comm1->end(); ++n1) {
+//                	for (auto n2 = comm2->begin(); n2 != comm2->end(); ++n2) {
+//                        auto d = lemon::Dijkstra<lemon::SmartGraph,lemon::SmartGraph::EdgeMap<float> >(graph, weights);
+//                        typename G::Node node1 = graph.nodeFromId(*n1);
+//                        typename G::Node node2 = graph.nodeFromId(*n2);
+//                        d.run(node1, node2);
+//                        float dist = d.dist(node2);
+//                        if (shortest_inter_comm_distance > dist) {
+//                        	shortest_inter_comm_distance = dist;
+//                        }
+//                	}
+//                }
+//            }
+//
+//            float edit_distance = shortest_inter_comm_distance + difference_size;
+            float edit_distance = find_community_dist(graph,weights,*comm1, *comm2, diff_itr);
+            X(i,j) = edit_distance;
+            X(j,i) = edit_distance;
+            if (num  % 1000000 == 0) {
+                cliques::output(i,j, edit_distance, num, ":", total);
+            }
+            num++;
+            j++;
+        }i++;
+    }
+    return X;
+}
+
 /**
  @brief  Find the pairwise partition edit distances (equivalent to above for partitions)
  */
@@ -186,7 +292,7 @@ arma::mat find_edit_dists(S &partitions) {
     arma::mat X(N, N);
     X.zeros();
 
-    int total = N * (N - 1) / 2;
+    int total = (N * (N - 1)) / 2;
 
     int i=0;
     int j=0;

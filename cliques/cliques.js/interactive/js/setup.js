@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/barbell_n8.json', function(data) {
+	$.getJSON('js/data/ring_comm2_n6.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -11,7 +11,7 @@ $(document).ready( function() {
 		landscape_view.camera.position.z = 4000;
 
 		landscape.add_edges({
-			opacity:0.4
+			opacity:0.6
 		});
 		//landscape.update_edge_colours();
 
@@ -34,7 +34,7 @@ $(document).ready( function() {
 		stabilities = data.processes[0];
 		basins = data.processes[1];
 		toolbox.addProcess(new NodeProcess(stabilities, landscape));
-		toolbox.addProcess(new BasinProcess(basins, landscape));
+		// toolbox.addProcess(new BasinProcess(basins, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain, landscape));
 		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
 

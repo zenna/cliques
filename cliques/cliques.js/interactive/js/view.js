@@ -14,7 +14,6 @@ function App(width, height, name) {
 		function animate() {
 			requestAnimationFrame( animate );
 			parent.render();
-			parent.stats.update();
 		}
 
 	}
@@ -28,12 +27,6 @@ function App(width, height, name) {
 		var renderer = this.renderer;
 		renderer.setSize(width, height);
 		container.appendChild(renderer.domElement);
-
-		this.stats = new Stats();
-		stats = this.stats;
-		stats.domElement.style.position = 'absolute';
-		stats.domElement.style.top = '0px';
-		container.appendChild(stats.domElement);
 		$(container).addClass(name);
 
 		this.camera = new THREE.TrackballCamera({
@@ -41,7 +34,7 @@ function App(width, height, name) {
 			fov: 75,
 			aspect: window.innerWidth / window.innerHeight,
 			near: 1,
-			far: 10000,
+			far: 50000,
 
 			rotateSpeed: 1.0,
 			zoomSpeed: 1.2,
@@ -119,7 +112,7 @@ function App(width, height, name) {
 			return;
 		}
 		console.log(landscape.partitions[id]);
-		var colorMap = new cliques.PartititionColorMap()
+		var colorMap = new cliques.CommunityColorMap()
 		var partition_colors = colorMap.getColors(partition);
 		orig_graph.paint_nodes(partition_colors);
 		orig_graph.match_edge_colours_to_node();

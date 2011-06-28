@@ -50,6 +50,6 @@ NodeProcess.prototype.render = function(dataId) {
 	}
 	this.graph.move_nodes(norm_values, 0, 1);
 }
-NodeProcess.prototype.hide = function(time) {
-
+NodeProcess.prototype.updateMeta = function(time) {
+	return "";
 }

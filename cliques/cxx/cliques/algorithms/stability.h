@@ -79,8 +79,8 @@ struct find_weighted_linearised_stability {
     }
 
     template<typename I>
-    double operator ()(I &internals, int comm_id, double dummy) {
-        double markov_time = markov_times_[0];
+    double operator ()(I &internals, int comm_id, int t) {
+        double markov_time = markov_times_[t];
         double q = -1;
         int i = comm_id;
         if (internals.comm_w_tot[i] > 0) {

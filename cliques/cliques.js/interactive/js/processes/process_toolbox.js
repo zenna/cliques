@@ -1,6 +1,7 @@
 dynamicProcessTemplate = "<div><span class='processName'></span>\
 <input class = 'timeSlider' name='r' type='range' min='0' max='529' value='0'>\
-<span class='time'>a</span>\
+<span class='time'></span>\
+<div class = 'meta'></div>\
 </div>\
 <br/>\
 "
@@ -54,11 +55,11 @@ ProcessToolbox.prototype.updateDomElement = function() {
 ProcessToolbox.prototype.handleTimeChange = function(event) {
 	var dataId = $(this).val();
 	var processGroup = event.data.processGroup;
-	var process = processGroup[0];
-	console.log(dataId);
+	var process = processGroup[0]; // This will fail for a dynamic process dependent on stability
 	var time = process.data[dataId]['time'];
 	$(this).next('.time').text(time);
-	
+	var metaHtml = process.updateMeta(dataId);
+	$(this).siblings('.meta').html(metaHtml);
 	process.render(dataId);
 }
 ProcessToolbox.prototype.handleProcessChange = function(event) {

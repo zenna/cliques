@@ -4,6 +4,50 @@
 #include <vector>
 #include <algorithm>
 
+// Today, write introduction and two robustness measures
+// And optimisation algorithm and projection
+
+//Robustness - prereq:
+//Need to be able to see maxima
+
+//Properties of basins
+//Size of basins
+//Volume of basins
+//How delineated they are
+//Number
+//
+//Properties of Paths to maxima
+//How funneled they become
+//
+//Global properties of landscape
+//
+//1. Additions to viewer:
+//a*// Want to see edges crossing basins
+//
+//// Just show edges where colors are different
+//
+//// Need to search by partition
+//// Visualise Paths
+//*// Fix clicking issues
+//// Add more example graphs
+//
+//2. All communities
+//b// Project down
+//// Adapt data format and cliuqes.js to be able to see it.
+//
+//
+//2. Algorithm
+//c*//Algorithm must find multiple optimal partitions
+////K-lin / Louvain esque
+//
+//d*.// Read these papers on landscapes and write draft introduction
+
+//Hypothesis
+//The robustness of a partition is related to how diffused the basins of attraction are
+// If any two proximal points oftne have differing basins of attraction
+
+//Tomorrow
+//Combinatorial stability
 
 namespace cliques {
 
@@ -11,7 +55,6 @@ template<typename G>
 void find_connected_communities(G &graph, std::vector<bool> allowed,
 		std::vector<int> community,
 		std::vector<std::vector<int> > & community_list) {
-	bool any_allowed = false;
 	bool breakout = false;
 	int neigh_id = 0;
 	int allowed_neigh = -1;
@@ -59,18 +102,6 @@ void find_connected_communities(G &graph, std::vector<bool> allowed,
 		community.pop_back();
 		//        std::cout << "last removed" << last_removed << std::endl;
 		find_connected_communities(graph, allowed, community, community_list);
-	}
-
-	for (unsigned int i = 0; i < allowed.size(); ++i) {
-		if (allowed[i] == true) {
-			//            std::cout << "allowed" << i << std::endl;
-			any_allowed = true;
-			break;
-		}
-	}
-
-	if (any_allowed == false || (any_allowed == true && allowed_neigh == -1)) {
-		return;
 	}
 }
 

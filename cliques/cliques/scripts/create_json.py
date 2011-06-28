@@ -77,7 +77,7 @@ def parse_args():
             sys.exit()
    
     return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_data
-            
+
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
     f = open(filename, 'r')
@@ -146,7 +146,10 @@ def main():
         process = file_to_energy_process(energy_file, float)
         output['processes'].append(process)
     if partitions_file:
-        output['partitions'] = file_to_nested_list(partitions_file, int)
+        try:
+            output['partitions'] = file_to_nested_list(partitions_file, int)
+        except:
+            print "couldnt open partitions"
     if graph_file:
         import networkx as nx
         graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
@@ -155,8 +158,11 @@ def main():
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
     if basins_file:
-        process = file_to_basin_process(basins_file, float)
-        output['processes'].append(process)
+        try:
+            process = file_to_basin_process(basins_file, float)
+            output['processes'].append(process)
+        except:
+            print "no basin file"
         
     f = open(output_file, 'w')
     simplejson.dump(output, f)

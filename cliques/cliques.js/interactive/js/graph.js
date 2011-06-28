@@ -35,10 +35,29 @@ function Graph(data, scene) {
         for ( var i = 0; i < coords.length; ++i) {
             var colour = cliques.intToRgb(i);
             var hex_r = colour[0].toString(16);
+            
+            // Hack to avoid bug of toString returning single digit
+            // Hex which causes multiple points to map to same id
+            if (hex_r.length == 1) {
+            	hex_r = "0" + hex_r;
+            }
             var hex_g = colour[1].toString(16);
+            if (hex_g.length == 1) {
+            	hex_g = "0" + hex_g;
+            }
+
             var hex_b = colour[2].toString(16);
+            if (hex_b.length == 1) {
+            	hex_b = "0" + hex_b;
+            }
+
+            
             var colour_hex = hex_r + hex_g + hex_b;
             this.node_id_colours[i] = new THREE.Color( parseInt(colour_hex, 16));
+            if (this.node_id_colours[i].hex == 45) {
+            	console.log(i);
+            	var alpha;
+            }
         }
 
         geometry.colors = colours;
