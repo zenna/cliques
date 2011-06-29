@@ -31,22 +31,18 @@ int main() {
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
     typedef cliques::VectorPartition VecPartition;
-
-
 	double stability = 0;
-	//cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
-	//		orange_graph, weights);
-
-	cliques::make_complete_graph(orange_graph,5);
+	cliques::make_complete_graph(orange_graph,5, weights);
 
 	double current_markov_time = 1.0;
-	std::vector<double> markov_times = {1.0};
+	cliques::VectorPartition singletons(5);
+	singletons.initialise_as_singletons();
 
     cliques::Logging<VecPartition> log_louvain;
 	std::vector<partition> optimal_partitions;
 	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
-			weights, cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_gain_louvain(current_markov_time),
+			weights, cliques::find_weighted_linearised_stability(current_markov_time),
+			cliques::linearised_stability_gain_louvain(current_markov_time),singletons,
 			optimal_partitions, log_louvain);
 
 	partition best_partition = optimal_partitions.back();
@@ -56,22 +52,5 @@ int main() {
 	}
 	std::cout << stability << std::endl;
 
-	/*	cliques::print_partition(optimal_partitions.back());
-
-	 //Drawing
-	 float start = -10;
-	 std::vector<float> energies;
-	 for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-	 energies.push_back(start);
-	 start += 12.0;
-	 std::cout << orange_graph.id(e) << std::endl;
-	 }
-
-	 cliques::draw_graph canvas(orange_graph);
-	 canvas.add_node_map(cliques::make_partition_colour_map<
-	 cliques::DisjointSetForest<int> >(best_partition));
-	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
-	 canvas.draw("test_louvain_out");
-	 */
 	return 0;
 }

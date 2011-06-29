@@ -4,15 +4,15 @@ include_directories(${graphviz_INCLUDE_DIRECTORIES})
 
 link_directories(/home/mts09/compiler/GCC/libs/install/lib/)
 
-set(CMAKE_CXX_COMPILER g++-4.6)
+#set(CMAKE_CXX_COMPILER g++-4.6)
 set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 
-#add_executable(test_louvain louvain.cpp)	
-#target_link_libraries(test_louvain ${graphviz_LIBRARIES})
+add_executable(test_louvain louvain.cpp)	
+target_link_libraries(test_louvain ${graphviz_LIBRARIES})
 
 #add_executable(test_kernighanlin kernighanlin.cpp)	
 #target_link_libraries(test_louvain ${graphviz_LIBRARIES})
 
 #add_executable(test_edit_distance edit_distance.cpp)
 
-add_executable(test_varofinf varofinf.cpp)
+#add_executable(test_varofinf varofinf.cpp)

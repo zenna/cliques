@@ -11,10 +11,13 @@
 #include <cliques/helpers.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/algorithms/internals/internals.h>
+#include <cliques/algorithms/internals/generators.h>
 
-// TODO: Louvain gets noticably slower on second iteration
+// TODO: Louvain gets noticeably slower on second iteration
 // TODO: It Doesn't even when map of different graph is passed, this is wrong
 // TODO: On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
+// TODO: Separate out louvain into smaller functions
+// TODO: Make new version for Hijacking etc
 
 namespace cliques {
 
@@ -53,6 +56,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
     double minimum_improve = 0.000000001;
 	double current_quality = compute_quality(internals);
+	cliques::output("current_quality", current_quality);
 	bool one_level_end = false;
 	double old_quality = current_quality;
 	bool did_nodes_move = false;
