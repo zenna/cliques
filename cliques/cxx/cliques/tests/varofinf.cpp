@@ -1,7 +1,7 @@
 #include <iostream>
-#include <helpers.h>
-#include <structures/disjointset.h>
-#include <algorithms/varofinf.h>
+#include <cliques/helpers.h>
+#include <cliques/structures/disjointset.h>
+#include <cliques/algorithms/varofinf.h>
 
 int main() {
 	cliques::DisjointSetForest<int> partition1;
