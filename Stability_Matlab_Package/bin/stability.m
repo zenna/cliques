@@ -497,7 +497,7 @@ stability_best = -1;
 for l=1:NbLouvain
     [stability, nb_comm, communities] = stability_louvain_LCL(Graph, time, precision, weighted);
     lnk(:,l) = communities;
-    lnkS(l) = stability;Play
+    lnkS(l) = stability;
     if stability>stability_best
         S = stability;
         C = communities;
