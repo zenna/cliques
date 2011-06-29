@@ -40,9 +40,9 @@ int main() {
 
     cliques::Logging<VecPartition> log_louvain;
 	std::vector<partition> optimal_partitions;
-	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
-			weights, cliques::find_weighted_linearised_stability(current_markov_time),
-			cliques::linearised_stability_gain_louvain(current_markov_time),singletons,
+	stability = cliques::find_optimal_partition_louvain<partition>(orange_graph,
+			weights, cliques::find_linearised_normalised_stability(current_markov_time),
+			cliques::linearised_normalised_stability_gain(current_markov_time),singletons,
 			optimal_partitions, log_louvain);
 
 	partition best_partition = optimal_partitions.back();

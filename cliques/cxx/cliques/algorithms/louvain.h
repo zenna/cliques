@@ -40,7 +40,7 @@ namespace cliques {
  @param[out] optimal_partitions     optimal partitions found, last in vector is overall best
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
-double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
+double find_optimal_partition_louvain(T &graph, W &weights,
 		QF compute_quality, QFDIFF compute_quality_diff, P initial_partition,
 		std::vector<P> &optimal_partitions, Logger &log) {
 
@@ -224,7 +224,7 @@ double find_optimal_partition_louvain_with_gain(T &graph, W &weights,
 
 	    P singleton_partition(lemon::countNodes(reduced_graph));
 	    singleton_partition.initialise_as_singletons();
-		return cliques::find_optimal_partition_louvain_with_gain<P>(
+		return cliques::find_optimal_partition_louvain<P>(
 				reduced_graph, reduced_weight_map, compute_quality,
 				compute_quality_diff, singleton_partition, optimal_partitions, log);
 	}

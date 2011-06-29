@@ -26,9 +26,9 @@ int main() {
 
     cliques::NoLogging no_log;
 	std::vector<partition> optimal_partitions;
-	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
-			weights, cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_gain_louvain(current_markov_time),
+	stability = cliques::find_optimal_partition_louvain<partition>(orange_graph,
+			weights, cliques::find_linearised_normalised_stability(markov_times),
+			cliques::linearised_normalised_stability_gain(current_markov_time),
 			optimal_partitions, no_log);
 
 	partition best_partition = optimal_partitions.back();
@@ -46,8 +46,8 @@ int main() {
 	double new_stability = cliques::refine_partition_kernighan_lin(
 		orange_graph,
 		weights,
-		cliques::find_weighted_linearised_stability(markov_times),
-		cliques::linearised_stability_gain_louvain(current_markov_time),
+		cliques::find_linearised_normalised_stability(markov_times),
+		cliques::linearised_normalised_stability_gain(current_markov_time),
 		optimal_partitions.back(),
 		refined_partition);
 
