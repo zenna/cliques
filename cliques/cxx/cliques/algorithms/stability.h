@@ -15,18 +15,6 @@
 
 namespace cliques {
 /**
- @brief  Functor for finding stability of weighted graph
- */
-struct find_full_normalised_stability {
-	double markov_time;
-
-	find_full_normalised_stability(double markov_time) :
-		markov_time(markov_time) {
-	}
-
-};
-
-/**
  @brief  Functor for finding linearised stability of weighted graph
  */
 struct find_linearised_normalised_stability {
@@ -46,7 +34,7 @@ struct find_linearised_normalised_stability {
 	double operator ()(I &internals) {
 		double q = 1.0 - markov_time;
 		int size = internals.comm_w_tot.size();
-//		cliques::output("time", markov_time, "size", size);
+		//		cliques::output("time", markov_time, "size", size);
 
 		for (int i = 0; i < size; i++) {
 			if (internals.comm_w_tot[i] > 0) {
@@ -55,7 +43,7 @@ struct find_linearised_normalised_stability {
 						/ internals.two_m) * (double(internals.comm_w_tot[i])
 						/ internals.two_m));
 			}
-//			cliques::output("q", q);
+			//			cliques::output("q", q);
 		}
 
 		return q;
@@ -105,6 +93,30 @@ struct linearised_normalised_stability_gain {
 		return (markov_time * w_node_to_comm - tot_w_comm * w_deg_node
 				/ internals.two_m) * 2 / internals.two_m;
 	}
+};
+
+/**
+ @brief  Functor for finding stability of weighted graph
+ */
+struct find_full_normalised_stability {
+	double markov_time;
+	find_linearised_normalised_stability lin_norm_stability;
+
+	find_full_normalised_stability(double markov_time) :
+	markov_time(markov_time),lin_norm_stability(markov_time) {
+	}
+
+	template<typename G, typename P, typename W>
+	double operator ()(G &graph, P &partition, W &weights, double time) {
+		// read out graph into matrix
+		// pass matrix to expokit and compute exponential
+		/// create new graph out of matrix
+
+
+		cliques::LinearisedInternals internals(exp_graph, weights, partition);
+		return (*this)(internals);
+	}
+
 };
 
 }
