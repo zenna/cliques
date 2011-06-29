@@ -95,9 +95,6 @@ struct linearised_normalised_stability_gain {
 	}
 };
 
-/**
- @brief  Functor for finding stability of weighted graph
- */
 struct find_full_normalised_stability {
 	double markov_time;
 	find_linearised_normalised_stability lin_norm_stability;

@@ -19,10 +19,11 @@ void print_map(std::map<int, int> my_map, bool add_one = false) {
     std::cout << "\n";
 }
 
-void print_2d_vector(std::vector<std::vector<int> > my_vector) {
-    std::vector<std::vector<int> >::iterator itr;
+template <typename T>
+void print_2d_vector(std::vector<std::vector<T> > my_vector) {
+    typename std::vector<std::vector<T> >::iterator itr;
     for (itr = my_vector.begin(); itr != my_vector.end(); ++itr) {
-        std::vector<int>::iterator new_itr;
+        typename std::vector<T>::iterator new_itr;
         for (new_itr = itr->begin(); new_itr != itr->end(); ++new_itr) {
             std::cout << (*new_itr) << " ";
         }

@@ -34,11 +34,11 @@ int main() {
     double *A = new double[lda*lda];
     
     for (int i =0; i < lda*lda; ++i) {
-        if (i%(lda+1) == 0) {
+        if (i<lda) {
             A[i] = 1.0;
         }
         else {
-            A[i] = -1.0;
+            A[i] = 0.0;
         }
     }
     
