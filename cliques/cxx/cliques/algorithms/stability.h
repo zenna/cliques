@@ -103,12 +103,56 @@ struct find_full_normalised_stability {
 	find_linearised_normalised_stability lin_norm_stability;
 
 	find_full_normalised_stability(double markov_time) :
-	markov_time(markov_time),lin_norm_stability(markov_time) {
+		markov_time(markov_time), lin_norm_stability(markov_time) {
 	}
 
 	template<typename G, typename P, typename W>
 	double operator ()(G &graph, P &partition, W &weights, double time) {
+
+		typedef typename G::Node Node;
+		typedef typename T::NodeIt NodeIt;
+		typedef typename G::EdgeIt EdgeIt;
+		/////////////////
 		// read out graph into matrix
+		//////////////////
+
+		// number of nodes N
+		int N = lemon::countNodes(graph);
+		// -D^-1*L*t == t(B-I)
+		std::vector<double> minus_t_D_inv_L(N * N, 0);
+		std::vector<double> node_weighted_degree(N, 0);
+
+		// get weighted degree of nodes
+		for (int i = 0; i < N; ++i) {
+			typename G::Node temp_node = graph.nodeFromId(i);
+			node_weighted_degree[i] = find_weighted_degree(graph, weights,
+					temp_node);
+		}
+
+		//initialise matrix and set diagonals to minus identity
+		for (int i = 0; i < N * N; ++i) {
+			if (i % (N + 1) == 0) {
+				minus_t_D_inv_L[i] = -1 * time;
+			} else {
+				minus_t_D_inv_L[i] = 0;
+			}
+
+		}
+
+		// fill in the rest
+		for (EdgeIt e(graph); e != lemon::INVALID; ++e) {
+			Node u = u(e);
+			Node v = v(e);
+			int node_id_u = id(u);
+			int node_id_v = id(v);
+			double weight_uv = weights(e);
+			// t*B_uv
+			minus_t_D_inv_L[node_id_u + N * node_id_v] += time * weight_uv
+					/ node_weighted_degree[v];
+			// t*B_vu
+			minus_t_D_inv_L[node_id_v + N * node_id_u] += time * weight_uv
+					/ node_weighted_degree[u];
+		}
 		// pass matrix to expokit and compute exponential
 		/// create new graph out of matrix
 
