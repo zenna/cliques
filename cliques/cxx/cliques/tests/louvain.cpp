@@ -25,7 +25,7 @@
 
 
 int main() {
-    std::vector<double> matrix = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    std::vector<double> matrix = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
     auto a = cliques::exp(matrix,1.0,3);
     //cliques::print_2d_vector(a);
     cliques::print_collection(a);

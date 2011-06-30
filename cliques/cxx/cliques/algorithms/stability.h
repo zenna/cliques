@@ -9,6 +9,8 @@
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
+#include<cliques/helpers/math.h>
+
 #include <cliques/algorithms/internals/linearised_internals.h>
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/disjointset.h>
@@ -129,7 +131,7 @@ struct find_full_normalised_stability {
 		//initialise matrix and set diagonals to minus identity
 		for (int i = 0; i < N * N; ++i) {
 			if (i % (N + 1) == 0) {
-				minus_t_D_inv_L[i] = -1 * time;
+				minus_t_D_inv_L[i] = -1;
 			} else {
 				minus_t_D_inv_L[i] = 0;
 			}
@@ -144,17 +146,38 @@ struct find_full_normalised_stability {
 			int node_id_v = id(v);
 			double weight_uv = weights(e);
 			// t*B_uv
-			minus_t_D_inv_L[node_id_u + N * node_id_v] += time * weight_uv
+			minus_t_D_inv_L[node_id_v + N * node_id_u] += weight_uv
 					/ node_weighted_degree[v];
 			// t*B_vu
-			minus_t_D_inv_L[node_id_v + N * node_id_u] += time * weight_uv
+			minus_t_D_inv_L[node_id_u + N * node_id_v] += weight_uv
 					/ node_weighted_degree[u];
 		}
-		// pass matrix to expokit and compute exponential
-		/// create new graph out of matrix
+		std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L, time,
+				N);
 
+		// create new graph out of matrix
+		G exp_graph;
+		G::EdgeMap exp_graph_weights(exp_graph);
 
-		cliques::LinearisedInternals internals(exp_graph, weights, partition);
+		// reserve memory space for number of nodes
+		exp_graph.reserveNode(N);
+		// add nodes
+		for (int i = 0; i < N; ++i) {
+			graph.addNode();
+		}
+		for (int i = 0; i < N; ++i) {
+			for (int j = i + 1; j < N; ++j) {
+				double weight = exp_graph_vec[N * i + j]
+						* node_weighted_degree[j];
+				if (weight > 0) {
+					typename G::Edge edge = exp_graph.addEdge(exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
+					exp_graphs_weights.set(edge, weight);
+				}
+			}
+		}
+
+		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
+				partition);
 		return (*this)(internals);
 	}
 

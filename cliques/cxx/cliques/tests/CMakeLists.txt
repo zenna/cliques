@@ -3,11 +3,11 @@ include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${graphviz_INCLUDE_DIRECTORIES})
 
 link_directories(/home/mts09/compiler/GCC/libs/install/lib/)
-
+SET (CMAKE_Fortran_COMPILER gfortran)
+#SET(CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "")
 #set(CMAKE_CXX_COMPILER g++-4.6)
 set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 
-SET (CMAKE_Fortran_COMPILER  gfortran)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 ENABLE_LANGUAGE(Fortran)
 SET(F_OBJ expokit.f)
