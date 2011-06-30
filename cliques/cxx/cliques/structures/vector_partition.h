@@ -52,7 +52,7 @@ public:
         is_normalised = true;
     }
 
-    void initialsie_as_global() {
+    void initialise_as_global() {
         partition_vector = std::vector<int>(partition_vector.size(), 0);
     }
 

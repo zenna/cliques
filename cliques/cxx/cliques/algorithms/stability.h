@@ -5,10 +5,12 @@
 #include <map>
 
 #include <lemon/list_graph.h>
+#include <lemon/smart_graph.h>
 #include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
+//#include <cliques/helpers.h>
 #include<cliques/helpers/math.h>
 
 #include <cliques/algorithms/internals/linearised_internals.h>
@@ -27,7 +29,7 @@ struct find_linearised_normalised_stability {
 	}
 
 	template<typename G, typename P, typename W>
-	double operator ()(G &graph, P &partition, W &weights, double time) {
+	double operator ()(G &graph, P &partition, W &weights) {
 		cliques::LinearisedInternals internals(graph, weights, partition);
 		return (*this)(internals);
 	}
@@ -102,14 +104,14 @@ struct find_full_normalised_stability {
 	find_linearised_normalised_stability lin_norm_stability;
 
 	find_full_normalised_stability(double markov_time) :
-		markov_time(markov_time), lin_norm_stability(markov_time) {
+		markov_time(markov_time), lin_norm_stability(1) {
 	}
 
 	template<typename G, typename P, typename W>
-	double operator ()(G &graph, P &partition, W &weights, double time) {
+	double operator ()(G &graph, P &partition, W &weights) {
 
 		typedef typename G::Node Node;
-		typedef typename T::NodeIt NodeIt;
+		typedef typename G::NodeIt NodeIt;
 		typedef typename G::EdgeIt EdgeIt;
 		/////////////////
 		// read out graph into matrix
@@ -140,45 +142,50 @@ struct find_full_normalised_stability {
 
 		// fill in the rest
 		for (EdgeIt e(graph); e != lemon::INVALID; ++e) {
-			Node u = u(e);
-			Node v = v(e);
-			int node_id_u = id(u);
-			int node_id_v = id(v);
-			double weight_uv = weights(e);
+			Node u = graph.u(e);
+			Node v = graph.v(e);
+			int node_id_u = graph.id(u);
+			int node_id_v = graph.id(v);
+			double weight_uv = weights[e];
 			// t*B_uv
 			minus_t_D_inv_L[node_id_v + N * node_id_u] += weight_uv
-					/ node_weighted_degree[v];
+					/ node_weighted_degree[node_id_v];
 			// t*B_vu
 			minus_t_D_inv_L[node_id_u + N * node_id_v] += weight_uv
-					/ node_weighted_degree[u];
+					/ node_weighted_degree[node_id_u];
 		}
-		std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L, time,
+
+		// call expokit
+		std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L, markov_time,
 				N);
+
+//		cliques::print_collection(exp_graph_vec);
 
 		// create new graph out of matrix
 		G exp_graph;
-		G::EdgeMap exp_graph_weights(exp_graph);
+		typename G::template EdgeMap<double>  exp_graph_weights(exp_graph);
 
 		// reserve memory space for number of nodes
 		exp_graph.reserveNode(N);
 		// add nodes
 		for (int i = 0; i < N; ++i) {
-			graph.addNode();
+			exp_graph.addNode();
 		}
+
 		for (int i = 0; i < N; ++i) {
 			for (int j = i + 1; j < N; ++j) {
 				double weight = exp_graph_vec[N * i + j]
 						* node_weighted_degree[j];
 				if (weight > 0) {
 					typename G::Edge edge = exp_graph.addEdge(exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
-					exp_graphs_weights.set(edge, weight);
+					exp_graph_weights.set(edge, weight);
 				}
 			}
 		}
 
 		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);
-		return (*this)(internals);
+		return lin_norm_stability(internals);
 	}
 
 };

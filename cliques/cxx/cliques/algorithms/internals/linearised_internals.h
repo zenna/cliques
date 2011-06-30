@@ -83,7 +83,6 @@ namespace cliques {
 
                 // weight of edge
                 double weight = weights[edge];
-
                 // add weight to node weight
                 node_to_w[node_u_id] += weight;
                 node_to_w[node_v_id] += weight;

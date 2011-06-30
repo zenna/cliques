@@ -1,25 +1,25 @@
 #include <iostream>
-//#include "cliques/algorithms/all_partitions.h"
-//#include <cliques/helpers.h>
-//#include <cliques/algorithms/stability.h>
+//#include <cliques/algorithms/all_partitions.h>
+
+#include <cliques/algorithms/stability.h>
 //#include <cliques/algorithms/modularity.h>
-//
-//#include <cliques/structures/make_graphs.h>
+
+#include <cliques/structures/make_graphs.h>
 //#include <cliques/drawing/colour_maps.h>
 //
 //#include <cliques/algorithms/louvain.h>
-//
-//#include <cliques/structures/vector_partition.h>
-//
+
+#include <cliques/structures/vector_partition.h>
+
 //#include <lemon/list_graph.h>
-//#include <lemon/smart_graph.h>
+#include <lemon/smart_graph.h>
 //#include <lemon/concepts/graph_components.h>
 //#include <lemon/concepts/graph.h>
 //#include <lemon/connectivity.h>
-//
-//#include <vector>
 
-//#include <cliques/graphhelpers.h>
+#include <vector>
+
+#include <cliques/graphhelpers.h>
 #include <cliques/helpers.h>
 #include <cliques/helpers/math.h>
 
@@ -29,17 +29,22 @@ int main() {
     auto a = cliques::exp(matrix,1.0,3);
     //cliques::print_2d_vector(a);
     cliques::print_collection(a);
-//
-//	typedef cliques::VectorPartition partition;
-//	lemon::SmartGraph orange_graph;
-//	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
-//    typedef cliques::VectorPartition VecPartition;
-//	double stability = 0;
-//	cliques::make_complete_graph(orange_graph,5, weights);
-//
-//	double current_markov_time = 1.0;
-//	cliques::VectorPartition singletons(5);
-//	singletons.initialise_as_singletons();
+
+	typedef cliques::VectorPartition partition;
+	lemon::SmartGraph orange_graph;
+	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
+    typedef cliques::VectorPartition VecPartition;
+	double stability = 0;
+	cliques::make_complete_graph(orange_graph,3, weights);
+
+	double current_markov_time = 0.001;
+	cliques::VectorPartition singletons(5);
+	singletons.initialise_as_singletons();
+	cliques::find_full_normalised_stability quality(current_markov_time);
+
+	stability = quality(orange_graph,singletons,weights);
+
+
 //
 //    cliques::Logging<VecPartition> log_louvain;
 //	std::vector<partition> optimal_partitions;
@@ -53,7 +58,7 @@ int main() {
 //	for (int i = 0; i < length; i++) {
 //		std::cout << i << " " << best_partition.find_set(i) << "\n";
 //	}
-//	std::cout << stability << std::endl;
+	std::cout << stability << std::endl;
 
 	return 0;
 }
