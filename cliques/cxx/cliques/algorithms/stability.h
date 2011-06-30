@@ -157,9 +157,6 @@ struct find_full_normalised_stability {
                     / node_weighted_degree[node_id_u];
         }
 
-        cliques::print_collection(minus_t_D_inv_L);
-        cliques::print_collection(node_weighted_degree);
-
 	}
 
 	template<typename P>

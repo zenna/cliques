@@ -301,133 +301,133 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
  @brief  Uniformly sample partition space using Metropolis-Hastings
  // TODO make type partition type independent
   */
-template<typename G, typename S, typename Logger>
-void sample_uniform_metropolis(G &graph, int num_samples,
-        int num_steps_per_sample, S &sampled_partitions, Logger &logger) {
-    typedef typename boost::unordered_set<cliques::VectorPartition,
-            cliques::partition_hash, cliques::partition_equal> partition_set;
-
-    int num_sampled = 0;
-    int num_steps = 0;
-    int num_nodes = lemon::countNodes(graph);
-    cliques::VectorPartition current_partition(num_nodes);
-    current_partition.initialise_as_singletons();
-
-    std::uniform_real_distribution<> real_distribution(0,1);
-    std::mt19937 m_engine;
-    std::mt19937 engine; // Mersenne twister MT19937
-
-    while (true) {
-        partition_set neigh_partitions;
-
-
-
-        std::vector<int>  debug_partition_vector = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0};
-        cliques::VectorPartition debug_partition(debug_partition_vector);
-
-        if (current_partition == debug_partition) {
-            cliques::output("HOLD UP A MINUTE");
-        }
-
-        cliques::find_neighbours(graph, current_partition, neigh_partitions);
-        int num_current_neighs = neigh_partitions.size();
-
-        cliques::output("\nThe following partition", num_current_neighs);
-        cliques::print_partition_line(current_partition);
-        cliques::output("has", num_current_neighs, "neighbours");
-
-
-        for (auto a = neigh_partitions.begin(); a != neigh_partitions.end(); ++a) {
-            cliques::print_partition_line(*a);
-        }
-        std::uniform_int_distribution<int> distribution(0,
-                num_current_neighs-1);
-
-        while (true) {
-            int rand_neigh = distribution(engine);
-
-            auto set_itr = neigh_partitions.begin();
-            for (int i = 0; i < rand_neigh; ++i) {
-                ++set_itr;
-            }
-            cliques::VectorPartition proposed_partition = *set_itr;
-            logger.log(proposed_partition);
-            partition_set proposed_neighs;
-            //cliques::print_partition_list(proposed_partition);
-            cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
-            int num_proposed_neighs = proposed_neighs.size();
-
-            //Metropolis-Hastings acceptance alpha
-            double alpha = real_distribution(m_engine);
-            double rand_real_num = double(num_current_neighs) / double(num_proposed_neighs);
-
-            if (alpha < rand_real_num) {
-                num_steps++;
-                current_partition = proposed_partition;
-                break;
-            }
-        }
-        if (num_steps % num_steps_per_sample == 0) {
-        	current_partition.normalise_ids();
-            sampled_partitions.insert(current_partition);
-            logger.log(current_partition);
-            num_sampled++;
-            //cliques::output(num_sampled, sampled_partitions.size());
-        }
-        if (num_sampled == num_samples) {
-            break;
-        }
-    }
-}
+//template<typename G, typename S, typename Logger>
+//void sample_uniform_metropolis(G &graph, int num_samples,
+//        int num_steps_per_sample, S &sampled_partitions, Logger &logger) {
+//    typedef typename boost::unordered_set<cliques::VectorPartition,
+//            cliques::partition_hash, cliques::partition_equal> partition_set;
+//
+//    int num_sampled = 0;
+//    int num_steps = 0;
+//    int num_nodes = lemon::countNodes(graph);
+//    cliques::VectorPartition current_partition(num_nodes);
+//    current_partition.initialise_as_singletons();
+//
+//    std::uniform_real_distribution<> real_distribution(0,1);
+//    std::mt19937 m_engine;
+//    std::mt19937 engine; // Mersenne twister MT19937
+//
+//    while (true) {
+//        partition_set neigh_partitions;
+//
+//
+//
+//        std::vector<int>  debug_partition_vector = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0};
+//        cliques::VectorPartition debug_partition(debug_partition_vector);
+//
+//        if (current_partition == debug_partition) {
+//            cliques::output("HOLD UP A MINUTE");
+//        }
+//
+//        cliques::find_neighbours(graph, current_partition, neigh_partitions);
+//        int num_current_neighs = neigh_partitions.size();
+//
+//        cliques::output("\nThe following partition", num_current_neighs);
+//        cliques::print_partition_line(current_partition);
+//        cliques::output("has", num_current_neighs, "neighbours");
+//
+//
+//        for (auto a = neigh_partitions.begin(); a != neigh_partitions.end(); ++a) {
+//            cliques::print_partition_line(*a);
+//        }
+//        std::uniform_int_distribution<int> distribution(0,
+//                num_current_neighs-1);
+//
+//        while (true) {
+//            int rand_neigh = distribution(engine);
+//
+//            auto set_itr = neigh_partitions.begin();
+//            for (int i = 0; i < rand_neigh; ++i) {
+//                ++set_itr;
+//            }
+//            cliques::VectorPartition proposed_partition = *set_itr;
+//            logger.log(proposed_partition);
+//            partition_set proposed_neighs;
+//            //cliques::print_partition_list(proposed_partition);
+//            cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
+//            int num_proposed_neighs = proposed_neighs.size();
+//
+//            //Metropolis-Hastings acceptance alpha
+//            double alpha = real_distribution(m_engine);
+//            double rand_real_num = double(num_current_neighs) / double(num_proposed_neighs);
+//
+//            if (alpha < rand_real_num) {
+//                num_steps++;
+//                current_partition = proposed_partition;
+//                break;
+//            }
+//        }
+//        if (num_steps % num_steps_per_sample == 0) {
+//        	current_partition.normalise_ids();
+//            sampled_partitions.insert(current_partition);
+//            logger.log(current_partition);
+//            num_sampled++;
+//            //cliques::output(num_sampled, sampled_partitions.size());
+//        }
+//        if (num_sampled == num_samples) {
+//            break;
+//        }
+//    }
+//}
 
 /**
  @brief  Uniformly sample partition space using Metropolis-Hastings
  // TODO make type partition type independent
   */
-template<typename G, typename P, typename Logger>
-void sample_uniform_biased(G &graph, int num_samples,
-        int num_steps_per_sample, boost::unordered_set<P, cliques::partition_hash,
-        cliques::partition_equal> &sampled_partitions, Logger &logger) {
-    typedef typename boost::unordered_set<P,
-            cliques::partition_hash, cliques::partition_equal> partition_set;
-    typedef typename G::Edge Edge;
-
-    int num_sampled = 0;
-    int num_steps = 0;
-    int num_nodes = lemon::countNodes(graph);
-    P current_partition(num_nodes);
-    current_partition.initialise_as_singletons();
-
-    std::mt19937 rand_engine; // Mersenne twister MT19937
-    std::vector<Edge> edges;
-
-    for (typename G::EdgeIt e(graph); e != lemon::INVALID; ++e) {
-    	edges.push_back(e);
-    }
-
-    std::uniform_int_distribution<int> distribution(0,
-            edges.size()-1);
-
-    while (true) {
-        Edge rand_edge = edges[distribution(rand_engine)];
-    	P new_partition = find_random_connected_neighbour(graph, current_partition, rand_edge, rand_engine);
-
-    	// Try again if no neighbour found
-    	if (new_partition == current_partition) {
-        	continue;
-        }
-        current_partition = new_partition;
-    	if (num_steps % num_steps_per_sample == 0) {
-        	current_partition.normalise_ids();
-            sampled_partitions.insert(current_partition);
-            logger.log(current_partition);
-            num_sampled++;
-        }
-        ++num_steps;
-        if (num_sampled == num_samples) {
-            break;
-        }
-    }
-}
+//template<typename G, typename P, typename Logger>
+//void sample_uniform_biased(G &graph, int num_samples,
+//        int num_steps_per_sample, boost::unordered_set<P, cliques::partition_hash,
+//        cliques::partition_equal> &sampled_partitions, Logger &logger) {
+//    typedef typename boost::unordered_set<P,
+//            cliques::partition_hash, cliques::partition_equal> partition_set;
+//    typedef typename G::Edge Edge;
+//
+//    int num_sampled = 0;
+//    int num_steps = 0;
+//    int num_nodes = lemon::countNodes(graph);
+//    P current_partition(num_nodes);
+//    current_partition.initialise_as_singletons();
+//
+//    std::mt19937 rand_engine; // Mersenne twister MT19937
+//    std::vector<Edge> edges;
+//
+//    for (typename G::EdgeIt e(graph); e != lemon::INVALID; ++e) {
+//    	edges.push_back(e);
+//    }
+//
+//    std::uniform_int_distribution<int> distribution(0,
+//            edges.size()-1);
+//
+//    while (true) {
+//        Edge rand_edge = edges[distribution(rand_engine)];
+//    	P new_partition = find_random_connected_neighbour(graph, current_partition, rand_edge, rand_engine);
+//
+//    	// Try again if no neighbour found
+//    	if (new_partition == current_partition) {
+//        	continue;
+//        }
+//        current_partition = new_partition;
+//    	if (num_steps % num_steps_per_sample == 0) {
+//        	current_partition.normalise_ids();
+//            sampled_partitions.insert(current_partition);
+//            logger.log(current_partition);
+//            num_sampled++;
+//        }
+//        ++num_steps;
+//        if (num_sampled == num_samples) {
+//            break;
+//        }
+//    }
+//}
 
 }

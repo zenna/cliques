@@ -49,13 +49,14 @@ def parse_args():
     
     for o, a in opts:
         if o in ("-x", "--prefix"):
-            coords_file = '{}_{}.mat'.format(a, 'coords')
-            edges_file = '{}_{}.edj'.format(a, 'landscape_edgelist')
-            energy_file = '{}_{}.mat'.format(a, 'energy')
-            output_file = '{}_{}.mat'.format(a, 'out.json')
-            basins_file = '{}_{}.mat'.format(a, 'greedy_basins')
-            partitions_file = '{}_{}.mat'.format(a, 'partitions')
-            graph_file = '{}_{}.edj'.format(a, 'graph_edgelist')
+            print "araraad", a
+            coords_file = '%s_%s.mat'%(a, 'coords')
+            edges_file = '%s_%s.edj'%(a, 'landscape_edgelist')
+            energy_file = '%s_%s.mat'%(a, 'energy')
+            output_file = '%s_%s.mat'%(a, 'out.json')
+            basins_file = '%s_%s.mat'%(a, 'greedy_basins')
+            partitions_file = '%s_%s.mat'%(a, 'partitions')
+            graph_file = '%s_%s.edj'%(a, 'graph_edgelist')
     
     for o, a in opts:
         if o in ("-c", "--coordinates"):
