@@ -13,7 +13,7 @@ else
 end
 
 % Generates the adjacency matrix A
-num_vertices = max(X(:,1)) + offset;
+num_vertices = max([X(:,1);X(:,2)]) + offset;
 A = sparse(num_vertices,num_vertices);
 if (length(X(1,:))==3)
     for i = 1:length(X(:,1))
