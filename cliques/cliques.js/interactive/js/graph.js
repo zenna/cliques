@@ -3,6 +3,7 @@ function Graph(data, scene) {
     this.coords = data.coords;
     this.energies = data.energies;
     this.edges = data.edges;
+    this.processes = data.processes;
     this.mean_position = {
         x:0.0,
         y:0.0,

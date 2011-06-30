@@ -112,6 +112,7 @@ function App(width, height, name) {
 			return;
 		}
 		console.log(landscape.partitions[id]);
+		
 		var colorMap = new cliques.CommunityColorMap()
 		var partition_colors = colorMap.getColors(partition);
 		orig_graph.paint_nodes(partition_colors);

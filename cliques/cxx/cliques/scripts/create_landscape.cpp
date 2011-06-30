@@ -85,8 +85,8 @@ int main(int ac, char* av[]) {
     bool find_partitions, create_space, find_stabs, find_basins, find_dists;
     find_partitions = create_space = find_stabs = find_basins = find_dists = false;
 
-//    cliques::output("Find Connected Communities");
-//    auto a = cliques::find_connected_communities(orange_graph);
+    cliques::output("Find Connected Communities");
+    auto a = cliques::find_connected_communities(orange_graph);
 //    cliques::print_2d_vector(a);
 //    cliques::output(a.size());
 //    cliques::output("neighbours of ");
