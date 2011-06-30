@@ -67,8 +67,12 @@ struct find_linearised_normalised_stability {
 		} else {
 			std::cout << "This community does not exist!!!" << std::endl;
 		}
-		//        cliques::output("Q", q);
-		return q;/// internals.comm_w_tot[i] * internals.two_m;
+
+		if(internals.comm_w_tot[i]==internals.two_m){
+		    return q;
+		}
+		else
+		return q / ((internals.comm_w_tot[i] / internals.two_m));// /(1-internals.comm_w_tot[i] / internals.two_m));
 	}
 
 };
@@ -199,7 +203,13 @@ struct find_full_normalised_stability {
 
         // call expokit
         int N = node_weighted_degree.size();
+
+//        cliques::output("minus");
+//        cliques::print_collection(minus_t_D_inv_L, N);
         std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L, markov_time,N);
+//        cliques::output("exp");
+//        cliques::print_collection(exp_graph_vec, N);
+
         // create new graph out of matrix find_stability<lemon::SmartGraph>(partiton,time)
         lemon::SmartGraph exp_graph;
         lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
@@ -211,17 +221,27 @@ struct find_full_normalised_stability {
             exp_graph.addNode();
         }
 
+        std::vector<double> effective_graph(N*N,0);
         for (int i = 0; i < N; ++i) {
             for (int j = i; j < N; ++j) {
                 double weight = exp_graph_vec[N * i + j]
                         * node_weighted_degree[j];
-
+                effective_graph[N*i+j] =effective_graph[N*j+i] = weight;
                 if (weight > 0) {
                     lemon::SmartGraph::Edge edge = exp_graph.addEdge(exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
                     exp_graph_weights.set(edge, weight);
                 }
             }
         }
+
+//        cliques::print_collection(effective_graph,N);
+//        double m = 0.0;
+//        for (lemon::SmartGraph::EdgeIt e(exp_graph); e!= lemon::INVALID; ++e) {
+//            m += exp_graph_weights[e];
+//        }
+//        cliques::output("edges", m);
+//        cliques::output("num_edges 2", lemon::countEdges(exp_graph));
+
 
         cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
                 partition);

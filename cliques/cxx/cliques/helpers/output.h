@@ -39,6 +39,21 @@ void print_collection(T collection) {
     std::cout << std::endl;
 }
 
+template<class T>
+void print_collection(T collection, int new_line) {
+    int i =0;
+    for (class T::iterator itr = collection.begin(); itr != collection.end(); ++itr) {
+        if (i % new_line == 0) {
+            std::cout << "\n";
+        }
+        std::cout << *itr << ", ";
+        ++i;
+
+    }
+    std::cout << std::endl;
+}
+
+
 //Since variadic templates are recursive, must have a base case
 void output() { std::cout << '\n'; }
 

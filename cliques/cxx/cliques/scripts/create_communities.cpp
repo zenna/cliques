@@ -88,10 +88,10 @@ int main(int ac, char* av[]) {
     //    cliques::output(communities.size(), "connected communities");
     //    cliques::output("neighbours of ");
     //    cliques::print_collection(a[0]);
-//    std::vector<double> markov_times;
-//    for (double t = 0.00001; t < 1000.0; t = t * 1.5) {
-//        markov_times.push_back(t);
-//    }
+    std::vector<double> markov_times;
+    for (double t = 0.00001; t < 500.0; t = t * 1.05) {
+        markov_times.push_back(t);
+    }
     //    auto communities = cliques::find_community_neighbours(orange_graph, a[0]);
 
     //    cliques::print_2d_vector(b);
@@ -120,8 +120,8 @@ int main(int ac, char* av[]) {
 //    cliques::output(markov_times.size());
 
     cliques::find_full_normalised_stability func(orange_graph, weights);
-    std::vector<double> best_stabilities = {0.73333,0.69647,0.6473,0.58382,0.51086,0.44223,0.40007,0.36686,0.32548,0.27528,0.21703,0.15439,0.09462,0.046789,0.016991,0.0039573,0.00048659,2.3857e-05,3.1292e-07};
-    std::vector<double> markov_times = {0.1,0.14384,0.20691,0.29764,0.42813,0.61585,0.88587,1.2743,1.833,2.6367,3.7927,5.4556,7.8476,11.288,16.238,23.357,33.598,48.329,69.519};
+//    std::vector<double> best_stabilities = {0.73333,0.69647,0.6473,0.58382,0.51086,0.44223,0.40007,0.36686,0.32548,0.27528,0.21703,0.15439,0.09462,0.046789,0.016991,0.0039573,0.00048659,2.3857e-05,3.1292e-07};
+//    std::vector<double> markov_times = {0.1,0.14384,0.20691,0.29764,0.42813,0.61585,0.88587,1.2743,1.833,2.6367,3.7927,5.4556,7.8476,11.288,16.238,23.357,33.598,48.329,69.519};
     for (unsigned int i = 0; i < markov_times.size(); ++i) {
         stabs_file << markov_times[i] << " ";
 
@@ -129,7 +129,7 @@ int main(int ac, char* av[]) {
             cliques::VectorPartition p = cliques::community_to_partition(
                     orange_graph, *itr, 0);
             double stability = func(p, 1, markov_times[i]);
-            stabs_file << stability << " ";
+            stabs_file << stability  << " ";
         }
         if (i + 1 != markov_times.size()) {
             stabs_file << std::endl;
