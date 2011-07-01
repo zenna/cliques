@@ -11,9 +11,12 @@ set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -llapack -lblas -DUSE_BOOST")
 #add_executable(compare_robustness compare_robustness.cpp)
 #target_link_libraries(compare_robustness ${Boost_LIBRARIES})
 
-#add_executable(create_landscape create_landscape.cpp)
-#target_link_libraries(create_landscape ${Boost_LIBRARIES})
-
+add_executable(create_landscape create_landscape.cpp)
+target_link_libraries(create_landscape ${Boost_LIBRARIES})
+target_link_libraries(create_landscape expokit)
+target_link_libraries(create_landscape gfortran)
+target_link_libraries(create_landscape blas)
+target_link_libraries(create_landscape lapack)
 
 
 ADD_EXECUTABLE(create_communities create_communities.cpp)
