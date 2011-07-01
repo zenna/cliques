@@ -69,8 +69,6 @@ void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, boost
     typedef typename boost::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
 
-//    auto internals = cliques::gen(compute_quality, graph, weights);
-//    compute_quality(p)
     P partition(lemon::countNodes(graph));
     partition.initialise_as_singletons();
 
@@ -81,12 +79,9 @@ void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, boost
             bool has_improved = false;
             partition_set neighs;
             cliques::find_neighbours(graph, best_neighbour, neighs);
-//            auto internals = cliques::gen(compute_quality, graph, weights, best_neighbour);
             double best_quality = compute_quality(best_neighbour, time);
 
             for (auto neigh_itr = neighs.begin(); neigh_itr != neighs.end(); ++neigh_itr) {
-//                auto neigh_internals = cliques::gen(compute_quality, graph, weights, *neigh_itr);
-                //Internals neigh_internals(graph, weights, *neigh_itr);
                 double neigh_quality = compute_quality(*neigh_itr, time);
                 if (best_quality < neigh_quality) {
                     best_quality = neigh_quality;

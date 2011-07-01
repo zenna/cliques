@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/circ_ladd_n14.json', function(data) {
+	$.getJSON('js/data/barbell_n8.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -31,12 +31,19 @@ $(document).ready( function() {
 		box = new cliques.SelectionBox(graph_view.camera.domElement);
 
 		toolbox = new ProcessToolbox(landscape_view);
-		stabilities = data.processes[0];
-		basins = data.processes[1];
-		toolbox.addProcess(new NodeProcess(stabilities, landscape));
-		// toolbox.addProcess(new BasinProcess(basins, landscape));
-		// toolbox.addProcess(new NodeProcess(louvain, landscape));
-		// toolbox.addProcess(new NodeProcess(louvain2, landscape));
+		
+		// Add Processes
+		for (var i = 0;i<data.processes.length; ++i) {
+			var process = data.processes[i];
+			switch(process.type) {
+				case 'basins':
+					toolbox.addProcess(new BasinProcess(process, landscape));
+					break;
+				case 'stability':
+					toolbox.addProcess(new NodeProcess(process, landscape));
+					break;
+			}
+		}
 
 	}, function() {
 		alert("could not load data");

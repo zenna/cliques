@@ -22,7 +22,7 @@ def usage():
 
 def parse_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ti:b:g:p:r:c:e:h:o:x:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "y:ti:b:g:p:r:c:e:h:o:x:", ["help", "output="])
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -36,6 +36,7 @@ def parse_args():
     basins_file = None
     timestamp_output = False
     input_file = None
+    landscape_type = 'partition'
     output_file = "out"
       
     for o, a in opts:
@@ -75,11 +76,13 @@ def parse_args():
             graph_file = a
         elif o in ("-i", "--input"):
             input_file = a
+        elif o in ("-y", "--type"):
+            landscape_type = a
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
    
-    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file
+    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file, landscape_type
 
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
@@ -132,7 +135,7 @@ def file_to_basin_process(filename, cast_type):
     return {'type':'basins', 'data':data}
     
 def main():
-    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file = parse_args()
+    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file, landscape_type = parse_args()
     
     if input_file:
         print "we have input coords"
@@ -170,6 +173,9 @@ def main():
         except:
             print "no basin file"
 
+
+    if landscape_type:
+        output['landscapeType'] = landscape_type
     f = open(output_file, 'w')
     simplejson.dump(output, f)
 

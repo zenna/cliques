@@ -13,6 +13,10 @@ function Graph(data, scene) {
     this.materials = [], this.nodes = [];
     this.offset = [];
     this.num_dim = this.coords[0].length;
+    if (data.landscapeType) {
+    	this.landscapeType = data.landscapeType;
+    }
+    
 
     /**
      Create geometry for each node in the graph.

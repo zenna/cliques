@@ -1,10 +1,10 @@
-cliques.PartititionColorMap = function() {
+cliques.PartitionColorMap = function() {
 	cliques.ColorMap.call(this);
 }
-cliques.PartititionColorMap.prototype = new cliques.ColorMap;
-cliques.PartititionColorMap.prototype.constructor = cliques.PartititionColorMap;
+cliques.PartitionColorMap.prototype = new cliques.ColorMap;
+cliques.PartitionColorMap.prototype.constructor = cliques.PartitionColorMap;
 
-cliques.PartititionColorMap.prototype.getColors = function(partition) {
+cliques.PartitionColorMap.prototype.getColors = function(partition) {
 	var groups = [];
 	var colors = [];
 	this.scaler.updateExtrema(0);

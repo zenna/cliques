@@ -102,7 +102,7 @@ int main(int ac, char* av[]) {
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
     std::vector<double> markov_times;
-    for (double t = 0.01; t < 5.0; t = t * 1.005) {
+    for (double t = 1e-9; t < 500.0; t = t * 1.05) {
         markov_times.push_back(t);
     }
     cliques::output(markov_times.size());
@@ -112,6 +112,8 @@ int main(int ac, char* av[]) {
         for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
             double stability = func(*itr, markov_times[i]);
             stabs_file << stability << " ";
+            cliques::print_partition_line(*itr);
+            cliques::output("time:", markov_times[i], "stabilityt", stability);
         }
         if (i + 1 != markov_times.size()) {
             stabs_file << std::endl;
@@ -220,7 +222,7 @@ int main(int ac, char* av[]) {
     // Format: time optima_node basin_node basin_value basin_node basin_value
     int num_nodes = lemon::countNodes(orange_graph);
     for (unsigned int i = 0; i < markov_times.size(); ++i) {
-        double current_markov_time = markov_times[0];
+        double current_markov_time = markov_times[i];
         std::map<int, std::vector<int> > optima_to_basin;
 
         // Find all Maxima First
@@ -230,8 +232,8 @@ int main(int ac, char* av[]) {
             VecPartitionSet temp_set;
             temp_set.insert(*itr);
             VecPartitionSet all_maxima;
-            cliques::sample_maxima(orange_graph, weights, func, current_markov_time, all_maxima,
-                    temp_set, no_logging);
+            cliques::sample_maxima(orange_graph, weights, func,
+                    current_markov_time, all_maxima, temp_set, no_logging);
 
             optima = *(all_maxima.begin());
             optima.normalise_ids();
@@ -239,7 +241,7 @@ int main(int ac, char* av[]) {
             int partition_id = orange_graph.id(map.left.at(*itr));
             optima_to_basin[optima_id].push_back(partition_id);
         }
-        cliques::output("num_basins", optima_to_basin.size());
+        cliques::output("time", current_markov_time, "num_basins", optima_to_basin.size());
         for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
             lemon::SmartGraph::Node n = orange_graph.nodeFromId(itr->first);
             basin_file << markov_times[i] << " " << itr->first << " ";
@@ -251,55 +253,49 @@ int main(int ac, char* av[]) {
     }
     basin_file.close();
 
-    //    for (auto p = all_maxima.begin(); p != all_maxima.end(); ++p) {
-    //        cliques::print_partition_line(*p);
-    //    }
+    std::ofstream space_file;
+    space_file.open(filename_prefix + "_space_edgelist.edj");
+    for (lemon::SmartGraph::EdgeIt e(space); e != lemon::INVALID; ++e) {
+        auto n1 = space.u(e);
+        auto n2 = space.v(e);
+        space_file << space.id(n1) << " " << space.id(n2) << std::endl;
+    }
+    space_file.close();
 
-    //
-    //    std::ofstream space_file;
-    //    space_file.open(filename_prefix + "_space_edgelist.edj");
-    //    for (lemon::SmartGraph::EdgeIt e(space); e != lemon::INVALID; ++e) {
-    //        auto n1 = space.u(e);
-    //        auto n2 = space.v(e);
-    //        space_file << space.id(n1) << " " << space.id(n2)
-    //                << std::endl;
-    //    }
-    //    space_file.close();
+    cliques::output("Finding distances");
+    //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
+    auto X = cliques::find_edit_dists(all_partitions);
 
-    //    cliques::output("Finding distances");
-    //    //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
-    //    auto X = cliques::find_edit_dists(all_partitions);
-    //
-    //    // From edit matrix: find only ones. output into two_d matrix
-    //    cliques::output(X.n_cols, X.n_rows);
-    //    std::vector<std::vector<int> > edges;
-    //    for (unsigned int i = 0; i < X.n_rows; ++i) {
-    //        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
-    //            if (X(i, j) == 1) {
-    //                std::vector<int> edge;
-    //                edge.push_back(i);
-    //                edge.push_back(j);
-    //                edges.push_back(edge);
-    //            }
-    //        }
-    //    }
-    //    arma::umat edges_mat(edges.size(), 2);
-    //    int i = 0;
-    //    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-    //        edges_mat(i, 0) = (*itr)[0];
-    //        edges_mat(i, 1) = (*itr)[1];
-    //        ++i;
-    //    }
-    //    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
-    ////
-    ////    cliques::output("finding embedding");
-    ////    auto L = cliques::embed_mds(X, num_dim);
-    ////    arma::mat L_t = arma::trans(L);
-    ////    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
-    ////
-    ////    auto D_y = cliques::euclid_pairwise_dists(L_t);
-    ////    cliques::output("residual variance", cliques::residual_variance(X, D_y));
-    //
+    // From edit matrix: find only ones. output into two_d matrix
+    cliques::output(X.n_cols, X.n_rows);
+    std::vector<std::vector<int> > edges;
+    for (unsigned int i = 0; i < X.n_rows; ++i) {
+        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
+            if (X(i, j) == 1) {
+                std::vector<int> edge;
+                edge.push_back(i);
+                edge.push_back(j);
+                edges.push_back(edge);
+            }
+        }
+    }
+    arma::umat edges_mat(edges.size(), 2);
+    int i = 0;
+    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
+        edges_mat(i, 0) = (*itr)[0];
+        edges_mat(i, 1) = (*itr)[1];
+        ++i;
+    }
+    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
+
+    cliques::output("finding embedding");
+    auto L = cliques::embed_mds(X, num_dim);
+    arma::mat L_t = arma::trans(L);
+    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
+
+    auto D_y = cliques::euclid_pairwise_dists(L_t);
+    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+
     std::ofstream vector_file;
     vector_file.open(filename_prefix + "_partitions.mat");
     for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {

@@ -3,7 +3,7 @@ include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${graphviz_INCLUDE_DIRECTORIES})
 
 link_directories(/home/mts09/compiler/GCC/libs/install/lib/)
-set(CMAKE_CXX_COMPILER g++-4.6)
+#set(CMAKE_CXX_COMPILER g++-4.6)
 SET (CMAKE_Fortran_COMPILER gfortran)
 set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 

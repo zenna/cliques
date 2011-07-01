@@ -60,15 +60,14 @@ function App(width, height, name) {
 		var mouseX = event.clientX;
 		var mouseY = event.clientY;
 		var invertedMouseY = $(landscape_view.renderer.domElement).height() - mouseY;alert
-		
+
 		landscape_view.renderer.render(landscape_view.scene, landscape_view.camera);
 		var arr = new Uint8Array(4);
 		context.readPixels(mouseX, invertedMouseY, 1, 1, context.RGBA, context.UNSIGNED_BYTE, arr);
 		var id = cliques.rgbToInt(arr);
 		if (id != 0) {
 			document.body.style.cursor = 'pointer';
-		}
-		else {
+		} else {
 			document.body.style.cursor = 'default';
 		}
 
@@ -112,8 +111,13 @@ function App(width, height, name) {
 			return;
 		}
 		console.log(landscape.partitions[id]);
-		
-		var colorMap = new cliques.CommunityColorMap()
+		var colorMap;
+		if (landscape.landscapeType == 'community') {
+			colorMap = new cliques.CommunityColorMap()
+		} else {
+			colorMap = new cliques.PartitionColorMap()
+		}
+
 		var partition_colors = colorMap.getColors(partition);
 		orig_graph.paint_nodes(partition_colors);
 		orig_graph.match_edge_colours_to_node();
