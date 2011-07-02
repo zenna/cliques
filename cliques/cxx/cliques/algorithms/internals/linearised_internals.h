@@ -82,14 +82,19 @@ struct LinearisedInternals {
 
             // weight of edge
             double weight = weights[edge];
+            
+            // if selfloop, only half of the weight has to be considered
+            if (node_u_id ==  node_v_id) {
+            weight = weight/2;
+            }
+
             // add weight to node weight
             node_to_w[node_u_id] += weight;
             node_to_w[node_v_id] += weight;
             // add weight to total weight of community
             comm_w_tot[comm_of_node_u] += weight;
-            if (node_u_id != node_v_id) {
-                comm_w_tot[comm_of_node_v] += weight;
-            }
+            comm_w_tot[comm_of_node_v] += weight;
+            
             if (comm_of_node_u == comm_of_node_v) {
                 // in case the weight stems from within the community add to internal weights
                 comm_w_in[comm_of_node_u] += 2 * weight;

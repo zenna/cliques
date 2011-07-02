@@ -63,9 +63,10 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
         std::string filename = vm["graph"].as<std::string> ();
         cliques::read_edgelist_weighted(filename, graph, weights);
     } else {
+        cliques::output("making default graph graph");
         //cliques::make_path_graph(graph, 7, weights);
         //      cliques::make_ring_graph(graph, 12, weights);
-        cliques::make_complete_graph(graph, 7, weights);
+        cliques::make_complete_graph(graph, 4, weights);
     }
 }
 
