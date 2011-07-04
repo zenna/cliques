@@ -72,7 +72,8 @@ public:
         is_normalised = false;
     }
 
-    void normalise_ids() {
+    std::map<int,int> normalise_ids() {
+        std::map<int,int> set_new_to_old;
         if (!is_normalised) {
             int start_num = 0;
             std::map<int, int> set_old_to_new;
@@ -82,6 +83,7 @@ public:
                 std::map<int, int>::iterator old_set = set_old_to_new.find(*itr);
                 if (old_set == set_old_to_new.end()) {
                     set_old_to_new[*itr] = start_num;
+                    set_new_to_old[start_num] = *itr;
                     *itr = start_num;
                     start_num++;
                 } else {
@@ -89,6 +91,13 @@ public:
                 }
             }
             is_normalised = true;
+            return set_new_to_old;
+        }
+        else{
+                for (std::vector<int>::iterator itr = partition_vector.begin(); itr
+                    != partition_vector.end(); ++itr) { set_new_to_old[*itr] = *itr;
+                }
+            return set_new_to_old;
         }
     }
 

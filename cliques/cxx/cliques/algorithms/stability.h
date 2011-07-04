@@ -10,7 +10,7 @@
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
-//#include <cliques/helpers.h>
+#include <cliques/helpers.h>
 #include<cliques/helpers/math.h>
 
 #include <cliques/algorithms/internals/linearised_internals.h>
@@ -19,7 +19,7 @@
 
 namespace cliques {
 /**
- @brief  Functor for finding linearised stability of weighted graph
+ @brief  Functor for finding normalised linearised stability of weighted graph
  */
 struct find_linearised_normalised_stability {
 	double markov_time;
@@ -47,7 +47,7 @@ struct find_linearised_normalised_stability {
 						/ internals.two_m) * (double(internals.comm_w_tot[i])
 						/ internals.two_m));
 			}
-						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "q", q);
+						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
 		}
 
 		return q;
@@ -103,10 +103,16 @@ struct linearised_normalised_stability_gain {
 	}
 };
 
+
+
+/**
+ @brief  Functor for finding full normalised stability of weighted graph
+ */
 struct find_full_normalised_stability {
     std::vector<double> minus_t_D_inv_L;
     std::vector<double> node_weighted_degree;
 	find_linearised_normalised_stability lin_norm_stability;
+
 
 	template <typename G, typename M>
 	find_full_normalised_stability(G &graph, M &weights) :
@@ -159,6 +165,7 @@ struct find_full_normalised_stability {
 
 	}
 
+
 	template<typename P>
 	double operator ()(P &partition, double markov_time) {
 
@@ -194,6 +201,7 @@ struct find_full_normalised_stability {
 				partition);
 		return lin_norm_stability(internals);
 	}
+
 
     template<typename P>
     double operator ()(P &partition, int comm_id, double markov_time) {

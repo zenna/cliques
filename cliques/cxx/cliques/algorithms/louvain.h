@@ -18,6 +18,7 @@
 // TODO: On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
 // TODO: Separate out louvain into smaller functions
 // TODO: Make new version for Hijacking etc
+// TODO: make minimum improvement an input parameter
 
 namespace cliques {
 
@@ -41,7 +42,7 @@ namespace cliques {
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
 double find_optimal_partition_louvain(T &graph, W &weights,
-		QF compute_quality, QFDIFF compute_quality_diff, P initial_partition,
+		QF compute_quality, QFDIFF compute_quality_diff, double minimum_improve, P initial_partition,
 		std::vector<P> &optimal_partitions, Logger &log) {
 
 	typedef typename T::Node Node;
@@ -54,7 +55,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 	partition = initial_partition;
     auto internals = cliques::gen(compute_quality, graph, weights, partition);
 
-    double minimum_improve = 0.000000001;
+    //double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);
 	cliques::output("current_quality", current_quality);
 	bool one_level_end = false;
@@ -156,7 +157,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 	} while ((current_quality - old_quality) > minimum_improve);
 
 	// Start Second phase - create reduced graph with self loops
-	partition.normalise_ids();
+    std::map<int,int> new_comm_id_to_old_comm_id = partition.normalise_ids();
 
 	int hierarchy = optimal_partitions.size();
 	if (one_level_end == true) {
@@ -189,20 +190,29 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 
 		// Create graph from partition
 		T reduced_graph;
-		for (int i = 0; i < num_comm; i++) {
-			reduced_graph.addNode();
-		}
-
-		//Need a map set_id > node_in_reduced_graph_
+        reduced_graph.reserveNode(num_comm);
+        
+        //Need a map set_id > node_in_reduced_graph_
 		W reduced_weight_map(reduced_graph);
 
-		// Find between community total weights by checking
+        // add self-loops in new_graph
+		for (int i = 0; i < num_comm; i++) {
+			Node comm_node = reduced_graph.addNode();
+            Edge e = reduced_graph.addEdge(comm_node,comm_node);
+            int old_comm_id = new_comm_id_to_old_comm_id[i];
+            reduced_weight_map[e] = internals.comm_w_in[old_comm_id];
+		}        
+        
+		// Find between community weights by checking
 		// Edges within graph
-		int i = 0;
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
 			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
-			i++;
+
+            // internal weights already accounted for            
+            if(comm_of_node_u == comm_of_node_v){
+                continue;            
+            }
 
 			float weight = weights[edge];
 
@@ -226,7 +236,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 	    singleton_partition.initialise_as_singletons();
 		return cliques::find_optimal_partition_louvain<P>(
 				reduced_graph, reduced_weight_map, compute_quality,
-				compute_quality_diff, singleton_partition, optimal_partitions, log);
+				compute_quality_diff, minimum_improve,singleton_partition, optimal_partitions, log);
 	}
 	if (hierarchy == 0) {
 		optimal_partitions.push_back(partition);

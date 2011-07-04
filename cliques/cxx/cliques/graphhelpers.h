@@ -51,7 +51,7 @@ double find_weight_selfloops(G &graph, M &weights, NO node) {
     if (edge == lemon::INVALID) {
         return 0.0;
     } else {
-        return 2 * double(weights[edge]);
+        return double(weights[edge]);
     }
 }
 
