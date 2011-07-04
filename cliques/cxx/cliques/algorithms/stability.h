@@ -38,7 +38,7 @@ struct find_linearised_normalised_stability {
 	double operator ()(I &internals) {
 		double q = 1.0 - markov_time;
 		int size = internals.comm_w_tot.size();
-				cliques::output("time", markov_time, "size", size);
+//				cliques::output("time", markov_time, "size", size);
 
 		for (int i = 0; i < size; i++) {
 			if (internals.comm_w_tot[i] > 0) {
@@ -47,7 +47,7 @@ struct find_linearised_normalised_stability {
 						/ internals.two_m) * (double(internals.comm_w_tot[i])
 						/ internals.two_m));
 			}
-						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
+//						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
 		}
 
 		return q;

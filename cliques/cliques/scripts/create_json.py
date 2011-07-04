@@ -126,7 +126,7 @@ def file_to_basin_process(filename, cast_type):
                 else:
                     metas.append(cast_type(val))
                         
-            time_to_values[l[0]].append({'basin':l[1],'nodes':nodes,'metas':metas})
+            time_to_values[float(l[0])].append({'basin':l[1],'nodes':nodes,'metas':metas})
         
     for time in sorted(time_to_values.keys()):
         data.append({'time':float(time), 'values':time_to_values[time]})
