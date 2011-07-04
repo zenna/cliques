@@ -1,6 +1,7 @@
 #include <iostream>
 //#include <cliques/algorithms/all_partitions.h>
 
+
 #include <cliques/algorithms/stability.h>
 //#include <cliques/algorithms/modularity.h>
 

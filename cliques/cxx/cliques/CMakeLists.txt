@@ -12,3 +12,14 @@ add_subdirectory (tests)
 add_subdirectory (algorithms)
 add_subdirectory (structures)
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+SET (CMAKE_Fortran_COMPILER gfortran)
+set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
+
+
+#option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+ENABLE_LANGUAGE(Fortran)
+SET(F_OBJ expokit.f)
+
+ADD_LIBRARY (expokit STATIC ${F_OBJ})
+SET_TARGET_PROPERTIES(expokit PROPERTIES LINKER_LANGUAGE Fortran)

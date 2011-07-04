@@ -430,4 +430,20 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 //    }
 //}
 
+
+// TODO
+// Convert Graph To Transition Graph
+// Find Basin Probabilities and write to file
+// Is Partition Maxima
+// Create communities space graph
+// Create Hasse diagram type graph:
+//
+//template <typename G, typename DG>
+//void convert_graph_to_transition_graph(G &graph, std::vector<dobule> energies, DG &transition_graph) {
+//	lemon::INVALID;
+//}
+//
+//void wh
+//
+//}
 }

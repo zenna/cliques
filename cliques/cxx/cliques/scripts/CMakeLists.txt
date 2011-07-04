@@ -4,23 +4,38 @@ find_package(GraphViz REQUIRED)
 include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${graphviz_INCLUDE_DIRECTORIES})
 
-set(CMAKE_CXX_COMPILER g++-4.6)
-set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -llapack -lblas -DUSE_BOOST")
+set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -DUSE_BOOST")
 
 #add_executable(compare_robustness compare_robustness.cpp)
 #target_link_libraries(compare_robustness ${Boost_LIBRARIES})
 
 add_executable(create_landscape create_landscape.cpp)
 target_link_libraries(create_landscape ${Boost_LIBRARIES})
+target_link_libraries(create_landscape gfortran)
 target_link_libraries(create_landscape expokit)
-#target_link_libraries(create_landscape gfortran)
 target_link_libraries(create_landscape blas)
 target_link_libraries(create_landscape lapack)
 
 
 ADD_EXECUTABLE(create_communities create_communities.cpp)
 target_link_libraries(create_communities expokit)
+target_link_libraries(create_communities gfortran)
 target_link_libraries(create_communities blas)
 target_link_libraries(create_communities lapack)
 
 target_link_libraries(create_communities ${Boost_LIBRARIES})
+
+
+add_executable(louvain2 commy.cpp)
+target_link_libraries(louvain2 ${Boost_LIBRARIES})
+target_link_libraries(louvain2 gfortran)
+target_link_libraries(louvain2 expokit)
+target_link_libraries(louvain2 blas)
+target_link_libraries(louvain2 lapack)
+
+add_executable(tlouvain tlouvain.cpp)
+target_link_libraries(tlouvain ${Boost_LIBRARIES})
+target_link_libraries(tlouvain gfortran)
+target_link_libraries(tlouvain expokit)
+target_link_libraries(tlouvain blas)
+target_link_libraries(tlouvain lapack)

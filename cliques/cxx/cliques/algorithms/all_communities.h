@@ -31,9 +31,7 @@
 //*// Fix clicking issues
 //// Add more example graphs
 //
-//2. All communities
-//b// Project down
-//// Adapt data format and cliuqes.js to be able to see it.
+
 //
 //
 //2. Algorithm
@@ -41,6 +39,12 @@
 ////K-lin / Louvain esque
 //
 //d*.// Read these papers on landscapes and write draft introduction
+
+// Technical work left:
+// Algorithm
+// Creating the HSG graph
+// Create a suitable benchmark
+// Robustness measures
 
 //Hypothesis
 //The robustness of a partition is related to how diffused the basins of attraction are
