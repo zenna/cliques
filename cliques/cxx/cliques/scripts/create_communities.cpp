@@ -120,8 +120,6 @@ int main(int ac, char* av[]) {
 //    cliques::output(markov_times.size());
 
     cliques::find_full_normalised_stability func(orange_graph, weights);
-//    std::vector<double> best_stabilities = {0.73333,0.69647,0.6473,0.58382,0.51086,0.44223,0.40007,0.36686,0.32548,0.27528,0.21703,0.15439,0.09462,0.046789,0.016991,0.0039573,0.00048659,2.3857e-05,3.1292e-07};
-//    std::vector<double> markov_times = {0.1,0.14384,0.20691,0.29764,0.42813,0.61585,0.88587,1.2743,1.833,2.6367,3.7927,5.4556,7.8476,11.288,16.238,23.357,33.598,48.329,69.519};
     for (unsigned int i = 0; i < markov_times.size(); ++i) {
         stabs_file << markov_times[i] << " ";
 

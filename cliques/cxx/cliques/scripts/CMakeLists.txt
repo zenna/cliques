@@ -22,20 +22,4 @@ target_link_libraries(create_communities expokit)
 target_link_libraries(create_communities gfortran)
 target_link_libraries(create_communities blas)
 target_link_libraries(create_communities lapack)
-
 target_link_libraries(create_communities ${Boost_LIBRARIES})
-
-
-add_executable(louvain2 commy.cpp)
-target_link_libraries(louvain2 ${Boost_LIBRARIES})
-target_link_libraries(louvain2 gfortran)
-target_link_libraries(louvain2 expokit)
-target_link_libraries(louvain2 blas)
-target_link_libraries(louvain2 lapack)
-
-add_executable(tlouvain tlouvain.cpp)
-target_link_libraries(tlouvain ${Boost_LIBRARIES})
-target_link_libraries(tlouvain gfortran)
-target_link_libraries(tlouvain expokit)
-target_link_libraries(tlouvain blas)
-target_link_libraries(tlouvain lapack)

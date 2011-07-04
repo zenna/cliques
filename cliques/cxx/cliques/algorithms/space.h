@@ -20,9 +20,10 @@ namespace cliques {
 
 /**
  @brief  Find all (single node moveset) neighbours of a partition
-*/
-template <typename G, typename P, typename NO>
-bool will_move_break_partition(G &graph, const P &partition_const, NO &node_to_move) {
+ */
+template<typename G, typename P, typename NO>
+bool will_move_break_partition(G &graph, const P &partition_const,
+        NO &node_to_move) {
     typedef typename G::Node Node;
     typedef typename G::IncEdgeIt IncEdgeIt;
 
@@ -76,8 +77,7 @@ bool will_move_break_partition(G &graph, const P &partition_const, NO &node_to_m
                 if (seen_nodes.find(neigh_node_id) == seen_nodes.end()) {
                     queue.push_back(neigh_node_id);
                     seen_nodes.insert(neigh_node_id);
-                }
-                else {
+                } else {
                     continue;
                 }
 
@@ -107,18 +107,20 @@ bool will_move_break_partition(G &graph, const P &partition_const, NO &node_to_m
 
  Basic algorithm: Iterate through edges, for each node u, v of edge:
  If moving the node (or isolation) would not break the partition:
-     1. Isolate it
-     2. If u and v are not in the same set, move u to v's set
+ 1. Isolate it
+ 2. If u and v are not in the same set, move u to v's set
 
  @param[in] all_partitons reference to unordered set of partitions
  @param[out] space output graph representing the space
 
  //TODO: This can return (and does return the same partition as a neighbour
-  * Needs to be fixed.  This happens for example in a set of singletons, because
-  * isolating a node would not break a partition
+ * Needs to be fixed.  This happens for example in a set of singletons, because
+ * isolating a node would not break a partition
  */
 template<typename G, typename P>
-void find_neighbours(G &graph, P const &partition,
+void find_neighbours(
+        G &graph,
+        P const &partition,
         boost::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &neighbour_partitions) {
     typedef typename G::EdgeIt EdgeIt;
@@ -166,7 +168,8 @@ void find_neighbours(G &graph, P const &partition,
 }
 
 template<typename G, typename P, typename E, typename R>
-P find_random_connected_neighbour(G &graph, P const &partition, E &edge, R &rand_engine) {
+P find_random_connected_neighbour(G &graph, P const &partition, E &edge,
+        R &rand_engine) {
     typedef typename G::Node Node;
 
     Node n1 = graph.u(edge);
@@ -176,8 +179,8 @@ P find_random_connected_neighbour(G &graph, P const &partition, E &edge, R &rand
     int set_of_n1 = partition.find_set(n1_id);
     int set_of_n2 = partition.find_set(n2_id);
     bool are_in_same_set = (set_of_n1 == set_of_n2);
-    boost::unordered_set<P, cliques::partition_hash,
-            cliques::partition_equal> neighbour_partitions;
+    boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
+            neighbour_partitions;
 
     // Add partition with n1 isolated and in n2's set
     // Avoid using too much memory, destroy temp_partiton after use
@@ -210,18 +213,17 @@ P find_random_connected_neighbour(G &graph, P const &partition, E &edge, R &rand
     }
 
     std::uniform_int_distribution<int> distribution(0,
-            neighbour_partitions.size()-1);
+            neighbour_partitions.size() - 1);
 
     int rand_neigh = distribution(rand_engine);
     auto set_itr = neighbour_partitions.begin();
     if (neighbour_partitions.size() > 0) {
-		for (int i = 0; i < rand_neigh; ++i) {
-			++set_itr;
-		}
-		return *set_itr;
-    }
-    else {
-    	return partition;
+        for (int i = 0; i < rand_neigh; ++i) {
+            ++set_itr;
+        }
+        return *set_itr;
+    } else {
+        return partition;
     }
 }
 
@@ -239,7 +241,8 @@ P find_random_connected_neighbour(G &graph, P const &partition, E &edge, R &rand
 template<typename G, typename P>
 boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
         cliques::partition_equal>, boost::bimaps::set_of<typename G::Node> > create_space(
-        G &graph, boost::unordered_set<P, cliques::partition_hash,
+        G &graph,
+        boost::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &all_partitions, G &space) {
 
     typedef typename G::Node Node;
@@ -279,7 +282,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
                 != neighbour_partitions.end(); ++neigh_itr) {
 
             // TODO: Hack! find_neighbours can return disconnected partition
-        	// Because of isolation
+            // Because of isolation
             // This discards if not in the set of all connected partitions
             if (all_partitions.find(*neigh_itr) == all_partitions.end()) {
                 continue;
@@ -300,7 +303,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 /**
  @brief  Uniformly sample partition space using Metropolis-Hastings
  // TODO make type partition type independent
-  */
+ */
 //template<typename G, typename S, typename Logger>
 //void sample_uniform_metropolis(G &graph, int num_samples,
 //        int num_steps_per_sample, S &sampled_partitions, Logger &logger) {
@@ -383,7 +386,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 /**
  @brief  Uniformly sample partition space using Metropolis-Hastings
  // TODO make type partition type independent
-  */
+ */
 //template<typename G, typename P, typename Logger>
 //void sample_uniform_biased(G &graph, int num_samples,
 //        int num_steps_per_sample, boost::unordered_set<P, cliques::partition_hash,
@@ -430,9 +433,8 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 //    }
 //}
 
-
 // TODO
-// Convert Graph To Transition Graph
+//Convert Graph To Transition Graph
 // Find Basin Probabilities and write to file
 // Is Partition Maxima
 // Create communities space graph
@@ -446,4 +448,109 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
 //void wh
 //
 //}
+
+template<typename G, typename DG, typename M>
+void graph_to_transition_digraph(G &graph, std::vector<double> qualities,
+        DG &transition_graph, M &transition_weights) {
+    typedef typename G::NodeIt NodeIt;
+    typedef typename G::IncEdgeIt IncEdgeIt;
+    typedef typename G::Node Node;
+    typedef typename DG::Arc Arc;
+
+    int num_nodes = lemon::countNodes(graph);
+    for (int i = 0; i < num_nodes; ++i) {
+        transition_graph.addNode();
+    }
+    for (NodeIt n1(graph); n1 != lemon::INVALID; ++n1) {
+        int base_id = graph.id(n1);
+
+        double current_quality = qualities[base_id];
+        double total_weight = 0.0;
+        std::vector<Arc> unormalised_arcs;
+        for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+            Node running = graph.oppositeNode(n1, e);
+            int running_id = graph.id(running);
+            double running_quality = qualities[running_id];
+            if (running_quality > current_quality) {
+                double weight_difference = running_quality - current_quality;
+                total_weight += weight_difference;
+                Arc new_arc = transition_graph.addArc(
+                        transition_graph.nodeFromId(base_id),
+                        transition_graph.nodeFromId(running_id));
+                unormalised_arcs.push_back(new_arc);
+                transition_weights.set(new_arc, weight_difference);
+            }
+        }
+        for (auto arc = unormalised_arcs.begin(); arc != unormalised_arcs.end(); ++arc) {
+            double normalised_transition_weight = transition_weights[*arc]
+                    / total_weight;
+            transition_weights.set(*arc, normalised_transition_weight);
+        }
+    }
+}
+
+/**
+ @brief  From a graph and vector of qualities create a directed transition graph
+ The new graph has the same number of nodes, but only directed edges from one node
+ to a node of greater quality, with the edge weight the probability of going
+ to that node.
+
+ The probability is weighted, as the difference between the qualities of the nodes
+ / the total weight (positive with respect to the starting node)
+
+ */
+template<typename DG, typename M, typename NO>
+void find_basins_depth_first(DG &transition_graph, M& transition_weights, double alpha,
+        NO node, std::map<int, double> &basin_to_probabilities) {
+    typedef typename DG::OutArcIt OutArcIt;
+    typedef typename DG::InArcIt InArcIt;
+    typedef typename DG::Node Node;
+
+    for (InArcIt arc(transition_graph, node); arc != lemon::INVALID; ++arc) {
+        Node lower_node = transition_graph.runningNode(arc);
+        int lower_node_id = transition_graph.id(lower_node);
+        double weight = transition_weights[arc];
+        double new_alpha = weight * alpha;
+        basin_to_probabilities[lower_node_id] += new_alpha;
+        find_basins_depth_first(transition_graph, transition_weights, new_alpha, lower_node,
+                basin_to_probabilities);
+    }
+
+}
+
+template<typename G>
+std::map<int, std::map<int, double> > compute_probabalistic_basins(G &graph,
+        std::vector<double> qualities) {
+
+    typedef typename lemon::SmartDigraph::NodeIt NodeIt;
+    typedef typename lemon::SmartDigraph::OutArcIt OutArcIt;
+
+    lemon::SmartDigraph transition_graph;
+    lemon::SmartDigraph::ArcMap<double> transition_weights(transition_graph);
+    graph_to_transition_digraph(graph, qualities, transition_graph,
+            transition_weights);
+
+    std::map<int, std::map<int, double> >all_basins;
+
+    for (NodeIt node(transition_graph); node != lemon::INVALID; ++node) {
+        int num_better_nodes = 0;
+        for (OutArcIt arc(transition_graph, node); arc != lemon::INVALID; ++arc) {
+            num_better_nodes++;
+        }
+
+        // I.e. only if this node is a maxima
+        if (num_better_nodes == 0) {
+            cliques::output("maxima");
+            int node_id = transition_graph.id(node);
+            double alpha = 1.0;
+            std::map<int, double> basin_to_probabilities;
+            find_basins_depth_first(transition_graph, transition_weights, alpha, node, basin_to_probabilities);
+            all_basins[node_id] = basin_to_probabilities;
+        }
+    }
+
+    return all_basins;
+
+}
+
 }
