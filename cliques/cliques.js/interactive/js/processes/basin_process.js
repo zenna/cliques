@@ -18,12 +18,19 @@ BasinProcess.prototype.render = function(dataId) {
 	colorMap.updateExtrema(values.length);
 	var rgbs = [];
 
+	
 	var norm_values = [];
 	for (var i =0;i<values.length;++i) {
 		var basinColor = colorMap.getColor(i);
 		for (var j = 0;j<values[i].nodes.length;++j) {
 			var node_id = values[i].nodes[j];
-			rgbs[node_id] = basinColor;
+			var probability = values[i].metas[j];
+			var scaledBasinColor = colorMap.scaleColor(basinColor,probability);
+			if (typeof(rgbs[node_id] = 'undefined')) {
+				rgbs[node_id] = [0.0,0.0,0.0];
+			}
+			var combinedColor = colorMap.add(rgbs[node_id], scaledBasinColor);
+			rgbs[node_id] = combinedColor;
 			norm_values[node_id] = colorMap.scaler.scaleValue(i);
 		}
 		// graph.highlight_node(values['basin'], basinColor));
@@ -34,7 +41,6 @@ BasinProcess.prototype.render = function(dataId) {
 	this.graph.paint_nodes(rgbs);
 	this.graph.move_nodes(norm_values, 0, 1);
 	this.graph.match_edge_colours_to_node();
-
 
 	// var alpha = {
 	// type:'basin',

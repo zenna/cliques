@@ -458,4 +458,40 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
     return L_t;
 }
 
+template <typename G, typename M, typename C>
+arma::mat space_to_dists(G &graph, M &weights) {
+    int size1 = comm1.size();
+    int size2 = comm2.size();
+
+    std::sort(comm1.begin(),comm1.end());
+    std::sort(comm2.begin(),comm2.end());
+
+	auto end = std::set_symmetric_difference(comm1.begin(),
+			comm1.end(), comm2.begin(),
+			comm2.end(), diff_itr.begin());
+	int difference_size = int(end - diff_itr.begin());
+
+    float shortest_inter_comm_distance = 0.0;
+
+    if (difference_size == 0) {
+    	difference_size = size1 + size2 - 1;
+    	shortest_inter_comm_distance = std::numeric_limits<int>::max();
+        for (auto n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
+        	for (auto n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
+                auto d = lemon::Dijkstra<lemon::SmartGraph,lemon::SmartGraph::EdgeMap<float> >(graph, weights);
+                typename G::Node node1 = graph.nodeFromId(*n1);
+                typename G::Node node2 = graph.nodeFromId(*n2);
+                d.run(node1, node2);
+                float dist = d.dist(node2);
+                if (shortest_inter_comm_distance > dist) {
+                	shortest_inter_comm_distance = dist;
+                }
+        	}
+        }
+    }
+
+    float edit_distance = shortest_inter_comm_distance + difference_size;
+    return edit_distance;
+}
+
 }

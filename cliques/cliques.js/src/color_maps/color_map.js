@@ -70,6 +70,22 @@ cliques.ColorMap.prototype.getColorHex = function() {
 	//cliques.RGBToHex
 }
 
+cliques.ColorMap.prototype.scaleColor = function(color, scaleFactor) {
+	var scaledColor = [];
+	scaledColor[0] = color[0] * scaleFactor;
+	scaledColor[1] = color[1] * scaleFactor;
+	scaledColor[2] = color[2] * scaleFactor;
+	return scaledColor;
+}
+
+cliques.ColorMap.prototype.add = function(color1, color2) {	
+	var combinedColor = [];
+	combinedColor[0] = color1[0] + color2[0];
+	combinedColor[1] = color1[1] + color2[1];
+	combinedColor[2] = color1[2] + color2[2];
+	return combinedColor;
+}
+
 cliques.convertColorSpace = function() {
 
 }
