@@ -57,7 +57,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 
     //double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);
-	cliques::output("current_quality", current_quality);
+	//cliques::output("current_quality", current_quality);
 	bool one_level_end = false;
 	double old_quality = current_quality;
 	bool did_nodes_move = false;

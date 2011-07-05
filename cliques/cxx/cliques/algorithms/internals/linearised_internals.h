@@ -30,16 +30,17 @@ void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
         I &internals, P &partition, int best_comm) {
     int node_id = graph.id(node);
     // insert node to partition/bookkeeping
-              std::cout << "node "<<node_id << " comm: to "<< best_comm << std::endl;
+//              std::cout << "node "<<node_id << " comm: to "<< best_comm << std::endl;
     internals.comm_w_tot[best_comm] += internals.node_to_w[node_id];
-              std::cout << "new_weight tot " <<internals.comm_w_tot[best_comm] << std::endl;
+//              std::cout << "new_weight tot " <<internals.comm_w_tot[best_comm] << std::endl;
     internals.comm_w_in[best_comm] += 2
             * internals.node_weight_to_communities[best_comm]
             + find_weight_selfloops(graph, weights, node);
-              std::cout << "new_weight int " <<internals.comm_w_in[best_comm] << std::endl;
+//              std::cout << "new_weight int " <<internals.comm_w_in[best_comm] << std::endl;
               
     partition.add_node_to_set(node_id, best_comm);
-    cliques::print_partition_line(partition);
+//    cliques::output("in", internals.comm_w_in[best_comm], "tot",internals.comm_w_tot[best_comm], "nodew", internals.node_to_w[best_comm], "2m", internals.two_m);
+//    cliques::print_partition_line(partition);
 }
 
 struct LinearisedInternals {

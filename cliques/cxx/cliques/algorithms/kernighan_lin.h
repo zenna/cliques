@@ -158,8 +158,9 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
         // keep track of quality
         current_quality = current_quality + best_gain;
 
+
         if (current_quality > best_quality) {
-            //            cliques::output(current_quality, best_quality);
+//            cliques::output(current_quality, best_quality);
             buffer_partition = partition;
             best_quality = current_quality;
         }
@@ -168,8 +169,8 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 
     double total_quality_improvement = best_quality - original_quality;
-    //    cliques::print_partition_line(buffer_partition);
-    //    cliques::output(current_quality,total_quality_improvement, best_quality, original_quality);
+//     cliques::print_partition_line(buffer_partition);
+//     cliques::output(current_quality,total_quality_improvement, best_quality, original_quality);
 
     // TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
     if (total_quality_improvement > minimum_improve) {
