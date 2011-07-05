@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	$.getJSON('js/data/path_n8.json', function(data) {
+	var jqxkr = $.getJSON('js/data/renaud_p_n12.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -45,7 +45,5 @@ $(document).ready( function() {
 			}
 		}
 
-	}, function() {
-		alert("could not load data");
-	})
+	}).error(function(data) { alert("error, could not load"); })
 })
