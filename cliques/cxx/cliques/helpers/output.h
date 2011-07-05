@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
+
 #include <vector>
 #include <map>
 
@@ -93,6 +95,21 @@ void print_partition_line(P &partition) {
         std::cout << partition.find_set(i) << " ";
     }
     std::cout << std::endl;
+}
+
+template<typename T>
+void basins_to_file(std::map<int, std::map<int, double> > all_basins,
+        std::string filename, T per_line_prefix) {
+    std::ofstream basins_file;
+    basins_file.open(filename);
+    for (auto itr = all_basins.begin(); itr != all_basins.end(); ++itr) {
+        int basin_id = itr->first;
+        basins_file << per_line_prefix << " " << basin_id << " ";
+        for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
+            basins_file << b->first << " " << b->second;
+        }
+    }
+    basins_file.close();
 }
 
 }
