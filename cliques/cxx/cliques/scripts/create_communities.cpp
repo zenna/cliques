@@ -117,23 +117,45 @@ int main(int ac, char* av[]) {
     cliques::output("Finding stabilities");
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
-//    cliques::output(markov_times.size());
+////    cliques::output(markov_times.size());
+//
+//    cliques::find_full_normalised_stability func(orange_graph, weights);
+//    for (unsigned int i = 0; i < markov_times.size(); ++i) {
+//        stabs_file << markov_times[i] << " ";
+//
+//        for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
+//            cliques::VectorPartition p = cliques::community_to_partition(
+//                    orange_graph, *itr, 0);
+//            double stability = func(p, 1, markov_times[i]);
+//            stabs_file << stability  << " ";
+//        }
+//        if (i + 1 != markov_times.size()) {
+//            stabs_file << std::endl;
+//        }
+//    }
+//    stabs_file.close();
 
+    cliques::output(markov_times.size());
     cliques::find_full_normalised_stability func(orange_graph, weights);
+    std::vector<std::vector<double> > all_stabilities;
     for (unsigned int i = 0; i < markov_times.size(); ++i) {
+        std::vector<double> stabilities;
         stabs_file << markov_times[i] << " ";
-
         for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
             cliques::VectorPartition p = cliques::community_to_partition(
                     orange_graph, *itr, 0);
             double stability = func(p, 1, markov_times[i]);
-            stabs_file << stability  << " ";
+            stabilities.push_back(stability);
+            stabs_file << stability << " ";
         }
+
+        all_stabilities.push_back(stabilities);
         if (i + 1 != markov_times.size()) {
             stabs_file << std::endl;
         }
     }
     stabs_file.close();
+
 
     std::ofstream graph_file;
     graph_file.open(filename_prefix + "_graph_edgelist.edj");
@@ -189,6 +211,22 @@ int main(int ac, char* av[]) {
         }
         vector_file << std::endl;
     }
+
+    lemon::SmartGraph space;
+    lemon::SmartGraph::EdgeMap<double> space_weights(space);
+    cliques::dists_to_graph(space,space_weights,X, 1.0);
+
+    cliques::output("Finding Probabalistic Community Basins");
+    std::vector<std::map<int, std::map<int, double> >> all_basins;
+    int j =0;
+    for (auto stabilities = all_stabilities.begin(); stabilities != all_stabilities.end(); ++ stabilities) {
+        auto basins = cliques::compute_probabalistic_basins_new(space, *stabilities);
+        cliques::output("time", markov_times[j], "num_basins",basins.size());
+        all_basins.push_back(basins);
+        ++j;
+    }
+    cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
+
 
     //    cliques::output("number of nodes", lemon::countNodes(space));
     //    cliques::output("number of edges", lemon::countEdges(space));

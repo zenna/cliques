@@ -70,6 +70,17 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
     }
 }
 
+// TODO Need to be
+// Isolate needs to remove foreign color from nodes
+// Need to be able See which basin is which
+// Compute basin volume
+// See Node statistics
+
+// Partition Basins
+    // Create space graph from partitions
+    //
+
+
 int main(int ac, char* av[]) {
     typedef cliques::VectorPartition VecPartition;
     typedef boost::unordered_set<VecPartition, cliques::partition_hash,
@@ -103,7 +114,7 @@ int main(int ac, char* av[]) {
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
     std::vector<double> markov_times;// = {0.00001, 0.5, 0.8, 1.0, 2.0, 10.0, 200};
-    for (double t = 0.00001; t < 500.0; t = t * 1.05) {
+    for (double t = 0.296908; t < 1.0; t = t * 1.0002) {
         markov_times.push_back(t);
     }
     cliques::output(markov_times.size());
@@ -116,8 +127,6 @@ int main(int ac, char* av[]) {
             double stability = func(*itr, markov_times[i]);
             stabilities.push_back(stability);
             stabs_file << stability << " ";
-//            cliques::print_partition_line(*itr);
-//            cliques::output("time:", markov_times[i], "stabilityt", stability);
         }
 
         all_stabilities.push_back(stabilities);

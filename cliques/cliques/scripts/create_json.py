@@ -170,11 +170,11 @@ def main():
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
     if basins_file:
-       # try:
-        process = file_to_basin_process(basins_file, float)
-        output['processes'].append(process)
-        #except:
-         #   print "no basin file"
+        try:
+            process = file_to_basin_process(basins_file, float)
+            output['processes'].append(process)
+        except:
+            print "no basin file"
 
 
     if landscape_type:
