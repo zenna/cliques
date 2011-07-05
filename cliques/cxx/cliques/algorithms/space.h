@@ -571,7 +571,7 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 	std::map<int, std::map<int, double> > all_basins;
 	std::set<int> maxima;
 	std::set<Node> maxima_nodes;
-	lemon::SmartDigraph::NodeMap<int> outlinks_queue(transition_graph, 0);
+	lemon::SmartDigraph::NodeMap<int> real_outlinks_queue(transition_graph, 0);
 
 	//find all maxima and insert into set
 	for (NodeIt node(transition_graph); node != lemon::INVALID; ++node) {
@@ -579,7 +579,7 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 		for (OutArcIt arc(transition_graph, node); arc != lemon::INVALID; ++arc) {
 			num_better_nodes++;
 		}
-		outlinks_queue[node] = num_better_nodes;
+		real_outlinks_queue[node] = num_better_nodes;
 		// I.e. only if this node is a maxima
 		if (num_better_nodes == 0) {
 			cliques::output("maxima");
@@ -598,7 +598,10 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 		node_values[max_node] = 1;
 		std::set<Node> candidates(maxima_nodes);
 		lemon::SmartDigraph::ArcMap<double> weights_to_max(transition_graph);
-		//weights_to_max = transition_weights;
+		lemon::mapCopy(transition_graph,transition_weights,weights_to_max);
+
+		lemon::SmartDigraph::NodeMap<int> outlinks_queue(transition_graph);
+		lemon::mapCopy(transition_graph,real_outlinks_queue,outlinks_queue);
 
 		// as long as there are "unconverged" Nodes
 		while (!candidates.empty()) {

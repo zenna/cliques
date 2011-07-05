@@ -103,9 +103,9 @@ int main(int ac, char* av[]) {
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
     std::vector<double> markov_times;
-    for (double t = 1.158584; t < 500.0; t = t * 1.05) {
-        markov_times.push_back(t);
-    }
+//    for (double t = 0.1; t < 100.0; t = t * 1.05) {
+        markov_times.push_back(0.608141);
+//    }
     cliques::output(markov_times.size());
     cliques::find_full_normalised_stability func(orange_graph, weights);
     std::vector<double> stabsmads;
@@ -313,31 +313,32 @@ int main(int ac, char* av[]) {
 //    }
 
     double total = 0.0;
-    cliques::output("num stabs", stabsmads.size(), "space nodes", lemon::countNodes(space));
-    auto a = cliques::compute_probabalistic_basins(space, stabsmads);
-    for (auto itr = a.begin(); itr != a.end(); ++itr) {
-        double subtotal = 0.0;
-        cliques::output(itr->first);
-        lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
-        cliques::print_partition_line(map.right.at(n));
-        for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
-            //cliques::output(b->first, b->second);
-            subtotal += b->second;
-        }
-        cliques::output("subtotal", subtotal);
-        total += subtotal;
-    }
-    cliques::output("grand total", total);
+//    cliques::output("num stabs", stabsmads.size(), "space nodes", lemon::countNodes(space));
+//    auto a = cliques::compute_probabalistic_basins(space, stabsmads);
+//    for (auto itr = a.begin(); itr != a.end(); ++itr) {
+//        double subtotal = 0.0;
+//        cliques::output(itr->first);
+//        lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
+//        cliques::print_partition_line(map.right.at(n));
+//        for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
+//            cliques::output(b->first, b->second);
+//            subtotal += b->second;
+//        }
+//        cliques::output("subtotal", subtotal);
+//        total += subtotal;
+//    }
+//    cliques::output("grand total", total);
 
+    total =0.0;
     auto c = cliques::compute_probabalistic_basins_new(space, stabsmads);
        for (auto itr = c.begin(); itr != c.end(); ++itr) {
            double subtotal = 0.0;
            cliques::output(itr->first);
            lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
            cliques::print_partition_line(map.right.at(n));
-           for (auto c = itr->second.begin(); c != itr->second.end(); ++c) {
-               //cliques::output(b->first, b->second);
-               subtotal += c->second;
+           for (auto d = itr->second.begin(); d != itr->second.end(); ++d) {
+               cliques::output(d->first, d->second);
+               subtotal += d->second;
            }
            cliques::output("subtotal", subtotal);
            total += subtotal;
