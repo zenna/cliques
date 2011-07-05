@@ -26,7 +26,10 @@ BasinProcess.prototype.render = function(dataId) {
 			var node_id = values[i].nodes[j];
 			var probability = values[i].metas[j];
 			var scaledBasinColor = colorMap.scaleColor(basinColor,probability);
-			if (typeof(rgbs[node_id] = 'undefined')) {
+			if (node_id == 5133) {
+				console.log("found you");
+			}
+			if (typeof(rgbs[node_id]) == 'undefined') {
 				rgbs[node_id] = [0.0,0.0,0.0];
 			}
 			var combinedColor = colorMap.add(rgbs[node_id], scaledBasinColor);

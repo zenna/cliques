@@ -97,16 +97,24 @@ void print_partition_line(P &partition) {
     std::cout << std::endl;
 }
 
-template<typename T>
-void basins_to_file(std::map<int, std::map<int, double> > all_basins,
-        std::string filename, T per_line_prefix) {
+void basins_to_file(std::string filename,
+        std::vector<std::map<int, std::map<int, double> >> all_basins,
+        std::vector<double> markov_times) {
     std::ofstream basins_file;
     basins_file.open(filename);
-    for (auto itr = all_basins.begin(); itr != all_basins.end(); ++itr) {
-        int basin_id = itr->first;
-        basins_file << per_line_prefix << " " << basin_id << " ";
-        for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
-            basins_file << b->first << " " << b->second;
+
+    for (unsigned int i = 0; i < markov_times.size(); ++i) {
+        double time = markov_times[i];
+        auto basins = all_basins[i];
+        for (auto itr = basins.begin(); itr != basins.end(); ++itr) {
+            int basin_id = itr->first;
+            basins_file << time << " " << basin_id << " ";
+            cliques::output(time, itr->second.size());
+
+            for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
+                basins_file << b->first << " " << b->second << " ";
+            }
+            basins_file << std::endl;
         }
     }
     basins_file.close();

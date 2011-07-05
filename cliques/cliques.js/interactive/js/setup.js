@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	var jqxkr = $.getJSON('js/data/renaud_p_n12.json', function(data) {
+	var jqxkr = $.getJSON('js/data/barbell_p_n8.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');

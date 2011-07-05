@@ -1,7 +1,7 @@
 import getopt, sys
 import simplejson
 from collections import defaultdict
-
+from ipdb import set_trace
 # Problems
 # Can't handle missing files
 # output timestamp
@@ -120,12 +120,15 @@ def file_to_basin_process(filename, cast_type):
             nodes = []
             metas = []
             #set_trace()
-            for index, val in enumerate(l[2:]):
-                if index % 2 == 0:
-                    nodes.append(int(val))
-                else:
-                    metas.append(cast_type(val))
-                        
+            try:
+                for index, val in enumerate(l[2:]):
+                    if index % 2 == 0:
+                        nodes.append(int(val))
+                    else:
+                        metas.append(float(val))
+            except:
+                print "error"
+                #set_trace()            
             time_to_values[float(l[0])].append({'basin':l[1],'nodes':nodes,'metas':metas})
         
     for time in sorted(time_to_values.keys()):
@@ -167,11 +170,11 @@ def main():
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
     if basins_file:
-        try:
-            process = file_to_basin_process(basins_file, float)
-            output['processes'].append(process)
-        except:
-            print "no basin file"
+       # try:
+        process = file_to_basin_process(basins_file, float)
+        output['processes'].append(process)
+        #except:
+         #   print "no basin file"
 
 
     if landscape_type:
