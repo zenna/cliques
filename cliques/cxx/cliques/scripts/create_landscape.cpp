@@ -329,6 +329,21 @@ int main(int ac, char* av[]) {
     }
     cliques::output("grand total", total);
 
+    auto c = cliques::compute_probabalistic_basins_new(space, stabsmads);
+       for (auto itr = c.begin(); itr != c.end(); ++itr) {
+           double subtotal = 0.0;
+           cliques::output(itr->first);
+           lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
+           cliques::print_partition_line(map.right.at(n));
+           for (auto c = itr->second.begin(); c != itr->second.end(); ++c) {
+               //cliques::output(b->first, b->second);
+               subtotal += c->second;
+           }
+           cliques::output("subtotal", subtotal);
+           total += subtotal;
+       }
+       cliques::output("grand total", total);
+
     //    cliques::output("number of nodes", lemon::countNodes(space));
     //    cliques::output("number of edges", lemon::countEdges(space));
     return 0;

@@ -478,7 +478,7 @@ void graph_to_transition_digraph(G &graph, std::vector<double> qualities,
 				transition_weights.set(new_arc, weight_difference);
 			}
 		}
-		for (Arc::iterator arc = unormalised_arcs.begin(); arc
+		for (typename std::vector<Arc>::iterator arc = unormalised_arcs.begin(); arc
 				!= unormalised_arcs.end(); ++arc) {
 			double normalised_transition_weight = transition_weights[*arc]
 					/ total_weight;
@@ -558,8 +558,6 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 
 	typedef typename lemon::SmartDigraph::NodeIt NodeIt;
 	typedef typename lemon::SmartDigraph::Node Node;
-	typedef typename lemon::SmartDigraph::NodeMap NodeMap;
-
 	typedef typename lemon::SmartDigraph::OutArcIt OutArcIt;
 
 	lemon::SmartDigraph transition_graph;
@@ -569,7 +567,8 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 
 	std::map<int, std::map<int, double> > all_basins;
 	std::set<int> maxima;
-	NodeMap outlinks_queue(transition_graph, 0);
+	std::set<Node> maxima_nodes;
+	lemon::SmartDigraph::NodeMap<int> outlinks_queue(transition_graph, 0);
 
 	//find all maxima and insert into set
 	for (NodeIt node(transition_graph); node != lemon::INVALID; ++node) {
@@ -583,18 +582,20 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 			cliques::output("maxima");
 			int node_id = transition_graph.id(node);
 			maxima.insert(node_id);
+			maxima_nodes.insert(node);
 		}
 
 	}
 
-	for (std::set<int>::itr = maxima.begin(); itr != maxima.end(); ++itr) {
+	for (std::set<int>::iterator itr = maxima.begin(); itr != maxima.end(); ++itr) {
 		// for each maximum do message passing
-		NodeMap node_values(transition_graph, 0);
+		lemon::SmartDigraph::NodeMap<double> node_values(transition_graph, 0);
 		int max_node_id = *itr;
 		Node max_node = transition_graph.nodeFromId(max_node_id);
 		node_values[max_node] = 1;
-		std::set<Node> candidates(maxima);
-		lemon::SmartDigraph::ArcMap<double> weights_to_max(transition_weights);
+		std::set<Node> candidates(maxima_nodes);
+		lemon::SmartDigraph::ArcMap<double> weights_to_max(transition_graph);
+		//weights_to_max = transition_weights;
 
 		// as long as there are "unconverged" Nodes
 		while (!candidates.empty()) {
@@ -606,17 +607,17 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 
 				// sum up outgoing link weight..
 				for (lemon::SmartDigraph::OutArcIt outgoing_link(
-						transition_graphs, candidate_node); outgoing_link
-						!= lemon::invalid; ++outgoing_link) {
-					node_values[candidate_node] +=weight_to_max[outgoing_link];
+						transition_graph, candidate_node); outgoing_link
+						!= lemon::INVALID; ++outgoing_link) {
+					node_values[candidate_node] +=weights_to_max[outgoing_link];
 				}
 
 				// multiply node value "down"..
 				for (lemon::SmartDigraph::InArcIt incoming_link(
-						transition_graphs, candidate_node); incoming_link
-						!= lemon::invalid; ++incoming_link) {
+						transition_graph, candidate_node); incoming_link
+						!= lemon::INVALID; ++incoming_link) {
 
-					weight_to_max[incoming_links]
+					weights_to_max[incoming_link]
 							*= node_values[candidate_node];
 					Node downstream_node = transition_graph.source(
 							incoming_link);
