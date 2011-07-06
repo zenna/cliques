@@ -120,4 +120,18 @@ void basins_to_file(std::string filename,
     basins_file.close();
 }
 
+template <typename G>
+void graph_to_edgelist_file(std::string filename,G &graph) {
+    typedef typename G::EdgeIt EdgeIt;
+    std::ofstream graph_file;
+    graph_file.open(filename);
+    for (EdgeIt e(graph); e != lemon::INVALID; ++e) {
+        auto n1 = graph.u(e);
+        auto n2 = graph.v(e);
+        graph_file << graph.id(n1) << " " << graph.id(n2)
+                << std::endl;
+    }
+    graph_file.close();
+}
+
 }

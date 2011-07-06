@@ -75,6 +75,8 @@ int main(int ac, char* av[]) {
             cliques::partition_equal> VecPartitionSet;
 
     lemon::SmartGraph orange_graph;
+    lemon::SmartGraph space;
+    lemon::SmartGraph::EdgeMap<double> space_weights(space);
     std::string filename_prefix;
     lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
     int num_samples = 100000;
@@ -84,58 +86,17 @@ int main(int ac, char* av[]) {
 
     cliques::output("Find Connected Communities");
     auto communities = cliques::find_connected_communities(orange_graph);
-    cliques::print_2d_vector(communities);
-    //    cliques::output(communities.size(), "connected communities");
-    //    cliques::output("neighbours of ");
-    //    cliques::print_collection(a[0]);
     std::vector<double> markov_times;
     for (double t = 0.00001; t < 500.0; t = t * 1.05) {
         markov_times.push_back(t);
     }
     //    auto communities = cliques::find_community_neighbours(orange_graph, a[0]);
-
-    //    cliques::print_2d_vector(b);
-    //    for (auto comm = a.begin(); comm != a.end(); ++comm) {
-    //        double stability;
-    ////        cliques::print_collection(*comm);
-    //        bool is_max = cliques::is_community_maxima(orange_graph,  weights, *comm, func, stability);
-    //        if (is_max) {
-    //            cliques::output("maxima:", stability);
-    //            cliques::print_collection(*comm);
-    //        }
-    //    }
-
-    //    cliques::output("Creating space graph");
-    //    lemon::SmartGraph space;
-    //    auto map = cliques::create_space(orange_graph, all_partitions, space);
-    //    lemon::SmartGraph::EdgeMap<float> space_weights(space);
-    //    cliques::make_weights_from_edges(space, space_weights);
-    ////
-
     cliques::output(communities.size(), "communities");
 
     cliques::output("Finding stabilities");
+    cliques::output("time_steps", markov_times.size());
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
-////    cliques::output(markov_times.size());
-//
-//    cliques::find_full_normalised_stability func(orange_graph, weights);
-//    for (unsigned int i = 0; i < markov_times.size(); ++i) {
-//        stabs_file << markov_times[i] << " ";
-//
-//        for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
-//            cliques::VectorPartition p = cliques::community_to_partition(
-//                    orange_graph, *itr, 0);
-//            double stability = func(p, 1, markov_times[i]);
-//            stabs_file << stability  << " ";
-//        }
-//        if (i + 1 != markov_times.size()) {
-//            stabs_file << std::endl;
-//        }
-//    }
-//    stabs_file.close();
-
-    cliques::output(markov_times.size());
     cliques::find_full_normalised_stability func(orange_graph, weights);
     std::vector<std::vector<double> > all_stabilities;
     for (unsigned int i = 0; i < markov_times.size(); ++i) {
@@ -156,43 +117,24 @@ int main(int ac, char* av[]) {
     }
     stabs_file.close();
 
+    cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj", orange_graph);
 
-    std::ofstream graph_file;
-    graph_file.open(filename_prefix + "_graph_edgelist.edj");
-    for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-        auto n1 = orange_graph.u(e);
-        auto n2 = orange_graph.v(e);
-        graph_file << orange_graph.id(n1) << " " << orange_graph.id(n2)
-                << std::endl;
+//    cliques::output("Finding distances");
+//    auto X = cliques::find_community_edit_dists(orange_graph, communities);
+//    cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
+
+    cliques::output("Finding distances Hasse");
+    cliques::create_hasse_community_space(space,communities,space);
+    std::vector<lemon::SmartGraph::Node> all_nodes;
+    for (unsigned int i = 0; i < communities.size(); ++i) {
+        all_nodes.push_back(space.nodeFromId(i));
     }
-    graph_file.close();
+    cliques::make_weights_from_edges(space,space_weights);
+    auto X = cliques::convert_graph_to_geodesic_dists(space,all_nodes,space_weights);
 
-    cliques::output("Finding distances");
-    auto X = cliques::find_community_edit_dists(orange_graph, communities);
+    cliques::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
 
-    // From edit matrix: find only ones. output into two_d matrix
-    cliques::output(X.n_cols, X.n_rows);
-    std::vector<std::vector<int> > edges;
-    for (unsigned int i = 0; i < X.n_rows; ++i) {
-        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
-            if (X(i, j) == 1) {
-                std::vector<int> edge;
-                edge.push_back(i);
-                edge.push_back(j);
-                edges.push_back(edge);
-            }
-        }
-    }
-    arma::umat edges_mat(edges.size(), 2);
-    int i = 0;
-    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-        edges_mat(i, 0) = (*itr)[0];
-        edges_mat(i, 1) = (*itr)[1];
-        ++i;
-    }
-    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
-
-    cliques::output("finding embedding");
+    cliques::output("Finding embedding");
     auto L = cliques::embed_mds(X, num_dim);
     arma::mat L_t = arma::trans(L);
     L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
@@ -212,10 +154,6 @@ int main(int ac, char* av[]) {
         vector_file << std::endl;
     }
 
-    lemon::SmartGraph space;
-    lemon::SmartGraph::EdgeMap<double> space_weights(space);
-    cliques::dists_to_graph(space,space_weights,X, 1.0);
-
     cliques::output("Finding Probabalistic Community Basins");
     std::vector<std::map<int, std::map<int, double> >> all_basins;
     int j =0;
@@ -227,8 +165,7 @@ int main(int ac, char* av[]) {
     }
     cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
 
-
-    //    cliques::output("number of nodes", lemon::countNodes(space));
-    //    cliques::output("number of edges", lemon::countEdges(space));
+    cliques::output("number of nodes", lemon::countNodes(space));
+    cliques::output("number of edges", lemon::countEdges(space));
     return 0;
 }

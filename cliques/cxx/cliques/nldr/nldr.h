@@ -37,6 +37,38 @@
 namespace cliques {
 
 /**
+ @brief  Find the pairwise geodesic (shortest path) distances between subset of nodes
+ */
+template<typename G, typename M>
+arma::mat convert_graph_to_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
+        M &weights) {
+    lemon::concepts::ReadWriteMap<typename G::Node, int> dist_map;
+    int N = nodes.size();
+    arma::mat X(N, N);
+    X.zeros();
+
+    int num = 0;
+    int total = N * (N - 1) / 2;
+    for (int i = 0; i < N - 1; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            auto d = lemon::Dijkstra<G,M>(graph, weights);
+            auto n1 = nodes[i];
+            auto n2 = nodes[j];
+            d.run(n1, n2);
+            float dist = d.dist(n2);
+            X(i,j) = dist;
+            X(j,i) = dist;
+            if (num  % 1000000 == 0) {
+                cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",total);
+            }
+            num++;
+        }
+    }
+    return X;
+}
+
+
+/**
  @brief  Find the euclidean distance between two row vectors
  */
 inline
@@ -116,37 +148,6 @@ std::vector<typename G::Node> randomly_choose_nodes(G &graph,
         landmark_nodes.push_back(graph.nodeFromId(rand_node_id));
     }
     return landmark_nodes;
-}
-
-/**
- @brief  Find the pairwise geodesic (shortest path) distances between subset of nodes
- */
-template<typename G, typename M>
-arma::mat find_geodesic_dists(G &graph, std::vector<typename G::Node> nodes,
-        M &weights) {
-    lemon::concepts::ReadWriteMap<typename G::Node, int> dist_map;
-    int N = nodes.size();
-    arma::mat X(N, N);
-    X.zeros();
-
-    int num = 0;
-    int total = N * (N - 1) / 2;
-    for (int i = 0; i < N - 1; ++i) {
-        for (int j = i + 1; j < N; ++j) {
-            auto d = lemon::Dijkstra<G,M>(graph, weights);
-            auto n1 = nodes[i];
-            auto n2 = nodes[j];
-            d.run(n1, n2);
-            float dist = d.dist(n2);
-            X(i,j) = dist;
-            X(j,i) = dist;
-            if (num  % 1000000 == 0) {
-                cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",total);
-            }
-            num++;
-        }
-    }
-    return X;
 }
 
 //[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -442,7 +443,7 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
     }
 
     cliques::output("choosing nodes");
-    auto X = cliques::find_geodesic_dists(graph, landmark_nodes, weights);
+    auto X = cliques::convert_graph_to_geodesic_dists(graph, landmark_nodes, weights);
     X.print("X");
 
     cliques::output("finding embedding");
@@ -459,7 +460,7 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
 }
 
 template <typename G, typename M, typename T>
-void dists_to_graph(G &graph, M &weights, arma::mat &dists, T threshold) {
+void convert_dists_to_graph(G &graph, M &weights, arma::mat &dists, T threshold) {
     typedef typename G::Node Node;
     typedef typename G::Edge Edge;
     int N = dists.n_cols;
@@ -478,5 +479,6 @@ void dists_to_graph(G &graph, M &weights, arma::mat &dists, T threshold) {
         }
     }
 }
+
 
 }

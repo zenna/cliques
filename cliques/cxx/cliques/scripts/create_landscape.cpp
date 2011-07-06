@@ -76,10 +76,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 // Compute basin volume
 // See Node statistics
 
-// Partition Basins
-    // Create space graph from partitions
-    //
-
+// Optimisation Algorithm
 
 int main(int ac, char* av[]) {
     typedef cliques::VectorPartition VecPartition;
@@ -99,7 +96,6 @@ int main(int ac, char* av[]) {
 
     cliques::output("Finding Connected Partitions");
     cliques::NoLogging no_logging;
-    cliques::Logging<VecPartition> log_all;
     VecPartitionSet all_partitions;
     cliques::find_connected_partitions(orange_graph, all_partitions, no_logging);
     cliques::output("complete size:", all_partitions.size());

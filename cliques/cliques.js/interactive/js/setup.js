@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	var jqxkr = $.getJSON('js/data/random_c_n14.json', function(data) {
+	var jqxkr = $.getJSON('js/data/what.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');

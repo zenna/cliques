@@ -1,6 +1,7 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010-2011 */
 #pragma once
 
+#include <stdlib.h>
 #include <random>
 #include <functional>
 #include <list>
@@ -710,5 +711,72 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 //    }
 //    return all_basins;
 //}
+
+bool does_set_contain_other(std::vector<int> larger_set, std::vector<int> smaller_set, std::vector<int> &buffer) {
+    std::sort(larger_set.begin(),larger_set.end());
+    std::sort(smaller_set.begin(),smaller_set.end());
+
+    auto end = std::set_difference(smaller_set.begin(),
+            smaller_set.end(), larger_set.begin(),
+            larger_set.end(), buffer.begin());
+
+    int difference_size = int(end - buffer.begin());
+
+    if (difference_size > 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+/**
+ @brief  Convert a set of partitions into a graph
+
+ Given a set of partitions (perhaps found with cliques::find_connected_partitions),
+ this function creates a graph with nodes representing partitions and edges created
+ according to a moveset rule.  The default rule is the single node moveset
+ see cliques::find_neighbours
+
+ @param[in] all_partitons reference to unordered set of partitions
+ @param[out] space output graph representing the space
+ */
+template<typename G>
+void create_hasse_community_space(G &graph, std::vector<std::vector<int> > &communities, G &space) {
+
+    typedef typename G::Node Node;
+
+    int num_nodes = communities.size();
+    for (int i=0;i<num_nodes;++i) {
+        space.addNode();
+    }
+
+    std::vector<int> buffer(20,0);
+
+    for (int i = 0; i < num_nodes - 1; ++i) {
+        for (int j = i + 1; j < num_nodes; ++j) {
+            auto comm1 = communities[i];
+            auto comm2 = communities[j];
+            int comm1_size = comm1.size();
+            int comm2_size = comm2.size();
+            int size_difference = comm1_size - comm2_size;
+
+            // Communities of the same size cannot contain one another
+            if (std::abs(size_difference) <= 13) {
+                std::vector<int> &larger_comm = comm1_size > comm2_size ? comm1 : comm2;
+                std::vector<int> &smaller_comm = comm1_size > comm2_size ? comm2 : comm1;
+
+                if (does_set_contain_other(larger_comm, smaller_comm,buffer)) {
+                    Node u = graph.nodeFromId(i);
+                    Node v = graph.nodeFromId(j);
+                    graph.addEdge(u,v);
+                    if (size_difference >= 11) {
+                        cliques::output(comm1_size, comm2_size, size_difference);
+                    }
+                }
+            }
+        }
+    }
+}
 
 }

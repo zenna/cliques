@@ -41,18 +41,18 @@ void make_fish_graph(G &graph, M &weights, double epsilon, bool many_links) {
 		weights[e] = epsilon;
 	} else {
 		int Ne = 6;
-		Edge e = graph.addEdge(graph.nodeFromId(3), graph.nodeFromId(4));
-		weights[e] = epsilon / Ne;
-		Edge e = graph.addEdge(graph.nodeFromId(0), graph.nodeFromId(6));
-		weights[e] = epsilon / Ne;
-		Edge e = graph.addEdge(graph.nodeFromId(1), graph.nodeFromId(5));
-		weights[e] = epsilon / Ne;
-		Edge e = graph.addEdge(graph.nodeFromId(2), graph.nodeFromId(7));
-		weights[e] = epsilon / Ne;
-		Edge e = graph.addEdge(graph.nodeFromId(2), graph.nodeFromId(6));
-		weights[e] = epsilon / Ne;
-		Edge e = graph.addEdge(graph.nodeFromId(3), graph.nodeFromId(5));
-		weights[e] = epsilon / Ne;
+		Edge e1 = graph.addEdge(graph.nodeFromId(3), graph.nodeFromId(4));
+		weights[e1] = epsilon / Ne;
+		Edge e2 = graph.addEdge(graph.nodeFromId(0), graph.nodeFromId(6));
+		weights[e2] = epsilon / Ne;
+		Edge e3 = graph.addEdge(graph.nodeFromId(1), graph.nodeFromId(5));
+		weights[e3] = epsilon / Ne;
+		Edge e4 = graph.addEdge(graph.nodeFromId(2), graph.nodeFromId(7));
+		weights[e4] = epsilon / Ne;
+		Edge e5 = graph.addEdge(graph.nodeFromId(2), graph.nodeFromId(6));
+		weights[e5] = epsilon / Ne;
+		Edge e6 = graph.addEdge(graph.nodeFromId(3), graph.nodeFromId(5));
+		weights[e6] = epsilon / Ne;
 	}
 
 }
