@@ -89,9 +89,19 @@ def file_to_nested_list(filename, cast_type):
 def main():
     coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file = parse_args()
     
+    # Load 
+    if basins_file:
+        try:
+            process = file_to_basin_process(basins_file, float)
+            'time':float(time v({'basin':l[1],'nodes':nodes,'metas':metas
+            output['processes'].append(process)
+        except:
+            print "no basin file"
+
+
     data = {}
     plt.semilogx([1,10,100,1000], [1,2,3, 4], 'go-', label='variation of information', linewidth=2)
-    plt.semilogx([1,10,100,1000], [1,2,5, 10], 'ro-', label='robustness', linewidth=2)
+    plt.semilogx([1,10,100], [1,2,5], 'ro-', label='robustness', linewidth=2)
     plt.legend()
     plt.show()
     

@@ -109,8 +109,8 @@ int main(int ac, char* av[]) {
     cliques::output("Finding stabilities");
     std::ofstream stabs_file;
     stabs_file.open(filename_prefix + "_energy.mat");
-    std::vector<double> markov_times;// = {0.00001, 0.5, 0.8, 1.0, 2.0, 10.0, 200};
-    for (double t = 0.296908; t < 1.0; t = t * 1.0002) {
+    std::vector<double> markov_times;
+    for (double t = 0.00001; t < 500.0; t = t * 1.05) {
         markov_times.push_back(t);
     }
     cliques::output(markov_times.size());
@@ -132,181 +132,19 @@ int main(int ac, char* av[]) {
     }
     stabs_file.close();
 
-    //    cliques::output("Finding Maxima");
-    //    VecPartitionSet all_maxima;
-    //    double current_markov_time = markov_times[0];
-    //    cliques::linearised_stability_gain_louvain diff_func(current_markov_time);
-    //    cliques::sample_maxima(orange_graph, weights, func, diff_func, all_maxima,
-    //            all_partitions, no_logging);
-
-    std::ofstream graph_file;
-    graph_file.open(filename_prefix + "_graph_edgelist.edj");
-    for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-        auto n1 = orange_graph.u(e);
-        auto n2 = orange_graph.v(e);
-        graph_file << orange_graph.id(n1) << " " << orange_graph.id(n2)
-                << std::endl;
-    }
-    graph_file.close();
-
-    //    cliques::output("Kernighan Lin Basin of attractions");
-    //    std::ofstream basin_file;
-    //    basin_file.open("basin.mat");
-    //    // Format: time optima_node basin_node basin_value basin_node basin_value
-    //    int num_nodes = lemon::countNodes(orange_graph);
-    //    for (unsigned int i = 0; i < markov_times.size(); ++i) {
-    //        std::map<int, std::vector<int> > optima_to_basin;
-    //        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-    //            cliques::VectorPartition optima(num_nodes);
-    //            std::vector<double> mkov_times;
-    //            mkov_times.push_back(markov_times[i]);
-    //            double mkov = markov_times[i];
-    //            cliques::refine_partition_kernighan_lin(orange_graph, weights,
-    //                    cliques::find_weighted_linearised_stability(mkov_times),
-    //                    cliques::linearised_stability_gain_louvain(mkov), *itr,
-    //                    optima);
-    //            optima.normalise_ids();
-    //            int optima_id =  orange_graph.id(map.left.at(optima));
-    //            int partition_id = orange_graph.id(map.left.at(*itr));
-    //            optima_to_basin[optima_id].push_back(partition_id);
-    //        }
-    //        cliques::output("num_basins", optima_to_basin.size());
-    //        for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
-    //            lemon::SmartGraph::Node n = orange_graph.nodeFromId(itr->first);
-    //            cliques::print_partition_line(map.right.at(n));
-    //            cliques::output("time: ", markov_times[i], "num in basin", itr->second.size());
-    //            basin_file << markov_times[i] << " " << itr->first << " ";
-    //            for (auto b_itr = itr->second.begin(); b_itr != itr->second.end(); ++b_itr) {
-    //                basin_file << *b_itr << " " << "1.0 ";
-    //            }
-    //            basin_file << std::endl;
-    //        }
-    //    }
-    //    basin_file.close();
-
-    //    cliques::output("Louvain Basin of attractions");
-    //    std::ofstream basin_file;
-    //    basin_file.open("basin.mat");
-    //    // Format: time optima_node basin_node basin_value basin_node basin_value
-    //    int num_nodes = lemon::countNodes(orange_graph);
-    //    for (unsigned int i = 0; i < markov_times.size(); ++i) {
-    //        std::map<int, std::vector<int> > optima_to_basin;
-    //        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-    //            cliques::VectorPartition optima(num_nodes);
-    //            std::vector<double> mkov_times;
-    //            mkov_times.push_back(markov_times[i]);
-    //            double mkov = markov_times[i];
-    //            std::vector<VecPartition> optimal_partitions;
-    //            cliques::find_optimal_partition_louvain_with_gain(orange_graph,
-    //                    weights, cliques::find_weighted_linearised_stability(mkov_times),
-    //                    cliques::linearised_stability_gain_louvain(mkov),
-    //                    *itr,
-    //                    optimal_partitions, no_logging);
-    //
-    //            optima = optimal_partitions.back();
-    //
-    //            optima.normalise_ids();
-    //            cliques::print_partition_line(*itr);
-    //            cliques::print_partition_line(optima);
-    //            int optima_id =  orange_graph.id(map.left.at(optima));
-    //            cliques::output("between");
-    //            int partition_id = orange_graph.id(map.left.at(*itr));
-    //            optima_to_basin[optima_id].push_back(partition_id);
-    //        }
-    //        cliques::output("num_basins", optima_to_basin.size());
-    //        for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
-    //            lemon::SmartGraph::Node n = orange_graph.nodeFromId(itr->first);
-    ////            cliques::print_partition_line(map.right.at(n));
-    ////            cliques::output("time: ", markov_times[i], "num in basin", itr->second.size());
-    //            basin_file << markov_times[i] << " " << itr->first << " ";
-    //            for (auto b_itr = itr->second.begin(); b_itr != itr->second.end(); ++b_itr) {
-    //                basin_file << *b_itr << " " << "1.0 ";
-    //            }
-    //            basin_file << std::endl;
-    //        }
-    //    }
-    //    basin_file.close();
-
-//    cliques::output("S Basin of attractions");
-//    std::ofstream basin_file;
-//    basin_file.open(filename_prefix + "_greedy_basins.mat");
-//    // Format: time optima_node basin_node basin_value basin_node basin_value
-//    int num_nodes = lemon::countNodes(orange_graph);
-//    for (unsigned int i = 0; i < markov_times.size(); ++i) {
-//        double current_markov_time = markov_times[i];
-//        std::map<int, std::vector<int> > optima_to_basin;
+    cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj", orange_graph);
+    cliques::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
+//    cliques::output("Finding distances");
+//    //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
+//    auto X = cliques::find_edit_dists(all_partitions);
 //
-//        // Find all Maxima First
-//        for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-//            cliques::VectorPartition optima(num_nodes);
+//    cliques::output("finding embedding");
+//    auto L = cliques::embed_mds(X, num_dim);
+//    arma::mat L_t = arma::trans(L);
+//    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
 //
-//            VecPartitionSet temp_set;
-//            temp_set.insert(*itr);
-//            VecPartitionSet all_maxima;
-//            cliques::sample_maxima(orange_graph, weights, func,
-//                    current_markov_time, all_maxima, temp_set, no_logging);
-//
-//            optima = *(all_maxima.begin());
-//            optima.normalise_ids();
-//            int optima_id = orange_graph.id(map.left.at(optima));
-//            int partition_id = orange_graph.id(map.left.at(*itr));
-//            optima_to_basin[optima_id].push_back(partition_id);
-//        }
-//        cliques::output("time", current_markov_time, "num_basins",
-//                optima_to_basin.size());
-//        for (auto itr = optima_to_basin.begin(); itr != optima_to_basin.end(); ++itr) {
-//            lemon::SmartGraph::Node n = orange_graph.nodeFromId(itr->first);
-//            basin_file << markov_times[i] << " " << itr->first << " ";
-//            for (auto b_itr = itr->second.begin(); b_itr != itr->second.end(); ++b_itr) {
-//                basin_file << *b_itr << " " << "1.0 ";
-//            }
-//            basin_file << std::endl;
-//        }
-//    }
-//    basin_file.close();
-
-    std::ofstream space_file;
-    space_file.open(filename_prefix + "_space_edgelist.edj");
-    for (lemon::SmartGraph::EdgeIt e(space); e != lemon::INVALID; ++e) {
-        auto n1 = space.u(e);
-        auto n2 = space.v(e);
-        space_file << space.id(n1) << " " << space.id(n2) << std::endl;
-    }
-    space_file.close();
-
-    cliques::output("Finding distances");
-    //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
-    auto X = cliques::find_edit_dists(all_partitions);
-
-    // From edit matrix: find only ones. output into two_d matrix
-    cliques::output(X.n_cols, X.n_rows);
-    std::vector<std::vector<int> > edges;
-    for (unsigned int i = 0; i < X.n_rows; ++i) {
-        for (unsigned int j = i + 1; j < X.n_cols; ++j) {
-            if (X(i, j) == 1) {
-                std::vector<int> edge;
-                edge.push_back(i);
-                edge.push_back(j);
-                edges.push_back(edge);
-            }
-        }
-    }
-    arma::umat edges_mat(edges.size(), 2);
-    int i = 0;
-    for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-        edges_mat(i, 0) = (*itr)[0];
-        edges_mat(i, 1) = (*itr)[1];
-        ++i;
-    }
-    edges_mat.save(filename_prefix + "_landscape_edgelist.edj", arma::raw_ascii);
-
-    cliques::output("finding embedding");
-    auto L = cliques::embed_mds(X, num_dim);
-    arma::mat L_t = arma::trans(L);
-    L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
-
-    auto D_y = cliques::euclid_pairwise_dists(L_t);
-    cliques::output("residual variance", cliques::residual_variance(X, D_y));
+//    auto D_y = cliques::euclid_pairwise_dists(L_t);
+//    cliques::output("residual variance", cliques::residual_variance(X, D_y));
 
     std::ofstream vector_file;
     vector_file.open(filename_prefix + "_partitions.mat");
@@ -318,52 +156,22 @@ int main(int ac, char* av[]) {
         vector_file << std::endl;
     }
 
-//    double total = 0.0;
-//    cliques::output("num stabs", stabsmads.size(), "space nodes", lemon::countNodes(space));
-//    auto a = cliques::compute_probabalistic_basins(space, stabsmads);
-//    for (auto itr = a.begin(); itr != a.end(); ++itr) {
-//        double subtotal = 0.0;
-//        cliques::output(itr->first);
-//        lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
-//        cliques::print_partition_line(map.right.at(n));
-//        for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
-//            cliques::output(b->first, b->second);
-//            subtotal += b->second;
-//        }
-//        cliques::output("subtotal", subtotal);
-//        total += subtotal;
-//    }
-//    cliques::output("grand total", total);
-
     cliques::output("Finding Probabalistic Basins");
-    std::vector<std::map<int, std::map<int, double> >> all_basins;
-    int j =0;
-    for (auto stabilities = all_stabilities.begin(); stabilities != all_stabilities.end(); ++ stabilities) {
-        auto basins = cliques::compute_probabalistic_basins_new(space, *stabilities);
-        cliques::output("time", markov_times[j], "num_basins",basins.size());
+    std::vector<std::map<int, std::map<int, double>>> all_basins;
+    int j = 0;
+    for (auto stabilities = all_stabilities.begin(); stabilities
+            != all_stabilities.end(); ++stabilities) {
+        auto basins = cliques::compute_probabalistic_basins_new(space,
+                *stabilities);
+        cliques::output("time", markov_times[j], "num_basins", basins.size());
         all_basins.push_back(basins);
         ++j;
     }
 
-    cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
+    cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
+            markov_times);
 
-
-//           for (auto itr = c.begin(); itr != c.end(); ++itr) {
-//               double subtotal = 0.0;
-//               cliques::output(itr->first);
-//               lemon::SmartGraph::Node n = space.nodeFromId(itr->first);
-//               cliques::print_partition_line(map.right.at(n));
-//               for (auto d = itr->second.begin(); d != itr->second.end(); ++d) {
-//                   cliques::output(d->first, d->second);
-//                   subtotal += d->second;
-//               }
-//               cliques::output("subtotal", subtotal);
-//               total += subtotal;
-//           }
-//           cliques::output("grand total", total);
-//    }
-
-    //    cliques::output("number of nodes", lemon::countNodes(space));
-    //    cliques::output("number of edges", lemon::countEdges(space));
+    cliques::output("number of nodes", lemon::countNodes(space));
+    cliques::output("number of edges", lemon::countEdges(space));
     return 0;
 }

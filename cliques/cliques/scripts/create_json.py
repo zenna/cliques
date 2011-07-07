@@ -2,6 +2,8 @@ import getopt, sys
 import simplejson
 from collections import defaultdict
 from ipdb import set_trace
+import matplotlib.pyplot as plt
+
 # Problems
 # Can't handle missing files
 # output timestamp
@@ -117,6 +119,7 @@ def file_to_basin_process(filename, cast_type):
     for line in f:
         if line:
             l = [x for x in line.strip().split(" ") if x]
+            
             nodes = []
             metas = []
             #set_trace()
@@ -136,6 +139,38 @@ def file_to_basin_process(filename, cast_type):
             
     f.close()
     return {'type':'basins', 'data':data}
+
+def file_to_basin_sizes(filename, energies, time_limit):
+    """"""
+    f = open(filename, 'r')
+    data = []
+     # a dictionary with default value dictionary with default value list
+    basin_to_values = defaultdict(lambda: defaultdict(list))
+    time_index = 0
+    for line in f:
+        if line:
+            l = [x for x in line.strip().split(" ") if x]
+            if float(l[0]) < time_limit:
+                #set_trace()
+                if float(l[0]) != energies['data'][time_index]['time']:
+                    time_index += 1
+                    
+                basin_size = 0
+                basin_prob_size = 0.0
+                for index, val in enumerate(l[2:]):
+                    if index % 2 == 0:
+                        nodes_id = int(val)
+                        basin_size += 1
+                    else:
+                        energy = energies['data'][time_index]['values'][nodes_id]
+                        node_to_basin_prob = float(val)
+                        basin_prob_size += node_to_basin_prob# * energy
+                                              
+                basin_to_values[int(l[1])]['time'].append(float(l[0]))
+                basin_to_values[int(l[1])]['size'].append(basin_prob_size)
+    
+    f.close()
+    return basin_to_values
     
 def main():
     coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file, landscape_type = parse_args()
@@ -150,7 +185,10 @@ def main():
     
     if coords_file:
         print "processing coords"
-        output['coords'] = file_to_nested_list(coords_file, float)
+        try:
+            output['coords'] = file_to_nested_list(coords_file, float)
+        except:
+            pass
     if edges_file:
         output['edges'] = file_to_nested_list(edges_file, int)
     if energy_file:
@@ -169,12 +207,35 @@ def main():
         output['graph'] = {}
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
+        plt.figure()
+        nx.draw(graph)
     if basins_file:
-        try:
-            process = file_to_basin_process(basins_file, float)
-            output['processes'].append(process)
-        except:
-            print "no basin file"
+#        try:
+        process = file_to_basin_process(basins_file, float)
+        output['processes'].append(process)
+        
+        time_indices = [80]
+        for index, time in enumerate(process['data']):
+            if index in time_indices:
+                print time['time']
+                for basin in time['values']:
+                    plt.figure()
+                    plt.hist(basin['nodes'], 10)
+                #set_trace()
+             
+        basins = file_to_basin_sizes(basins_file, output['processes'][0], 200)        
+        plt.figure()
+        for basin, data in basins.items():
+            d = []
+            scaled_size = []
+            plt.semilogx(data['time'], data['size'], label=str(basin) + str(output['partitions'][basin]),  linewidth=2)
+        
+#        plt.legend()
+        plt.show()
+    
+        #set_trace()
+#        except:
+#            print "no basin file"
 
 
     if landscape_type:

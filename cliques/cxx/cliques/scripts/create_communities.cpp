@@ -119,18 +119,18 @@ int main(int ac, char* av[]) {
 
     cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj", orange_graph);
 
-//    cliques::output("Finding distances");
-//    auto X = cliques::find_community_edit_dists(orange_graph, communities);
-//    cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
+    cliques::output("Finding distances");
+    auto X = cliques::find_community_edit_dists(orange_graph, communities);
+    cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
 
-    cliques::output("Finding distances Hasse");
-    cliques::create_hasse_community_space(space,communities,space);
-    std::vector<lemon::SmartGraph::Node> all_nodes;
-    for (unsigned int i = 0; i < communities.size(); ++i) {
-        all_nodes.push_back(space.nodeFromId(i));
-    }
-    cliques::make_weights_from_edges(space,space_weights);
-    auto X = cliques::convert_graph_to_geodesic_dists(space,all_nodes,space_weights);
+//    cliques::output("Finding distances Hasse");
+//    cliques::create_hasse_community_space(space,communities,space);
+//    std::vector<lemon::SmartGraph::Node> all_nodes;
+//    for (unsigned int i = 0; i < communities.size(); ++i) {
+//        all_nodes.push_back(space.nodeFromId(i));
+//    }
+//    cliques::make_weights_from_edges(space,space_weights);
+//    auto X = cliques::convert_graph_to_geodesic_dists(space,all_nodes,space_weights);
 
     cliques::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
 
