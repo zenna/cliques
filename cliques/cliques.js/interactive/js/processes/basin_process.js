@@ -42,7 +42,7 @@ BasinProcess.prototype.render = function(dataId) {
 	}
 	
 	this.graph.paint_nodes(rgbs);
-	this.graph.move_nodes(norm_values, 0, 1);
+	//this.graph.move_nodes(norm_values, 0, 1);
 	this.graph.match_edge_colours_to_node();
 
 	// var alpha = {

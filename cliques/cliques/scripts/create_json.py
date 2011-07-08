@@ -210,33 +210,8 @@ def main():
         plt.figure()
         nx.draw(graph)
     if basins_file:
-#        try:
         process = file_to_basin_process(basins_file, float)
         output['processes'].append(process)
-        
-        time_indices = [80]
-        for index, time in enumerate(process['data']):
-            if index in time_indices:
-                print time['time']
-                for basin in time['values']:
-                    plt.figure()
-                    plt.hist(basin['nodes'], 10)
-                #set_trace()
-             
-        basins = file_to_basin_sizes(basins_file, output['processes'][0], 200)        
-        plt.figure()
-        for basin, data in basins.items():
-            d = []
-            scaled_size = []
-            plt.semilogx(data['time'], data['size'], label=str(basin) + str(output['partitions'][basin]),  linewidth=2)
-        
-#        plt.legend()
-        plt.show()
-    
-        #set_trace()
-#        except:
-#            print "no basin file"
-
 
     if landscape_type:
         output['landscapeType'] = landscape_type
