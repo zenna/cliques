@@ -1,7 +1,7 @@
 import getopt, sys
 import simplejson
 from collections import defaultdict
-from ipdb import set_trace
+#from ipdb import set_trace
 import matplotlib.pyplot as plt
 
 # Problems
