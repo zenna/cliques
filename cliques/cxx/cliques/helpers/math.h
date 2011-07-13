@@ -37,4 +37,18 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
 	return output;
 }
 
+std::vector<double> create_exponential_markov_times(double start_time,
+		double end_time, int num_steps) {
+	std::vector<double> markov_times;
+	double start_log = std::log(start_time);
+	double end_log = std::log(end_time);
+
+	double increment = (end_log - start_log) / float(num_steps - 1);
+	for (int i = 0; i < num_steps; ++i) {
+		double current_log = start_log + i * increment;
+		markov_times.push_back(std::exp(current_log));
+	}
+	return markov_times;
+}
+
 }

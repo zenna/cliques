@@ -212,7 +212,7 @@ def main():
     if basins_file:
         process = file_to_basin_process(basins_file, float)
         output['processes'].append(process)
-        time_indices = [5]
+        time_indices = [100]
         for index, time in enumerate(process['data']):
             if index in time_indices:
                 print time['time']
