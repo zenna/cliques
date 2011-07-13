@@ -33,7 +33,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	po::options_description desc("Allowed options");
 	desc.add_options()("help", "produce help message")("graph,G",
 			po::value<std::string>(), "input graph")("num-samples,S",
-			po::value<int>(), "number of samples")("dimensions,d",
+			po::value<int>(), "number of samples")("dimensions,D",
 			po::value<int>(), "number of dimensions")("prefix,x",
 			po::value<std::string>(), "filename prefix")("find_partitions,p",
 			"Find Partitions")("create_space,s", "Create Space")(
@@ -46,11 +46,37 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	po::notify(vm);
 
 	find_partitions = vm.count("find_partitions") ? true : false;
-	create_space = vm.count("create_space") ? true : false;
-	find_stabilities = vm.count("find_stabilities") ? true : false;
 	find_distances = vm.count("find_distances") ? true : false;
-	do_embedding = vm.count("do_embedding") ? true : false;
-	find_basins = vm.count("find_basins") ? true : false;
+
+	if (vm.count("find_distances")) {
+		find_distances = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("create_space")) {
+		create_space = true;
+		find_distances = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("find_stabilities")) {
+		find_stabilities = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("find_basins")) {
+		find_basins = true;
+		create_space = true;
+		find_stabilities = true;
+		find_partitions = true;
+		find_distances = true;
+	}
+
+	if (vm.count("do_embedding")) {
+		do_embedding = true;
+		find_distances = true;
+		find_partitions = true;
+	}
 
 	// Do everything if nothing specified
 	if (!(find_partitions || create_space || find_stabilities || find_distances
@@ -96,6 +122,32 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 // See Node statistics
 
 // Optimisation Algorithm
+// Characterise Paths into basins
+	// We want an optimsiation algorithm that with a high probability will follow paths to robust maxima
+	// Maxima in this landscape may be structurally different, and of similar or different stability values.
+	// Are we going to combine our finding of maxima with robustness
+
+// Simple algorithm
+  // Go to a random point in the landscape
+  // Make a greedy walk upwards
+
+
+// Observe Basins when stable and unstable
+// Size of basins
+// Distribution of probabilities
+// Spatial Distribution of probabilities
+  // Landscape hide colors
+  // Histogram
+// Volume of the basins
+// Paths into basins
+
+
+// Profiling
+// SmartGraph::AddEdge is the bottleneck, creates a new graph for Num Partitions * Num Timesteps, 2000000 * 500, 1 billion times, 120 billion Add Edges
+// In find pbasins; create a new much bigger graph just T times, 	NUM edges * 500 = 17 billion
+
+// Generate filename based on input as well as passed arguments
+// Any base logarithms
 
 int main(int ac, char* av[]) {
 	typedef cliques::VectorPartition VecPartition;
@@ -193,7 +245,7 @@ int main(int ac, char* av[]) {
 	}
 
 	if (find_basins) {
-		cliques::output("Finding Probabalistic Basins");
+		cliques::output("Finding Probabilistic Basins");
 		std::vector<std::map<int, std::map<int, double>>>all_basins;
 		int j = 0;
 		for (auto stabilities = all_stabilities.begin(); stabilities

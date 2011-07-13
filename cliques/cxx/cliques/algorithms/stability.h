@@ -181,6 +181,8 @@ struct find_full_normalised_stability {
 
 		// reserve memory space for number of nodes
 		exp_graph.reserveNode(N);
+        exp_graph.reserveEdge(N+(N*(N-1))/2);
+
 		// add nodes
 		for (int i = 0; i < N; ++i) {
 			exp_graph.addNode();
@@ -196,6 +198,8 @@ struct find_full_normalised_stability {
 				}
 			}
 		}
+
+		cliques::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", (N * (N-1))/2, N*N, (N*N)/2);
 
 		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);
@@ -221,6 +225,7 @@ struct find_full_normalised_stability {
 
         // reserve memory space for number of nodes
         exp_graph.reserveNode(N);
+        exp_graph.reserveEdge(N+(N*(N-1))/2);
         // add nodes
         for (int i = 0; i < N; ++i) {
             exp_graph.addNode();
@@ -238,6 +243,12 @@ struct find_full_normalised_stability {
                 }
             }
         }
+
+//		cliques::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", N + (N * (N-1))/2, N*N, (N*N)/2);
+
+
+
+
 
 //        cliques::print_collection(effective_graph,N);
 //        double m = 0.0;

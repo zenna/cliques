@@ -1,8 +1,6 @@
 import getopt, sys
 import simplejson
 from collections import defaultdict
-#from ipdb import set_trace
-import matplotlib.pyplot as plt
 
 # Problems
 # Can't handle missing files
@@ -207,8 +205,6 @@ def main():
         output['graph'] = {}
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(graph_file, float)
-        plt.figure()
-        nx.draw(graph)
     if basins_file:
         process = file_to_basin_process(basins_file, float)
         output['processes'].append(process)

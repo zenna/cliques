@@ -33,7 +33,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	po::options_description desc("Allowed options");
 	desc.add_options()("help", "produce help message")("graph,G",
 			po::value<std::string>(), "input graph")("num-samples,S",
-			po::value<int>(), "number of samples")("dimensions,d",
+			po::value<int>(), "number of samples")("dimensions,D",
 			po::value<int>(), "number of dimensions")("prefix,x",
 			po::value<std::string>(), "filename prefix")("find_partitions,p",
 			"Find Partitions")("create_space,s", "Create Space")(
@@ -46,11 +46,37 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	po::notify(vm);
 
 	find_partitions = vm.count("find_partitions") ? true : false;
-	create_space = vm.count("create_space") ? true : false;
-	find_stabilities = vm.count("find_stabilities") ? true : false;
 	find_distances = vm.count("find_distances") ? true : false;
-	do_embedding = vm.count("do_embedding") ? true : false;
-	find_basins = vm.count("find_basins") ? true : false;
+
+	if (vm.count("find_distances")) {
+		find_distances = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("create_space")) {
+		create_space = true;
+		find_distances = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("find_stabilities")) {
+		find_stabilities = true;
+		find_partitions = true;
+	}
+
+	if (vm.count("find_basins")) {
+		find_basins = true;
+		create_space = true;
+		find_stabilities = true;
+		find_partitions = true;
+		find_distances = true;
+	}
+
+	if (vm.count("do_embedding")) {
+		do_embedding = true;
+		find_distances = true;
+		find_partitions = true;
+	}
 
 	// Do everything if nothing specified
 	if (!(find_partitions || create_space || find_stabilities || find_distances
@@ -85,7 +111,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		cliques::output("making default graph graph");
 		//cliques::make_path_graph(graph, 7, weights);
 		//      cliques::make_ring_graph(graph, 12, weights);
-		cliques::make_complete_graph(graph, 4, weights);
+		cliques::make_complete_graph(graph, 8, weights);
 	}
 }
 
