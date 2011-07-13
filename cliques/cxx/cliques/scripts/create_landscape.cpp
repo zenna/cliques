@@ -161,6 +161,8 @@ int main(int ac, char* av[]) {
 	int num_dim = 3;
 	bool find_partitions, create_space, find_stabs, find_basins,
 			find_distances, do_embedding;
+    find_partitions = create_space = find_stabs = find_basins =
+                find_distances = do_embedding = false;
 	parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim,
 			filename_prefix, find_partitions, create_space, find_stabs,
 			find_distances, do_embedding, find_basins);

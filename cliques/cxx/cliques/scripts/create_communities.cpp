@@ -78,11 +78,14 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		find_partitions = true;
 	}
 
+	cliques::output("bools", find_partitions, create_space, find_stabilities, find_distances, do_embedding, find_basins);
+
 	// Do everything if nothing specified
 	if (!(find_partitions || create_space || find_stabilities || find_distances
 			|| do_embedding || find_basins)) {
 		find_partitions = create_space = find_stabilities = find_distances
 				= do_embedding = find_basins = true;
+		cliques::output("F", find_partitions);
 	}
 
 	if (vm.count("help")) {
@@ -127,6 +130,8 @@ int main(int ac, char* av[]) {
 	int num_dim = 3;
 	bool find_partitions, create_space, find_stabs, find_basins,
 			find_distances, do_embedding;
+	find_partitions = create_space = find_stabs = find_basins =
+	            find_distances = do_embedding = false;
 	parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim,
 			filename_prefix, find_partitions, create_space, find_stabs,
 			find_distances, do_embedding, find_basins);
