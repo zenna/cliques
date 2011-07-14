@@ -28,7 +28,7 @@ template<typename G, typename M>
 void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		int &num_samples, int &num_dim, std::string &filename_prefix,
 		bool &find_partitions, bool &create_space, bool &find_stabilities,
-		bool &find_distances, bool &do_embedding, bool &find_basins) {
+		bool &find_distances, bool &do_embedding, bool &find_basins, int &num_timesteps, double &start_time, double &end_time) {
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()("help", "produce help message")("graph,G",
@@ -38,8 +38,11 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 			po::value<std::string>(), "filename prefix")("find_partitions,p",
 			"Find Partitions")("create_space,s", "Create Space")(
 			"find_stabilities,r", "Find Stabilities")("find_distances,d",
-			"Find Distances")("do_embedding,e", "Do Embedding")(
-			"find_basins,b", "Find Basins");
+			"Find Distances")("do_embedding,e", "Do Embedding")
+			("find_basins,b", "Find Basins")
+			("time_steps",po::value<int>(), "Number of time steps")
+			("start_time",po::value<double>(), "start time")
+			("end_time",po::value<double>(), "end time");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(ac, av, desc), vm);
@@ -47,6 +50,18 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 
 	find_partitions = vm.count("find_partitions") ? true : false;
 	find_distances = vm.count("find_distances") ? true : false;
+
+	if (vm.count("time_steps")) {
+	    num_timesteps = vm["time_steps"].as<int> ();
+	}
+
+	if (vm.count("start_time")) {
+        start_time = vm["start_time"].as<double> ();
+    }
+
+    if (vm.count("end_time")) {
+        end_time = vm["end_time"].as<double> ();
+    }
 
 	if (vm.count("find_distances")) {
 		find_distances = true;
@@ -111,7 +126,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		cliques::output("making default graph graph");
 		//cliques::make_path_graph(graph, 7, weights);
 		//      cliques::make_ring_graph(graph, 12, weights);
-		cliques::make_complete_graph(graph, 4, weights);
+		cliques::make_complete_graph(graph, 8, weights);
 	}
 }
 
@@ -157,15 +172,15 @@ int main(int ac, char* av[]) {
 	lemon::SmartGraph orange_graph;
 	std::string filename_prefix;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
-	int num_samples = 100000;
-	int num_dim = 3;
+	int num_samples = 100000, num_dim = 3, num_timesteps = 500;
+	double start_time = 1e-5, end_time = 500;
 	bool find_partitions, create_space, find_stabs, find_basins,
 			find_distances, do_embedding;
     find_partitions = create_space = find_stabs = find_basins =
                 find_distances = do_embedding = false;
 	parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim,
 			filename_prefix, find_partitions, create_space, find_stabs,
-			find_distances, do_embedding, find_basins);
+			find_distances, do_embedding, find_basins, num_timesteps, start_time, end_time);
 
 	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
 			orange_graph);
@@ -206,7 +221,8 @@ int main(int ac, char* av[]) {
 		cliques::output("Finding stabilities");
 		std::ofstream stabs_file;
 		stabs_file.open(filename_prefix + "_energy.mat");
-		markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
+		cliques::output(start_time, end_time, num_timesteps);
+		markov_times = cliques::create_exponential_markov_times(start_time, end_time, num_timesteps);
 		cliques::output(markov_times.size(), "time steps");
 		cliques::find_full_normalised_stability func(orange_graph, weights);
 		for (unsigned int i = 0; i < markov_times.size(); ++i) {

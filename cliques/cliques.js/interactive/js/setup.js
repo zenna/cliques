@@ -46,6 +46,4 @@ $(document).ready( function() {
 		}
 
 	}).error(function(data) { alert("error, could not load"); })
-	
-		
 })
