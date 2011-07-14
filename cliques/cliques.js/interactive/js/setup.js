@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	var jqxkr = $.getJSON('js/data/hier_c_n18.json', function(data) {
+	var jqxkr = $.getJSON('js/data/tree.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');
@@ -46,4 +46,6 @@ $(document).ready( function() {
 		}
 
 	}).error(function(data) { alert("error, could not load"); })
+	
+		
 })

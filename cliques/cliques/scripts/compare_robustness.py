@@ -211,6 +211,7 @@ def main():
         plt.figure()
         nx.draw(graph)
     if basins_file:
+        num_partitions = float(len(output['partitions']))
         process = file_to_basin_process(basins_file, float)
         output['processes'].append(process)
         time_indices = [800]
@@ -227,6 +228,7 @@ def main():
                     nx.draw(graph, pos= pos, node_color = partition)
                     plt.subplot(122)
                     plt.hist(basin['metas'], 50)
+                    plt.xlabel("time " + str(time['time']))
             H = 0.0
             count = 0     
             pdist = []       
@@ -245,15 +247,16 @@ def main():
         plt.semilogx(time_list,entropy_list2)
         
         print len(output['partitions'])
+                    
         basins = file_to_basin_sizes(basins_file, output['processes'][0], 200)        
         plt.figure()
         for basin, data in basins.items():
             d = []
-            scaled_size = []
-            plt.semilogx(data['time'], data['size'], label=str(basin) + str(output['partitions'][basin]),  linewidth=2)
-#        plt.legend()
+            scaled_size = [x/num_partitions for x in data['size']]
+            plt.semilogx(data['time'], scaled_size, label=str(basin) + str(output['partitions'][basin]),  linewidth=2)
+        
+        plt.legend()
         plt.show()
-
 
 def entropy(prob_dist):
     entropy = 0.0
