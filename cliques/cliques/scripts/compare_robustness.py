@@ -3,6 +3,7 @@ import simplejson
 from collections import defaultdict
 from ipdb import set_trace
 import matplotlib.pyplot as plt
+import math
 
 # Problems
 # Can't handle missing files
@@ -164,7 +165,7 @@ def file_to_basin_sizes(filename, energies, time_limit):
                     else:
                         energy = energies['data'][time_index]['values'][nodes_id]
                         node_to_basin_prob = float(val)
-                        basin_prob_size += node_to_basin_prob# * energy
+                        basin_prob_size += node_to_basin_prob * energy
                                               
                 basin_to_values[int(l[1])]['time'].append(float(l[0]))
                 basin_to_values[int(l[1])]['size'].append(basin_prob_size)
@@ -212,7 +213,10 @@ def main():
     if basins_file:
         process = file_to_basin_process(basins_file, float)
         output['processes'].append(process)
-        time_indices = [100]
+        time_indices = [800]
+        entropy_list = []
+        entropy_list2 =[]
+        time_list = []
         for index, time in enumerate(process['data']):
             if index in time_indices:
                 print time['time']
@@ -223,16 +227,47 @@ def main():
                     nx.draw(graph, pos= pos, node_color = partition)
                     plt.subplot(122)
                     plt.hist(basin['metas'], 50)
-             
+            H = 0.0
+            count = 0     
+            pdist = []       
+            for basin in time['values']:
+                pdist.append(sum(basin['metas'])/len(output['partitions']))
+                H += entropy_rate_part(basin['metas'],len(output['partitions']))
+                count+=1
+            H= H
+            entropy_list2.append(H)
+            entropy_list.append(entropy(pdist))
+            time_list.append(time['time'])
+        plt.figure()
+        #set_trace()
+        plt.semilogx(time_list,entropy_list)
+        plt.figure()
+        plt.semilogx(time_list,entropy_list2)
+        
+        print len(output['partitions'])
         basins = file_to_basin_sizes(basins_file, output['processes'][0], 200)        
         plt.figure()
         for basin, data in basins.items():
             d = []
             scaled_size = []
             plt.semilogx(data['time'], data['size'], label=str(basin) + str(output['partitions'][basin]),  linewidth=2)
-        
 #        plt.legend()
         plt.show()
+
+
+def entropy(prob_dist):
+    entropy = 0.0
+    for prob in prob_dist:
+        if prob > 0:
+            entropy += -prob*math.log(prob)/math.log(2)
+    return entropy
+
+def entropy_rate_part(prob_dist,num_nodes):
+    entropy = 0.0
+    for prob in prob_dist:
+        if prob > 0:
+            entropy += -1/num_nodes*prob*math.log(prob)/math.log(2)
+    return entropy
 
 if __name__ == "__main__":
     main()
