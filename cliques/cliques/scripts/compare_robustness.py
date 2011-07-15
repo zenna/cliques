@@ -53,7 +53,6 @@ def parse_args():
     
     for o, a in opts:
         if o in ("-x", "--prefix"):
-            print "araraad", a
             coords_file = '%s_%s.mat'%(a, 'coords')
             edges_file = '%s_%s.edj'%(a, 'landscape_edgelist')
             energy_file = '%s_%s.mat'%(a, 'energy')
@@ -165,7 +164,7 @@ def file_to_basin_sizes(filename, energies, time_limit):
                     else:
                         energy = energies['data'][time_index]['values'][nodes_id]
                         node_to_basin_prob = float(val)
-                        basin_prob_size += node_to_basin_prob * energy
+                        basin_prob_size += node_to_basin_prob #* energy
                                               
                 basin_to_values[int(l[1])]['time'].append(float(l[0]))
                 basin_to_values[int(l[1])]['size'].append(basin_prob_size)
