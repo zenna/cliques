@@ -121,7 +121,7 @@ bool is_community_maxima(G &graph, M &weights, std::vector<int> comm,
  */
 template<typename G, typename M, typename QF>
 std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
-		M &weights, QF &compute_quality, double time,
+		M &weights, QF &compute_quality, double time, std::vector<std::vector<double> > all_stabilities,
 		std::vector<std::vector<int> > communities) {
 
 	std::set<std::vector<int> > all_maxima;
@@ -129,6 +129,8 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
 	int num_iterations = 1000;
 	std::vector<int> buffer(lemon::countNodes(graph), 0);
 	std::map<std::vector<int>, int> maxima_to_seen_count;
+	int iterations_per_snapshot = 10;
+
 	for (int i = 0; i < num_iterations; ++i) {
 		//		cliques::print_collection(comm);
 		cliques::VectorPartition p = cliques::community_to_partition(graph,
@@ -200,6 +202,25 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
 		} else {
 			cliques::output("meta maxima", i);
 			maxima_to_seen_count[comm]++;
+		}
+
+		if (i % iterations_per_snapshot == 0) {
+		    std::vector<double> stabilities;
+		    for (auto comm = communities.begin(); comm != communities.end(); ++comm) {
+	            cliques::VectorPartition p = cliques::community_to_partition(graph,
+	                    *comm, 0);
+	            double quality = compute_quality(p, 1, time);
+	            for (auto maximum = maxima_to_seen_count.begin(); maximum
+	                    != maxima_to_seen_count.end(); ++maximum) {
+	                int dist_to_maximum = cliques::find_community_dist(graph,
+	                        weights, *comm, maximum->first, buffer);
+
+	                quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)
+	                        * maximum->second;
+	            }
+                stabilities.push_back(quality);
+		    }
+		    all_stabilities.push_back(stabilities);
 		}
 	}
 

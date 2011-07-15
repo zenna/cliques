@@ -1,12 +1,11 @@
 $(document).ready( function() {
-	var jqxkr = $.getJSON('js/data/tree.json', function(data) {
-		load_landscape(data);
-	}).error( function(data) {
-		alert("error, could not load");
-	})
-	
+	// var jqxkr = $.getJSON('js/data/tree.json', function(data) {
+		// load_landscape(data);
+	// }).error( function(data) {
+		// alert("error, could not load");
+	// })
+// 	
 	function load_landscape(data) {
-	var jqxkr = $.getJSON('js/data/barbell_n8.json', function(data) {
 		landscape_view = new App();
 		landscape_view.setup();
 		landscape = new Graph(data, landscape_view.scene, 'landscape');

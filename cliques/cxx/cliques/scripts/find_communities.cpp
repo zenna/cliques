@@ -154,11 +154,12 @@ int main(int ac, char* av[]) {
 //	markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
 	cliques::find_full_normalised_stability func(orange_graph, weights);
 //	double stability = func(p, 1, markov_times[i]);
-	auto all_maxima = cliques::find_optimal_communities_huxley(orange_graph, weights, func, 1e-5);
-	cliques::output("maximum");
-	for (auto maximum = all_maxima.begin(); maximum != all_maxima.end(); ++maximum) {
-		cliques::print_collection(*maximum);
-	}
+//	std::vector<std::vector<double> > all_stabilities;
+//	auto all_maxima = cliques::find_optimal_communities_huxley(orange_graph, weights, func, 1.0, all_stabilities);
+//	cliques::output("maximum");
+//	for (auto maximum = all_maxima.begin(); maximum != all_maxima.end(); ++maximum) {
+//		cliques::print_collection(*maximum);
+//	}
 
     return 0;
 }

@@ -14,6 +14,8 @@
 
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/vector_partition.h>
+#include <cliques/algorithms/kernighan_lin.h>
+
 
 namespace cliques {
 
@@ -556,6 +558,16 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins(G &graph,
 
 }
 
+/**
+ @brief  From a graph and vector of qualities create a directed transition graph
+ The new graph has the same number of nodes, but only directed edges from one node
+ to a node of greater quality, with the edge weight the probability of going
+ to that node.
+
+ The probability is weighted, as the difference between the qualities of the nodes
+ / the total weight (positive with respect to the starting node)
+
+ */
 template<typename G>
 std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
         G &graph, std::vector<double> qualities) {
@@ -655,6 +667,89 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
     return all_basins;
 }
 
+/**
+ @brief  Compute the probabalistic basins defined by kernginal lin
+ algorithm
+ */
+template<typename G, typename M, typename QF, typename QFDIFF, typename MAP, typename COMM>
+std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
+        M &weights, QF compute_quality, QFDIFF compute_quality_diff, MAP &map, G &space, double time, COMM &all_partitions) {
+
+    std::map<int, std::map<int, int> > node_to_basin_to_count;
+    typedef cliques::VectorPartition VecPartition;
+    const int TOTAL_COUNT_INDEX = -1; // Magic number to store total count
+    int num_nodes = lemon::countNodes(graph);
+
+    for (auto start_partition = all_partitions.begin(); start_partition != all_partitions.end(); ++start_partition) {
+
+        std::vector<VecPartition> path_partitions;
+        VecPartition output_partition(num_nodes);
+
+
+        cliques::refine_partition_kernighan_lin_hijack(graph,
+                weights,
+                compute_quality,
+                compute_quality_diff,
+                path_partitions,
+                *start_partition,
+                output_partition);
+
+        output_partition.normalise_ids();
+
+        //Convert path_partitions into path_nodes
+        std::vector<int> path_nodes;
+//        cliques::output("paths");
+        for (auto partition = path_partitions.begin(); partition != path_partitions.end(); ++partition) {
+            partition->normalise_ids();
+//            cliques::print_partition_line(*partition);
+            auto p = map.left.find(*partition);
+            if (p != map.left.end()) {
+                auto node_id = space.id(p->second);
+                path_nodes.push_back(node_id);
+            }
+        }
+
+//        cliques::output("start then output:");
+//        cliques::print_partition_line(*start_partition);
+//        cliques::print_partition_line(output_partition);
+
+        auto p = map.left.find(output_partition);
+        if (p != map.left.end()) {
+            int optimum = space.id(p->second);
+            path_nodes.push_back(space.id(map.left.at(*start_partition)));
+
+            for (auto node = path_nodes.begin(); node != path_nodes.end(); ++node) {
+                node_to_basin_to_count[*node][optimum]++;
+                node_to_basin_to_count[*node][TOTAL_COUNT_INDEX]++;
+
+//                cliques::output(*node,optimum,node_to_basin_to_count[*node][optimum],node_to_basin_to_count[*node][TOTAL_COUNT_INDEX]);
+            }
+        }
+        else {
+            cliques::output("maxima is disconnected partition");
+        }
+
+    }
+
+    std::map<int, std::map<int, double> > basin;
+
+    // Convert into basin format
+    for (auto node = node_to_basin_to_count.begin(); node != node_to_basin_to_count.end(); ++node) {
+        int node_id = node->first;
+        int total_count = node->second[TOTAL_COUNT_INDEX];
+
+        for (auto basin_itr = node->second.begin(); basin_itr != node->second.end(); ++basin_itr) {
+            int basin_id = basin_itr->first;
+            if (basin_id != -1) {
+                int basin_count = basin_itr->second;
+                basin[basin_id][node_id] = basin_count / float(total_count);
+            }
+        }
+    }
+
+    return basin;
+}
+
 //template<typename G>
 //std::map<int, std::map<int, double> > compute_steepest_ascent_basins(G &graph,
 //        std::vector<double> qualities) {
@@ -712,20 +807,19 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
 //    return all_basins;
 //}
 
-bool does_set_contain_other(std::vector<int> larger_set, std::vector<int> smaller_set, std::vector<int> &buffer) {
-    std::sort(larger_set.begin(),larger_set.end());
-    std::sort(smaller_set.begin(),smaller_set.end());
+bool does_set_contain_other(std::vector<int> larger_set,
+        std::vector<int> smaller_set, std::vector<int> &buffer) {
+    std::sort(larger_set.begin(), larger_set.end());
+    std::sort(smaller_set.begin(), smaller_set.end());
 
-    auto end = std::set_difference(smaller_set.begin(),
-            smaller_set.end(), larger_set.begin(),
-            larger_set.end(), buffer.begin());
+    auto end = std::set_difference(smaller_set.begin(), smaller_set.end(),
+            larger_set.begin(), larger_set.end(), buffer.begin());
 
     int difference_size = int(end - buffer.begin());
 
     if (difference_size > 0) {
         return false;
-    }
-    else {
+    } else {
         return true;
     }
 }
@@ -742,16 +836,17 @@ bool does_set_contain_other(std::vector<int> larger_set, std::vector<int> smalle
  @param[out] space output graph representing the space
  */
 template<typename G>
-void create_hasse_community_space(G &graph, std::vector<std::vector<int> > &communities, G &space) {
+void create_hasse_community_space(G &graph,
+        std::vector<std::vector<int> > &communities, G &space) {
 
     typedef typename G::Node Node;
 
     int num_nodes = communities.size();
-    for (int i=0;i<num_nodes;++i) {
+    for (int i = 0; i < num_nodes; ++i) {
         space.addNode();
     }
 
-    std::vector<int> buffer(20,0);
+    std::vector<int> buffer(20, 0);
 
     for (int i = 0; i < num_nodes - 1; ++i) {
         for (int j = i + 1; j < num_nodes; ++j) {
@@ -763,13 +858,15 @@ void create_hasse_community_space(G &graph, std::vector<std::vector<int> > &comm
 
             // Communities of the same size cannot contain one another
             if (std::abs(size_difference) <= 13) {
-                std::vector<int> &larger_comm = comm1_size > comm2_size ? comm1 : comm2;
-                std::vector<int> &smaller_comm = comm1_size > comm2_size ? comm2 : comm1;
+                std::vector<int> &larger_comm = comm1_size > comm2_size ? comm1
+                        : comm2;
+                std::vector<int> &smaller_comm =
+                        comm1_size > comm2_size ? comm2 : comm1;
 
-                if (does_set_contain_other(larger_comm, smaller_comm,buffer)) {
+                if (does_set_contain_other(larger_comm, smaller_comm, buffer)) {
                     Node u = graph.nodeFromId(i);
                     Node v = graph.nodeFromId(j);
-                    graph.addEdge(u,v);
+                    graph.addEdge(u, v);
                     if (size_difference >= 11) {
                         cliques::output(comm1_size, comm2_size, size_difference);
                     }

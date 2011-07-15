@@ -157,6 +157,13 @@ int main(int ac, char* av[]) {
 	    }
 	}
 
+    std::vector<std::vector<double> > all_stabilities;
+    auto all_maxima = cliques::find_optimal_communities_huxley(orange_graph, weights, func, 1.0, all_stabilities, communities);
+    cliques::output("maximum");
+    for (auto maximum = all_maxima.begin(); maximum != all_maxima.end(); ++maximum) {
+        cliques::print_collection(*maximum);
+    }
+
 	std::vector<double> markov_times;
 	std::vector<std::vector<double> > all_stabilities;
 	if (find_stabs) {
