@@ -199,6 +199,8 @@ struct find_full_normalised_stability {
 			}
 		}
 
+
+//		cliques::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", (N * (N-1))/2, N*N, (N*N)/2);
 		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);
 		return lin_norm_stability(internals);

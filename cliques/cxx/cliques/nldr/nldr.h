@@ -155,35 +155,37 @@ std::vector<typename G::Node> randomly_choose_nodes(G &graph,
 //view.js:114[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0]
 
 template <typename G, typename M, typename C>
-float find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) {
+double find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) {
     int size1 = comm1.size();
     int size2 = comm2.size();
 
     std::sort(comm1.begin(),comm1.end());
     std::sort(comm2.begin(),comm2.end());
 
-	auto end = std::set_symmetric_difference(comm1.begin(),
+	auto end = std::set_intersection(comm1.begin(),
 			comm1.end(), comm2.begin(),
 			comm2.end(), diff_itr.begin());
-	int difference_size = int(end - diff_itr.begin());
+	int intersection_size = int(end - diff_itr.begin());
 
+	int difference_size = size1+size2 - intersection_size * 2;
     float shortest_inter_comm_distance = 0.0;
 
-    if (difference_size == 0) {
+    if (intersection_size == 0) {
     	difference_size = size1 + size2 - 1;
     	shortest_inter_comm_distance = std::numeric_limits<int>::max();
         for (auto n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
         	for (auto n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
-                auto d = lemon::Dijkstra<lemon::SmartGraph,lemon::SmartGraph::EdgeMap<float> >(graph, weights);
+                auto d = lemon::Dijkstra<G,M >(graph, weights);
                 typename G::Node node1 = graph.nodeFromId(*n1);
                 typename G::Node node2 = graph.nodeFromId(*n2);
                 d.run(node1, node2);
-                float dist = d.dist(node2);
+                double dist = d.dist(node2);
                 if (shortest_inter_comm_distance > dist) {
                 	shortest_inter_comm_distance = dist;
                 }
         	}
         }
+    	difference_size = size1 + size2 + shortest_inter_comm_distance - 2;
     }
 
     float edit_distance = shortest_inter_comm_distance + difference_size;

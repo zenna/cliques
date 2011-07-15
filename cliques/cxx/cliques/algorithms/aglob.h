@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <limits>
+#include <map>
 
 namespace cliques {
 
@@ -51,6 +52,9 @@ std::vector<std::vector<int> > find_community_neighbours(G &graph,
 					contracted_comm.end(), node_id);
 			contracted_comm.erase(location);
 			forbidden.insert(node_id);
+			std::sort(contracted_comm.begin(), contracted_comm.end());
+			//		    cliques::output("WHAAC");
+			//		    cliques::print_collection(contracted_comm);
 			neighbours.push_back(contracted_comm);
 		}
 
@@ -65,6 +69,8 @@ std::vector<std::vector<int> > find_community_neighbours(G &graph,
 				forbidden.insert(neigh_node_id);
 				std::vector<int> new_comm = comm;
 				new_comm.push_back(neigh_node_id);
+				std::sort(new_comm.begin(), new_comm.end());
+
 				neighbours.push_back(new_comm);//neighbours.push_back()
 			}
 		}
@@ -113,13 +119,99 @@ bool is_community_maxima(G &graph, M &weights, std::vector<int> comm,
  @brief  Optimise for maxima
 
  */
-//template<typename G, typename M, typename QF>
-//void find_optimal_community_huxley(G &graph, M &weights, QF &compute_quality,
-//		double time, std::vector<std::vector<int> > communities) {
-//
-//	find_community_neighbours(graph, comm);
-//
-//	// Take N steps to get to random start position
-//}
+template<typename G, typename M, typename QF>
+std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
+		M &weights, QF &compute_quality, double time,
+		std::vector<std::vector<int> > communities) {
+
+	std::set<std::vector<int> > all_maxima;
+	std::vector<int> comm = { 0 };
+	int num_iterations = 1000;
+	std::vector<int> buffer(lemon::countNodes(graph), 0);
+	std::map<std::vector<int>, int> maxima_to_seen_count;
+	for (int i = 0; i < num_iterations; ++i) {
+		//		cliques::print_collection(comm);
+		cliques::VectorPartition p = cliques::community_to_partition(graph,
+				comm, 0);
+		auto neighs = find_community_neighbours(graph, comm);
+		double current_quality = compute_quality(p, 1, time);
+		double real_quality = current_quality;
+		for (auto maximum = maxima_to_seen_count.begin(); maximum
+				!= maxima_to_seen_count.end(); ++maximum) {
+			int dist_to_maximum = cliques::find_community_dist(graph, weights,
+					comm, maximum->first, buffer);
+			//			cliques::output("dist between following two is", dist_to_maximum);
+			//			cliques::print_collection(comm);
+			//			cliques::print_collection(maximum->first);
+			current_quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)
+					* maximum->second;
+		}
+
+		std::vector<double> neigh_qualities;
+		//		cliques::output("current quality:", current_quality);
+
+		// Compute neighbour qualities then bias by history dependent maxima filling
+		bool is_real_maximum = true;
+		for (auto neigh = neighs.begin(); neigh != neighs.end(); ++neigh) {
+			//			cliques::print_collection(*neigh);
+
+			cliques::VectorPartition p = cliques::community_to_partition(graph,
+					*neigh, 0);
+			double neigh_quality = compute_quality(p, 1, time);
+
+			if (neigh_quality > real_quality) {
+				is_real_maximum = false;
+			}
+			for (auto maximum = maxima_to_seen_count.begin(); maximum
+					!= maxima_to_seen_count.end(); ++maximum) {
+				int dist_to_maximum = cliques::find_community_dist(graph,
+						weights, *neigh, maximum->first, buffer);
+
+				neigh_quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)
+						* maximum->second;
+			}
+			//			cliques::output("neigh quality:", neigh_quality);
+
+			neigh_qualities.push_back(neigh_quality);
+		}
+
+		// Save if I am maxima on the unmodified landscape
+		if (is_real_maximum == true) {
+			all_maxima.insert(comm);
+		}
+
+		// Move to neighbour with probability dependent on difference in stability
+		double best_quality_diff = -std::numeric_limits<double>::max();
+		int j = 0, best_neighbour = -1;
+		for (auto neigh_quality = neigh_qualities.begin(); neigh_quality
+				!= neigh_qualities.end(); ++neigh_quality) {
+			double quality_diff = *neigh_quality - current_quality;
+			if (quality_diff > best_quality_diff) {
+				best_quality_diff = quality_diff;
+				best_neighbour = j;
+			}
+			++j;
+		}
+		// If not maxima in meta landscape
+		if (best_quality_diff > 0.0) {
+			comm = neighs[best_neighbour];
+			cliques::output("moving", i);
+			//			cliques::print_collection(comm);
+		} else {
+			cliques::output("meta maxima", i);
+			maxima_to_seen_count[comm]++;
+		}
+	}
+
+	return all_maxima;
+}
+
+template<typename G, typename M, typename QF>
+std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
+		M &weights, QF &compute_quality, double time) {
+	std::vector<std::vector<int> > communities;
+	return find_optimal_communities_huxley(graph, weights, compute_quality,
+			time, communities);
+}
 
 }

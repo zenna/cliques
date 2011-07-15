@@ -51,4 +51,8 @@ std::vector<double> create_exponential_markov_times(double start_time,
 	return markov_times;
 }
 
+double discrete_gauss_kernel(int N, double T) {
+	return 1.0/(N+1);
+}
+
 }
