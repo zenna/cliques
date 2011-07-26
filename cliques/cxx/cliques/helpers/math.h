@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 extern "C" void dgpadm_(int* ideg, int* m, double* t, double* A, int* ldh,
         double* wsp, int* lwsp, int* iwsp, int* iexp, int* ns, int* iflag);
