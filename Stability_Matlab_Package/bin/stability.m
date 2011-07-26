@@ -194,8 +194,20 @@ end
 % Display starting time
 if verbose
     c = clock;
-    disp('');
-    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
+    disp(' ');
+    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS') ' with the following parameters:']);
+    disp(['      Stability function: ' func2str(StabilityFunction)]);
+    disp(['      Compute the variation of information: ' int2str(ComputeVI)]);
+    disp(['      Save the results in files: ' int2str(OutputFile)]);
+    if OutputFile; disp(['      Prefix of the output files: ' prefix]); end
+    disp(['      Number of Louvain iterations: ' int2str(NbLouvain)]);
+    disp(['      Number of Louvain iterations used for the computation of VI: ' int2str(M)]);
+    disp(['      Full stability: ' int2str(Full)]);
+    disp(['      Check the input graph: ' int2str(Sanity)]);
+    disp(['      Precision used: ' num2str(Precision)]);
+    disp(['      Plot the results: ' int2str(plotStability)]);
+    disp(['      Verbose mode: ' int2str(verbose)]);    
+    disp(' ');
     tstart=tic;
 end
 
@@ -222,7 +234,7 @@ end
 for t=1:length(Time)
 
     if verbose
-        disp(['        Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
+        disp(['   Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
     end
     
     [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
@@ -238,13 +250,15 @@ for t=1:length(Time)
         dlmwrite(['Stability_' prefix '.stdout'],[Time(t), S(t), N(t), VI(t)],'-append', 'delimiter','\t')
     end   
     
-    if verbose && 100*t/length(Time) >= step_prec+10
-        disp(['     ' num2str(round(100*t/length(Time)),10) '% done.']);
+    if verbose && 100*t/length(Time) >= step_prec+10        
+        disp(' ');
+        disp(['   Completed: ' num2str(round(100*t/length(Time)),10) '%']);
         remaining_time=toc(tstart)*(1-t/length(Time))/(t/length(Time));
         nb_hours = floor(remaining_time/3600);
         nb_min = floor((remaining_time - nb_hours*3600)/60);
         nb_sec = round(remaining_time - nb_hours*3600 - nb_min*60);
-        disp(['     Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(['   Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(' ');
         step_prec = floor(100*t/length(Time));
     end
 
@@ -252,6 +266,7 @@ end
 
 if verbose
     c = clock;
+    disp(' ');
     disp(['   Partitioning of the graph finished at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
     remaining_time=toc(tstart);
     nb_hours = floor(remaining_time/3600);
@@ -551,6 +566,7 @@ end
 function Graph = check(Graph, verbose)
 % Check that the graph is properly encoded.
     if verbose
+        disp(' ');
         disp('   Graph sanity check...');
     end
     
