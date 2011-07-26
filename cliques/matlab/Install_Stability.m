@@ -11,11 +11,16 @@ cd(clique_path);
 
 disp('Building of mex files...');
 
-mex -v -DUSE_BOOST CXX=g++-4.6 CXXFLAGS="\$CXXFLAGS -std=gnu++0x" -O -output stability_louvain -I./ ./cliques/louvain_matlab_interface.cpp
+mex -v -DUSE_BOOST CXXFLAGS="\$CXXFLAGS -std=gnu++0x" -O -output stability_louvain -I./ ...
+    ./cliques/louvain_matlab_interface.cpp ...
+    /home/mts09/repositories/group_repository/graph-codes/cliques/cxx/cliques/libexpokit.so ...
+    LDFLAGS="\$LDFLAGS /home/mts09/repositories/group_repository/graph-codes/cliques/cxx/cliques/libexpokit.so" ...
+    CXX=g++-4.6
+    %LDCXXFLAGS='\$LDCXXFLAGS /home/mts09/repositories/group_repository/graph-codes/cliques/cxx/cliques/libexpokit.so' ...
 
 disp('Moving build files to bin directory...');
 
-movefile('louvain_matlab_interface.mex*',curr_folder);
+movefile('stability_louvain.mex*',curr_folder);
 
 cd(curr_folder);
 

@@ -30,7 +30,7 @@ namespace matlab {
 
 
 double *data = NULL;
-double precision = 0.000001;
+double precision = 1e-9;
 
 // TODO enable passing time vectors..
 double m_time = 1;
@@ -163,20 +163,24 @@ void mexFunction(int nlhs, matlab::mxArray *plhs[], int nrhs, const matlab::mxAr
 	// typedef for convenience
 	typedef cliques::VectorPartition partition;
 
+    // vector of initial partition
+    partition singletons(lemon::countNodes(mygraph));
+    singletons.initialise_as_singletons();
+    
+    // Logging feature
+    cliques::Logging<partition> log_louvain;
+    
 	// create empty vector of partitions
 	std::vector<partition> optimal_partitions;
 
-	// create time vector
-	std::vector<double> markov_times;
-	markov_times.push_back(m_time);
-
 	//initialise stability
 	double stability = 0;
+    cliques::find_linearised_normalised_stability quality(m_time);
 
     // now run Louvain method
     stability = cliques::find_optimal_partition_louvain<partition>(mygraph,
             myweights, quality,
-            cliques::linearised_normalised_stability_gain(current_markov_time), 1e-9, singletons,
+            cliques::linearised_normalised_stability_gain(m_time), precision, singletons,
             optimal_partitions, log_louvain);
 
 	// last partition in vector == best partition

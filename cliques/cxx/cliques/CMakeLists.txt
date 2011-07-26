@@ -21,5 +21,5 @@ set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 ENABLE_LANGUAGE(Fortran)
 SET(F_OBJ expokit.f)
 
-ADD_LIBRARY (expokit STATIC ${F_OBJ})
+ADD_LIBRARY(expokit STATIC ${F_OBJ})
 SET_TARGET_PROPERTIES(expokit PROPERTIES LINKER_LANGUAGE Fortran)
