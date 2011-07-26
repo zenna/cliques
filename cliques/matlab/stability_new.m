@@ -1,4 +1,4 @@
-function [S, N, VI, C] = stability(G, T, varargin)
+function [S, N, VI, C] = stability_new(G, T, varargin)
 %STABILITY    Graph partitioning optimizing stability with the Louvain
 %             algorithm
 %
