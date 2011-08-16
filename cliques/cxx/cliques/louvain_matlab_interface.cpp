@@ -18,16 +18,12 @@
 #include <string>
 #include <stdlib.h>
 
-namespace matlab {
+// some redefinitions needed here as MATLAB tries to define its own symbols...
+//namespace matlab {
 #define CHAR16_T UINT16_T // VALID?? be careful!!
 #include "mex.h"
 #include "matrix.h"
-}
-
-
-
-
-
+//}
 
 double *data = NULL;
 double precision = 1e-9;
@@ -39,39 +35,39 @@ bool hierarchy = false;
 int num_largest_dim = -1;
 
 // parse function definition, needed by constructor
-bool parse_arg(int nrhs, const matlab::mxArray *prhs[]) {
+bool parse_arg(int nrhs, const mxArray *prhs[]) {
 
 	//FIRST ARGUMENT: Graph
 	if (nrhs > 0) {
 		// number of columns should be 3 (n1,n2, weight)
 		if (mxGetN(prhs[0]) != 3) {
-			matlab::mexPrintf("Number of columns %d", matlab::mxGetN(prhs[0]));
+			mexPrintf("Number of columns %d", mxGetN(prhs[0]));
 			return false;
 		}
 		// data is stored in column major ordering ordering
-		data = (double *) matlab::mxGetPr(prhs[0]);
+		data = (double *) mxGetPr(prhs[0]);
 		// number of rows is important for indexing
-		num_largest_dim = matlab::mxGetM(prhs[0]);
+		num_largest_dim = mxGetM(prhs[0]);
 	}
 
 	//SECOND ARGUMENT: time
 	if (nrhs > 1) {
-		m_time = ((double) matlab::mxGetScalar(prhs[1]));
+		m_time = ((double) mxGetScalar(prhs[1]));
 	}
 
 	//THIRD ARGUMENT: precision
 	if (nrhs > 2) {
 		if (precision > 1)
 			return false;
-		precision = ((double) matlab::mxGetScalar(prhs[2]));
+		precision = ((double) mxGetScalar(prhs[2]));
 	}
 	//FOURTH ARGUMENT: hierarchical output
 	if (nrhs > 3) {
 		// get buffer length and allocate buffer
 		char *buf;
-		matlab::mwSize buflen = matlab::mxGetN(prhs[3]) * sizeof(matlab::mxChar) + 1;
-		buf = (char*) matlab::mxMalloc(buflen);
-		if (!matlab::mxGetString(prhs[3], buf, buflen)) {
+		mwSize buflen = mxGetN(prhs[3]) * sizeof(mxChar) + 1;
+		buf = (char*) mxMalloc(buflen);
+		if (!mxGetString(prhs[3], buf, buflen)) {
 			//if reading successful string is created from matlab input
 			const std::string input(buf);
 			const std::string comparison("h");
@@ -79,11 +75,11 @@ bool parse_arg(int nrhs, const matlab::mxArray *prhs[]) {
 			// in case hierarchical output is activated print message
 			if (!comparison.compare(input)) {
 				hierarchy = true;
-				matlab::mexPrintf("Hierarchical output from Louvain activated \n");
+				mexPrintf("Hierarchical output from Louvain activated \n");
 			}
 		}
 		// free read buffer
-		matlab::mxFree(buf);
+		mxFree(buf);
 	}
 
 	// SANITY CHECK for number of arguments
@@ -138,17 +134,17 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 	return true;
 }
 
-void mexFunction(int nlhs, matlab::mxArray *plhs[], int nrhs, const matlab::mxArray *prhs[]) {
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	// Parse arguments and return 0 if there is an error
 	if (!parse_arg(nrhs, prhs)) {
 		// give back zero for all outputs
-		plhs[0] = matlab::mxCreateDoubleMatrix(0, 0, matlab::mxREAL);
+		plhs[0] = mxCreateDoubleMatrix(0, 0, mxREAL);
 		if (nlhs > 1)
-			plhs[1] = matlab::mxCreateDoubleMatrix(0, 0, matlab::mxREAL);
+			plhs[1] = mxCreateDoubleMatrix(0, 0, mxREAL);
 		if (nlhs > 2)
-			plhs[2] = matlab::mxCreateDoubleMatrix(0, 0, matlab::mxREAL);
-		matlab::mexErrMsgTxt("Error parsing arguments");
+			plhs[2] = mxCreateDoubleMatrix(0, 0, mxREAL);
+		mexErrMsgTxt("Error parsing arguments");
 	}
 
 	//create new graph and weight map
@@ -157,7 +153,7 @@ void mexFunction(int nlhs, matlab::mxArray *plhs[], int nrhs, const matlab::mxAr
 
 	if (!read_edgelist_weighted_from_data(data, num_largest_dim, mygraph,
 			myweights)) {
-		matlab::mexErrMsgTxt("Error creating graph from data");
+		mexErrMsgTxt("Error creating graph from data");
 	}
 
 	// typedef for convenience
@@ -195,19 +191,19 @@ void mexFunction(int nlhs, matlab::mxArray *plhs[], int nrhs, const matlab::mxAr
 	// FIRST output: stability
 
 	// mxReal is our data-type
-	plhs[0] = matlab::mxCreateDoubleMatrix(1, 1, matlab::mxREAL);
+	plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	//Get a pointer to the data space in our newly allocated memory
-	double * out1 = (double*) matlab::mxGetPr(plhs[0]);
+	double * out1 = (double*) mxGetPr(plhs[0]);
 	out1[0] = stability;
 
 	////////////////////////////////////////
 	// SECOND output: number of communities
 	if (nlhs > 1) {
 
-		plhs[1] = matlab::mxCreateDoubleMatrix(1, 1, matlab::mxREAL); //mxReal is our data-type
+		plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL); //mxReal is our data-type
 
 		//Get a pointer to the data space in our newly allocated memory
-		double * out2 = (double*) matlab::mxGetPr(plhs[1]);
+		double * out2 = (double*) mxGetPr(plhs[1]);
 
 		out2[0] = double(best_partition.set_count());
 
@@ -219,8 +215,8 @@ void mexFunction(int nlhs, matlab::mxArray *plhs[], int nrhs, const matlab::mxAr
 		int num_nodes = best_partition.element_count();
 
 		// allocate storage
-		plhs[2] = matlab::mxCreateDoubleMatrix(num_nodes, 1, matlab::mxREAL);
-		double * output_tab = (double*) matlab::mxGetPr(plhs[2]);
+		plhs[2] = mxCreateDoubleMatrix(num_nodes, 1, mxREAL);
+		double * output_tab = (double*) mxGetPr(plhs[2]);
 
 		// write out results
 		for (unsigned int node = 0; node < num_nodes; ++node) {
