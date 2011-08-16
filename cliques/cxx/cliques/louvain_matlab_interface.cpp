@@ -117,14 +117,15 @@ bool read_edgelist_weighted_from_data(double* graph_data, int num_l_dim,
 		// column major ordering from MATLAB
 		int node1_id = graph_data[i];
 		int node2_id = graph_data[num_l_dim + i];
-		//TODO adapt for the case where unweighted graph is passed
-		double weight = graph_data[2 * num_l_dim + i];
 
 		// TODO maybe there is a neater solution here
 		// read in list is two-way yet undirected, but edges should only be created once
 		if (node1_id > node2_id) {
 			continue;
 		}
+
+		//TODO adapt for the case where unweighted graph is passed
+		double weight = graph_data[2 * num_l_dim + i];
 
 		typename G::Edge edge = graph.addEdge(graph.nodeFromId(node1_id),
 				graph.nodeFromId(node2_id));
@@ -149,7 +150,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 	//create new graph and weight map
 	lemon::SmartGraph mygraph;
-	lemon::SmartGraph::EdgeMap<float> myweights(mygraph);
+	lemon::SmartGraph::EdgeMap<double> myweights(mygraph);
 
 	if (!read_edgelist_weighted_from_data(data, num_largest_dim, mygraph,
 			myweights)) {
