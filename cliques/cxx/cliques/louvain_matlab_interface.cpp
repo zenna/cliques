@@ -73,7 +73,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 	//THIRD ARGUMENT: iterations
 	if (nrhs > 2) {
 		num_iterations = int((double) mxGetScalar(prhs[2]));
-		std::cout << "number of iterations" << num_iterations << std::endl;
+		//std::cout << "number of iterations" << num_iterations << std::endl;
 		if (num_iterations < 1) {
 			return false;
 		}
