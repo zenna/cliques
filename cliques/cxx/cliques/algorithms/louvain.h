@@ -126,31 +126,31 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 			insert_and_update_internals(graph, weights, n1, internals,
 					partition, best_comm);
 
-			// HIJACK ---------------------------------------
-			int hierarchy = optimal_partitions.size();
-			if (hierarchy == 0) {
-				log.log(partition);
-			} else {
-				// get size of partition one level below, i.e. number of nodes in original graph
-				unsigned int original_number_of_nodes =
-						optimal_partitions[hierarchy - 1].element_count();
-				// create new empty partition of this size
-				P partition_original_nodes(original_number_of_nodes);
-
-				// loop over nodes one level below
-				int old_comm, new_comm;
-				for (unsigned int id = 0; id < original_number_of_nodes; id++) {
-					// get the communities for each node one level below
-					old_comm = optimal_partitions[hierarchy - 1].find_set(id);
-					// use this as node_id in the current partition as old community id
-					//is equivalent to new node id and read out new community id
-					new_comm = partition.find_set(old_comm);
-					// include pair (node, new community) id in the newly created partition
-					partition_original_nodes.add_node_to_set(id, new_comm);
-				}
-				log.log(partition_original_nodes);
-			}
-			// ----------------------------------------------
+//			// HIJACK ---------------------------------------
+//			int hierarchy = optimal_partitions.size();
+//			if (hierarchy == 0) {
+//				log.log(partition);
+//			} else {
+//				// get size of partition one level below, i.e. number of nodes in original graph
+//				unsigned int original_number_of_nodes =
+//						optimal_partitions[hierarchy - 1].element_count();
+//				// create new empty partition of this size
+//				P partition_original_nodes(original_number_of_nodes);
+//
+//				// loop over nodes one level below
+//				int old_comm, new_comm;
+//				for (unsigned int id = 0; id < original_number_of_nodes; id++) {
+//					// get the communities for each node one level below
+//					old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+//					// use this as node_id in the current partition as old community id
+//					//is equivalent to new node id and read out new community id
+//					new_comm = partition.find_set(old_comm);
+//					// include pair (node, new community) id in the newly created partition
+//					partition_original_nodes.add_node_to_set(id, new_comm);
+//				}
+//				log.log(partition_original_nodes);
+//			}
+//			// ----------------------------------------------
 
 			if (best_comm != comm_id) {
 				did_nodes_move = true;

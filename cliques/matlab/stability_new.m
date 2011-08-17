@@ -536,19 +536,18 @@ end
 function [S, N, C, VI] = louvain_LNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
 
 % Optimize louvain NbLouvain times
-lnk = zeros(NbNodes, NbLouvain);
-lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain(Graph, time, precision);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
-    end
-end
+[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision);
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
+
+
 
 clear communities;
 clear graph;
