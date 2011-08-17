@@ -40,10 +40,11 @@ namespace cliques {
  @param[in]  compute_quality     partition quality functor
  @param[out] optimal_partitions     optimal partitions found, last in vector is overall best
  */
-template<typename P, typename T, typename W, typename QF, typename QFDIFF, typename Logger>
-double find_optimal_partition_louvain(T &graph, W &weights,
-		QF compute_quality, QFDIFF compute_quality_diff, double minimum_improve, P initial_partition,
-		std::vector<P> &optimal_partitions, Logger &log) {
+template<typename P, typename T, typename W, typename QF, typename QFDIFF,
+		typename Logger>
+double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
+		QFDIFF compute_quality_diff, double minimum_improve,
+		P initial_partition, std::vector<P> &optimal_partitions, Logger &log) {
 
 	typedef typename T::Node Node;
 	typedef typename T::Edge Edge;
@@ -53,9 +54,9 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 
 	P partition(lemon::countNodes(graph));
 	partition = initial_partition;
-    auto internals = cliques::gen(compute_quality, graph, weights, partition);
+	auto internals = cliques::gen(compute_quality, graph, weights, partition);
 
-    //double minimum_improve = 0.000000001; //1e-9
+	//double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);
 	//cliques::output("current_quality", current_quality);
 	bool one_level_end = false;
@@ -82,19 +83,23 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 		typename std::vector<Node>::iterator n1_it;
 		for (n1_it = nodes_ordered_randomly.begin(); n1_it
 				!= nodes_ordered_randomly.end(); ++n1_it) {
+
 			// get node id and comm id
 			Node n1 = *n1_it;
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
+
 			isolate_and_update_internals(graph, weights, n1, internals,
 					partition);
+
 			//default option for re-inclusion of node
 			unsigned int best_comm = comm_id;
 			double best_gain = 0;
 
-			// TODO check if better to loop over all neighbouring  communities,
-			// find all neighbouring communities
-			// loop over all neighbouring nodes
+			// TODO check if better to loop over all neighbouring  communities, via internals
+			// node_weight_to_communities
+
+			// find all neighbouring communities; loop over all neighbouring nodes
 			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
 				Node n2 = graph.oppositeNode(n1, e);
 				// get neighbour node id and neighbour community id
@@ -102,11 +107,14 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 				if (node_id != node_id_neighbour) {
 					unsigned int comm_id_neighbour = partition.find_set(
 							node_id_neighbour);
+
 					double gain = compute_quality_diff(internals,
 							comm_id_neighbour, node_id);
+
 					if (gain > best_gain) {
 						best_comm = comm_id_neighbour;
 						best_gain = gain;
+
 						// avoid not necessary movements, place node in old community if possible
 					} else if (gain == best_gain && comm_id
 							== comm_id_neighbour) {
@@ -157,7 +165,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 	} while ((current_quality - old_quality) > minimum_improve);
 
 	// Start Second phase - create reduced graph with self loops
-    std::map<int,int> new_comm_id_to_old_comm_id = partition.normalise_ids();
+	std::map<int, int> new_comm_id_to_old_comm_id = partition.normalise_ids();
 
 	int hierarchy = optimal_partitions.size();
 	if (one_level_end == true) {
@@ -190,29 +198,29 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 
 		// Create graph from partition
 		T reduced_graph;
-        reduced_graph.reserveNode(num_comm);
-        
-        //Need a map set_id > node_in_reduced_graph_
+		reduced_graph.reserveNode(num_comm);
+
+		//Need a map set_id > node_in_reduced_graph_
 		W reduced_weight_map(reduced_graph);
 
-        // add self-loops in new_graph
+		// add self-loops in new_graph
 		for (int i = 0; i < num_comm; i++) {
 			Node comm_node = reduced_graph.addNode();
-            Edge e = reduced_graph.addEdge(comm_node,comm_node);
-            int old_comm_id = new_comm_id_to_old_comm_id[i];
-            reduced_weight_map[e] = internals.comm_w_in[old_comm_id];
-		}        
-        
+			Edge e = reduced_graph.addEdge(comm_node, comm_node);
+			int old_comm_id = new_comm_id_to_old_comm_id[i];
+			reduced_weight_map[e] = internals.comm_w_in[old_comm_id];
+		}
+
 		// Find between community weights by checking
 		// Edges within graph
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
 			int comm_of_node_u = partition.find_set(graph.id(graph.u(edge)));
 			int comm_of_node_v = partition.find_set(graph.id(graph.v(edge)));
 
-            // internal weights already accounted for            
-            if(comm_of_node_u == comm_of_node_v){
-                continue;            
-            }
+			// internal weights already accounted for
+			if (comm_of_node_u == comm_of_node_v) {
+				continue;
+			}
 
 			float weight = weights[edge];
 
@@ -232,11 +240,11 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 			}
 		}
 
-	    P singleton_partition(lemon::countNodes(reduced_graph));
-	    singleton_partition.initialise_as_singletons();
-		return cliques::find_optimal_partition_louvain<P>(
-				reduced_graph, reduced_weight_map, compute_quality,
-				compute_quality_diff, minimum_improve,singleton_partition, optimal_partitions, log);
+		P singleton_partition(lemon::countNodes(reduced_graph));
+		singleton_partition.initialise_as_singletons();
+		return cliques::find_optimal_partition_louvain<P>(reduced_graph,
+				reduced_weight_map, compute_quality, compute_quality_diff,
+				minimum_improve, singleton_partition, optimal_partitions, log);
 	}
 	if (hierarchy == 0) {
 		optimal_partitions.push_back(partition);

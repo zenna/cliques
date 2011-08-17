@@ -194,8 +194,20 @@ end
 % Display starting time
 if verbose
     c = clock;
-    disp('');
-    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
+    disp(' ');
+    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS') ' with the following parameters:']);
+    disp(['      Stability function: ' func2str(StabilityFunction)]);
+    disp(['      Compute the variation of information: ' int2str(ComputeVI)]);
+    disp(['      Save the results in files: ' int2str(OutputFile)]);
+    if OutputFile; disp(['      Prefix of the output files: ' prefix]); end
+    disp(['      Number of Louvain iterations: ' int2str(NbLouvain)]);
+    disp(['      Number of Louvain iterations used for the computation of VI: ' int2str(M)]);
+    disp(['      Full stability: ' int2str(Full)]);
+    disp(['      Check the input graph: ' int2str(Sanity)]);
+    disp(['      Precision used: ' num2str(Precision)]);
+    disp(['      Plot the results: ' int2str(plotStability)]);
+    disp(['      Verbose mode: ' int2str(verbose)]);    
+    disp(' ');
     tstart=tic;
 end
 
@@ -222,7 +234,7 @@ end
 for t=1:length(Time)
 
     if verbose
-        disp(['        Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
+        disp(['   Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
     end
     
     [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
@@ -238,13 +250,15 @@ for t=1:length(Time)
         dlmwrite(['Stability_' prefix '.stdout'],[Time(t), S(t), N(t), VI(t)],'-append', 'delimiter','\t')
     end   
     
-    if verbose && 100*t/length(Time) >= step_prec+10
-        disp(['     ' num2str(round(100*t/length(Time)),10) '% done.']);
+    if verbose && 100*t/length(Time) >= step_prec+10        
+        disp(' ');
+        disp(['   Completed: ' num2str(round(100*t/length(Time)),10) '%']);
         remaining_time=toc(tstart)*(1-t/length(Time))/(t/length(Time));
         nb_hours = floor(remaining_time/3600);
         nb_min = floor((remaining_time - nb_hours*3600)/60);
         nb_sec = round(remaining_time - nb_hours*3600 - nb_min*60);
-        disp(['     Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(['   Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(' ');
         step_prec = floor(100*t/length(Time));
     end
 
@@ -252,6 +266,7 @@ end
 
 if verbose
     c = clock;
+    disp(' ');
     disp(['   Partitioning of the graph finished at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
     remaining_time=toc(tstart);
     nb_hours = floor(remaining_time/3600);
@@ -286,7 +301,7 @@ plotStability = false;
 verbose = false;
 M = 100;
 prefix = '';
-attributes={'noVI', 'L', 'M', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v'};
+attributes={'novi', 'l', 'm', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v'};
 
 if options > 0
     
@@ -303,7 +318,7 @@ if options > 0
             if strcmpi(varargin{i},'full')
                 Full = true;
                 i = i+1;
-            elseif strcmpi(varargin{i},'noVI')
+            elseif strcmpi(varargin{i},'novi')
                 ComputeVI = false;
                 i = i+1;
             elseif strcmpi(varargin{i},'nocheck')
@@ -319,8 +334,8 @@ if options > 0
                 %Check to make sure that there is a pair to go with
                 %this argument.
                 if length(varargin) < i + 1
-                    error('MATLAB:dlmwrite:AttributeList', ...
-                        'Attribute %s requires a matching value', varargin{i})
+                    error('MATLAB:stability:AttributeList', ...
+                        'Attribute %s requires a matching value', varargin{i});
                 elseif strcmpi(varargin{i},'laplacian')
                     if ischar(varargin{i+1})
                         Laplacian = varargin{i+1};
@@ -328,7 +343,7 @@ if options > 0
                         error('MATLAB:stability:laplacian',...
                             'Please provide a matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
                     end
-                elseif strcmpi(varargin{i},'L')
+                elseif strcmpi(varargin{i},'l')
                     if isnumeric(varargin{i+1})
                         NbLouvain = round(varargin{i+1});
                         M = round(varargin{i+1});
@@ -337,7 +352,7 @@ if options > 0
                     if isnumeric(varargin{i+1})
                         Precision = varargin{i+1};
                     end
-                elseif strcmpi(varargin{i},'M')
+                elseif strcmpi(varargin{i},'m')
                     if isnumeric(varargin{i+1})
                         M = varargin{i+1};
                     end
@@ -350,21 +365,19 @@ if options > 0
                             'Please provide a matching value for attribute out. It must be a string.');
                     end
                 else
-                    error('MATLAB:dlmwrite:Attribute',...
-                        'Invalid attribute tag: %s', varargin{i})
+                    error('MATLAB:stability:Attribute',...
+                        'Invalid attribute tag: %s', varargin{i});
                 end
                 i = i+2;
             end
         end
-    else % arguments are in fixed parameter order
-        if options > 0  
-            Full = varargin{1};
-        end
-        if options > 1 && ~isempty(varargin{2})
-            ComputeVI = varargin{2};
-        end
-        if options > 2 && ~isempty(varargin{3})
-            NbLouvain = varargin{3};
+    else 
+        if ischar(varargin{1})
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %s', varargin{1});
+        else
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %d', varargin{1});
         end
     end
 end
@@ -553,6 +566,7 @@ end
 function Graph = check(Graph, verbose)
 % Check that the graph is properly encoded.
     if verbose
+        disp(' ');
         disp('   Graph sanity check...');
     end
     
