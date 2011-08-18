@@ -8,8 +8,9 @@
 
 namespace cliques {
 
-void print_map(std::map<int, int> my_map, bool add_one = false) {
-    for (std::map<int, int>::iterator itr = my_map.begin(); itr != my_map.end(); ++itr) {
+template <typename T>
+void print_map(typename std::map<int, T> my_map, bool add_one = false) {
+    for (typename std::map<int, T>::iterator itr = my_map.begin(); itr != my_map.end(); ++itr) {
         int node = itr->first;
         int part = itr->second;
         if (add_one) {

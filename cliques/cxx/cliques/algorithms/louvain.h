@@ -137,7 +137,7 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 						best_comm = comm_id_neighbour;
 						best_gain = gain;
 
-						// avoid not necessary movements, place node in old community if possible
+					// avoid not necessary movements, place node in old community if possible
 					} else if (gain == best_gain && comm_id
 							== comm_id_neighbour) {
 						best_comm = comm_id;

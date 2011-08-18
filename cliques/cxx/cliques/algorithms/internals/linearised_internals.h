@@ -16,9 +16,12 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
             = cliques::find_weight_node_to_communities(graph, partition,
                     weights, node);
     internals.comm_w_tot[comm_id] -= internals.node_to_w[node_id];
+    //cliques::output("in", internals.comm_w_in[comm_id]);
     internals.comm_w_in[comm_id] -= 2
             * internals.node_weight_to_communities[comm_id]
             + find_weight_selfloops(graph, weights, node);
+    //cliques::output("in", internals.comm_w_in[comm_id]);
+
     partition.isolate_node(node_id);
 }
 
@@ -44,7 +47,8 @@ void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
 }
 
 struct LinearisedInternals {
-    typedef lemon::RangeMap<double> range_map;
+//    typedef lemon::RangeMap<double> range_map;
+    typedef std::vector<double> range_map;
     unsigned int num_nodes;
     double two_m;
     range_map node_to_w;
