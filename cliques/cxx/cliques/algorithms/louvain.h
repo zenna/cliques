@@ -89,7 +89,7 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
 
-			isolate_and_update_internals(graph, weights, n1, internals,
+			isolate_and_update_internals_new(graph, weights, n1, internals,
 					partition);
 
 			//default option for re-inclusion of node
