@@ -2,31 +2,14 @@
 
 #include <cliques/graphhelpers.h>
 
+//TODO: move node_weight to communities out of internals..
+
 namespace cliques {
 /**
  @brief  isolate a node into its singleton set & update internals
  */
 template<typename G, typename M, typename I, typename P>
-void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
-		I &internals, P &partition) {
-	int node_id = graph.id(node);
-	int comm_id = partition.find_set(node_id);
-	// get weights from node to each community
-	internals.node_weight_to_communities
-			= cliques::find_weight_node_to_communities(graph, partition,
-					weights, node);
-	internals.comm_w_tot[comm_id] -= internals.node_to_w[node_id];
-	//cliques::output("in", internals.comm_w_in[comm_id]);
-	internals.comm_w_in[comm_id] -= 2
-			* internals.node_weight_to_communities[comm_id]
-			+ find_weight_selfloops(graph, weights, node);
-	//cliques::output("in", internals.comm_w_in[comm_id]);
-
-	partition.isolate_node(node_id);
-}
-
-template<typename G, typename M, typename I, typename P>
-void isolate_and_update_internals_new(G &graph, M &weights,
+void isolate_and_update_internals(G &graph, M &weights,
 		typename G::Node node, I &internals, P &partition) {
 	int node_id = graph.id(node);
 	int comm_id = partition.find_set(node_id);
@@ -100,7 +83,9 @@ struct LinearisedInternals {
 	template<typename G, typename M>
 	LinearisedInternals(G &graph, M &weights) :
 		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
-				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0) {
+				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0),
+				node_weight_to_communities(lemon::countNodes(graph), 0),
+				neighbouring_communities_list() {
 		two_m = 2 * find_total_weight(graph, weights);
 		for (unsigned int i = 0; i < num_nodes; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
@@ -115,9 +100,8 @@ struct LinearisedInternals {
 		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
 				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0),
 				node_weight_to_communities(lemon::countNodes(graph), 0),
-				neighbouring_communities_list(1,-1) {
+				neighbouring_communities_list() {
 		two_m = 2 * find_total_weight(graph, weights);
-		neighbouring_communities_list.clear();
 
 		typedef typename G::EdgeIt EdgeIt;
 		// find internal statistics based on graph, weights and partitions

@@ -18,7 +18,6 @@
 // TODO: On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
 // TODO: Separate out louvain into smaller functions
 // TODO: Make new version for Hijacking etc
-// TODO: make minimum improvement an input parameter
 
 namespace cliques {
 
@@ -89,7 +88,7 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 			unsigned int node_id = graph.id(n1);
 			unsigned int comm_id = partition.find_set(node_id);
 
-			isolate_and_update_internals_new(graph, weights, n1, internals,
+			isolate_and_update_internals(graph, weights, n1, internals,
 					partition);
 
 			//default option for re-inclusion of node
@@ -97,53 +96,51 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 			double best_gain = 0;
 
 			// TODO check if better to loop over all neighbouring  communities, via internals
-			// node_weight_to_communities or loop over neighbouring nodes...
+			// or loop over neighbouring nodes...
 
+			unsigned int num_neighbour_communities = internals.neighbouring_communities_list.size();
+			// loop over neighbouring communities
+			for (unsigned int k = 0; k<num_neighbour_communities; ++k){
 
-//			// loop over neighbouring communities
-//			for (std::map<int, double>::iterator node_w_to_comm_id_it =
-//					internals.node_weight_to_communities.begin(); node_w_to_comm_id_it
-//					!= internals.node_weight_to_communities.end(); ++node_w_to_comm_id_it) {
-//
-//				int comm_id_neighbour = (*node_w_to_comm_id_it).first;
-//				double gain = compute_quality_diff(internals,
-//						comm_id_neighbour, node_id);
-//
-//				if (gain > best_gain) {
-//					best_comm = comm_id_neighbour;
-//					best_gain = gain;
-//				// avoid not necessary movements, place node in old community if possible
-//				} else if (gain == best_gain && comm_id == comm_id_neighbour) {
-//					best_comm = comm_id;
-//				}
-//
-//			}
+				unsigned int comm_id_neighbour = internals.neighbouring_communities_list[k];
+				double gain = compute_quality_diff(internals,
+						comm_id_neighbour, node_id);
 
-
-
-			// loop over all neighbouring nodes, again find all neighbouring communities
-			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
-				Node n2 = graph.oppositeNode(n1, e);
-				// get neighbour node id and neighbour community id
-				unsigned int node_id_neighbour = graph.id(n2);
-				if (node_id != node_id_neighbour) {
-					unsigned int comm_id_neighbour = partition.find_set(
-							node_id_neighbour);
-
-					double gain = compute_quality_diff(internals,
-							comm_id_neighbour, node_id);
-
-					if (gain > best_gain) {
-						best_comm = comm_id_neighbour;
-						best_gain = gain;
-
-					// avoid not necessary movements, place node in old community if possible
-					} else if (gain == best_gain && comm_id
-							== comm_id_neighbour) {
-						best_comm = comm_id;
-					}
+				if (gain > best_gain) {
+					best_comm = comm_id_neighbour;
+					best_gain = gain;
+				// avoid not necessary movements, place node in old community if possible
+				} else if (gain == best_gain && comm_id == comm_id_neighbour) {
+					best_comm = comm_id;
 				}
+
 			}
+
+
+
+//			// loop over all neighbouring nodes, again find all neighbouring communities
+//			for (IncEdgeIt e(graph, n1); e != lemon::INVALID; ++e) {
+//				Node n2 = graph.oppositeNode(n1, e);
+//				// get neighbour node id and neighbour community id
+//				unsigned int node_id_neighbour = graph.id(n2);
+//				if (node_id != node_id_neighbour) {
+//					unsigned int comm_id_neighbour = partition.find_set(
+//							node_id_neighbour);
+//
+//					double gain = compute_quality_diff(internals,
+//							comm_id_neighbour, node_id);
+//
+//					if (gain > best_gain) {
+//						best_comm = comm_id_neighbour;
+//						best_gain = gain;
+//
+//					// avoid not necessary movements, place node in old community if possible
+//					} else if (gain == best_gain && comm_id
+//							== comm_id_neighbour) {
+//						best_comm = comm_id;
+//					}
+//				}
+//			}
 
 			insert_and_update_internals(graph, weights, n1, internals,
 					partition, best_comm);
@@ -221,8 +218,6 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 		// Create graph from partition
 		T reduced_graph;
 		reduced_graph.reserveNode(num_comm);
-
-		//Need a map set_id > node_in_reduced_graph_
 		W reduced_weight_map(reduced_graph);
 
 		// add self-loops in new_graph
