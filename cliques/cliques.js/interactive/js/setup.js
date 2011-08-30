@@ -51,6 +51,13 @@ $(document).ready( function() {
 			}
 		}
 	}
+
+	function saveImage() {
+		landscape_view.save()
+		//imageElement.src = myImage;
+		// return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+		// https://developer.mozilla.org/En/HTML/Canvas/Pixel_manipulation_with_canvas
+	}
 	
 	function handleFileSelect(evt) {
 		var files = evt.target.files; // FileList object
@@ -69,5 +76,9 @@ $(document).ready( function() {
 
 	document.getElementById('files').addEventListener('change',
 	handleFileSelect, false);
+	
+	$('#save').click(function(){
+		saveImage();
+	})
 
 })

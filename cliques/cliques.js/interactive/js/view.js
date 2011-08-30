@@ -128,4 +128,8 @@ function App(width, height, name) {
 		this.renderer.render(this.scene, this.camera);
 
 	}
+	this.save = function() {
+		this.render();
+		window.open(this.renderer.domElement.toDataURL("image/png"));
+	}
 }
