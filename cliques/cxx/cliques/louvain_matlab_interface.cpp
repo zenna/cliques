@@ -198,6 +198,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	//initialise stabilities
 	std::vector<double> stability(num_iterations, 0);
 
+	srand(std::time(0));
+
 	// TODO: IMPORTANT implement iterations over time correctly
 	//atm this relies on the MATLAB input to be a single number
 	for (int i = 0; i < num_iterations; ++i) {

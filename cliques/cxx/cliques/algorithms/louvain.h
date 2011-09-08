@@ -65,7 +65,8 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 
 	// Randomise the looping over nodes
 	// initialise random number generator
-	srand(std::time(0));
+	//srand(std::time(0));
+	//TODO find neat way of doing this once only...
 	// create vector to shuffle
 	std::vector<Node> nodes_ordered_randomly;
 	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node) {
