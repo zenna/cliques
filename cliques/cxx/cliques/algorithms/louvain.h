@@ -54,159 +54,163 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 
 	P partition(lemon::countNodes(graph));
 	partition = initial_partition;
-	auto internals = cliques::gen(compute_quality, graph, weights, partition);
-
-	//double minimum_improve = 0.000000001; //1e-9
-	double current_quality = compute_quality(internals);
-	//cliques::output("current_quality", current_quality);
-	bool one_level_end = false;
-	double old_quality = current_quality;
-	bool did_nodes_move = false;
-
-	// Randomise the looping over nodes
-	// initialise random number generator
-	//srand(std::time(0));
-	//TODO find neat way of doing this once only...
-	// create vector to shuffle
-	std::vector<Node> nodes_ordered_randomly;
-	for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node) {
-		nodes_ordered_randomly.push_back(temp_node);
+	P partition_init = initial_partition;
+	if (!optimal_partitions.empty() ) {
+		P partition_init = optimal_partitions.back();
 	}
-	// Randomly shuffle nodes
-	std::random_shuffle(nodes_ordered_randomly.begin(),
-			nodes_ordered_randomly.end());
+	auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init);
 
-	do {
-		did_nodes_move = false;
-		old_quality = current_quality;
 
-		// loop over all nodes in random order
-		typename std::vector<Node>::iterator n1_it;
-		for (n1_it = nodes_ordered_randomly.begin(); n1_it
-				!= nodes_ordered_randomly.end(); ++n1_it) {
+//double minimum_improve = 0.000000001; //1e-9
+double current_quality = compute_quality(internals);
+//cliques::output("current_quality", current_quality);
+bool one_level_end = false;
+double old_quality = current_quality;
+bool did_nodes_move = false;
 
-			// get node id and comm id
-			Node n1 = *n1_it;
-			unsigned int node_id = graph.id(n1);
-			unsigned int comm_id = partition.find_set(node_id);
+// Randomise the looping over nodes
+// initialise random number generator
+//srand(std::time(0));
+//TODO find neat way of doing this once only...
+// create vector to shuffle
+std::vector<Node> nodes_ordered_randomly;
+for (NodeIt temp_node(graph); temp_node != lemon::INVALID; ++temp_node) {
+	nodes_ordered_randomly.push_back(temp_node);
+}
+// Randomly shuffle nodes
+std::random_shuffle(nodes_ordered_randomly.begin(),
+		nodes_ordered_randomly.end());
 
-			isolate_and_update_internals(graph, weights, n1, internals,
-					partition);
+do {
+	did_nodes_move = false;
+	old_quality = current_quality;
 
-			//default option for re-inclusion of node
-			unsigned int best_comm = comm_id;
-			double best_gain = 0;
+	// loop over all nodes in random order
+	typename std::vector<Node>::iterator n1_it;
+	for (n1_it = nodes_ordered_randomly.begin(); n1_it
+			!= nodes_ordered_randomly.end(); ++n1_it) {
 
-			unsigned int num_neighbour_communities =
-					internals.neighbouring_communities_list.size();
+		// get node id and comm id
+		Node n1 = *n1_it;
+		unsigned int node_id = graph.id(n1);
+		unsigned int comm_id = partition.find_set(node_id);
 
-			// loop over neighbouring communities
-			for (unsigned int k = 0; k < num_neighbour_communities; ++k) {
+		isolate_and_update_internals(graph, weights, n1, internals,
+				partition);
 
-				unsigned int comm_id_neighbour =
-						internals.neighbouring_communities_list[k];
-				double gain = compute_quality_diff(internals,
-						comm_id_neighbour, node_id);
+		//default option for re-inclusion of node
+		unsigned int best_comm = comm_id;
+		double best_gain = 0;
 
-				if (gain > best_gain) {
-					best_comm = comm_id_neighbour;
-					best_gain = gain;
-					// avoid not necessary movements, place node in old community if possible
-				} else if (gain == best_gain && comm_id == comm_id_neighbour) {
-					best_comm = comm_id;
-				}
+		unsigned int num_neighbour_communities =
+		internals.neighbouring_communities_list.size();
 
+		// loop over neighbouring communities
+		for (unsigned int k = 0; k < num_neighbour_communities; ++k) {
+
+			unsigned int comm_id_neighbour =
+			internals.neighbouring_communities_list[k];
+			double gain = compute_quality_diff(internals,
+					comm_id_neighbour, node_id);
+
+			if (gain > best_gain) {
+				best_comm = comm_id_neighbour;
+				best_gain = gain;
+				// avoid not necessary movements, place node in old community if possible
+			} else if (gain == best_gain && comm_id == comm_id_neighbour) {
+				best_comm = comm_id;
 			}
 
-
-			insert_and_update_internals(graph, weights, n1, internals,
-					partition, best_comm);
-
-			//			// HIJACK ---------------------------------------
-			//			int hierarchy = optimal_partitions.size();
-			//			if (hierarchy == 0) {
-			//				log.log(partition);
-			//			} else {
-			//				// get size of partition one level below, i.e. number of nodes in original graph
-			//				unsigned int original_number_of_nodes =
-			//						optimal_partitions[hierarchy - 1].element_count();
-			//				// create new empty partition of this size
-			//				P partition_original_nodes(original_number_of_nodes);
-			//
-			//				// loop over nodes one level below
-			//				int old_comm, new_comm;
-			//				for (unsigned int id = 0; id < original_number_of_nodes; id++) {
-			//					// get the communities for each node one level below
-			//					old_comm = optimal_partitions[hierarchy - 1].find_set(id);
-			//					// use this as node_id in the current partition as old community id
-			//					//is equivalent to new node id and read out new community id
-			//					new_comm = partition.find_set(old_comm);
-			//					// include pair (node, new community) id in the newly created partition
-			//					partition_original_nodes.add_node_to_set(id, new_comm);
-			//				}
-			//				log.log(partition_original_nodes);
-			//			}
-			//			// ----------------------------------------------
-
-			if (best_comm != comm_id) {
-				did_nodes_move = true;
-			}
-		}
-		if (did_nodes_move == true) {
-			current_quality = compute_quality(internals);
-			one_level_end = true;
 		}
 
-		// If there was a movement of the nodes AND quality increases make another run
-	} while ((current_quality - old_quality) > minimum_improve);
+		insert_and_update_internals(graph, weights, n1, internals,
+				partition, best_comm);
 
-	// Start Second phase - create reduced graph with self loops
-	std::map<int, int> new_comm_id_to_old_comm_id = partition.normalise_ids();
+		//			// HIJACK ---------------------------------------
+		//			int hierarchy = optimal_partitions.size();
+		//			if (hierarchy == 0) {
+		//				log.log(partition);
+		//			} else {
+		//				// get size of partition one level below, i.e. number of nodes in original graph
+		//				unsigned int original_number_of_nodes =
+		//						optimal_partitions[hierarchy - 1].element_count();
+		//				// create new empty partition of this size
+		//				P partition_original_nodes(original_number_of_nodes);
+		//
+		//				// loop over nodes one level below
+		//				int old_comm, new_comm;
+		//				for (unsigned int id = 0; id < original_number_of_nodes; id++) {
+		//					// get the communities for each node one level below
+		//					old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+		//					// use this as node_id in the current partition as old community id
+		//					//is equivalent to new node id and read out new community id
+		//					new_comm = partition.find_set(old_comm);
+		//					// include pair (node, new community) id in the newly created partition
+		//					partition_original_nodes.add_node_to_set(id, new_comm);
+		//				}
+		//				log.log(partition_original_nodes);
+		//			}
+		//			// ----------------------------------------------
 
-	int hierarchy = optimal_partitions.size();
-	if (one_level_end == true) {
-		// Compile P into original partition size
-		if (hierarchy == 0) {
-			optimal_partitions.push_back(partition);
-		} else {
-			// get size of partition one level below, i.e. number of nodes in original graph
-			unsigned int original_number_of_nodes =
-					optimal_partitions[hierarchy - 1].element_count();
-			// create new empty partition of this size
-			P partition_original_nodes(original_number_of_nodes);
-
-			// loop over nodes one level below
-			int old_comm, new_comm;
-			for (unsigned int id = 0; id < original_number_of_nodes; id++) {
-				// get the communities for each node one level below
-				old_comm = optimal_partitions[hierarchy - 1].find_set(id);
-				// use this as node_id in the current partition as old community id
-				//is equivalent to new node id and read out new community id
-				new_comm = partition.find_set(old_comm);
-				// include pair (node, new community) id in the newly created partition
-				partition_original_nodes.add_node_to_set(id, new_comm);
-			}
-			optimal_partitions.push_back(partition_original_nodes);
+		if (best_comm != comm_id) {
+			did_nodes_move = true;
 		}
-
-		// Create graph from partition
-		T reduced_graph;
-		W reduced_weight_map(reduced_graph);
-		create_reduced_graph_from_partition(reduced_graph, reduced_weight_map,
-				graph, weights, partition, new_comm_id_to_old_comm_id,
-				internals);
-
-		P singleton_partition(lemon::countNodes(reduced_graph));
-		singleton_partition.initialise_as_singletons();
-
-		return cliques::find_optimal_partition_louvain<P>(reduced_graph,
-				reduced_weight_map, compute_quality, compute_quality_diff,
-				minimum_improve, singleton_partition, optimal_partitions, log);
 	}
+	if (did_nodes_move == true) {
+		current_quality = compute_quality(internals);
+		one_level_end = true;
+	}
+
+	// If there was a movement of the nodes AND quality increases make another run
+}while ((current_quality - old_quality) > minimum_improve);
+
+// Start Second phase - create reduced graph with self loops
+std::map<int, int> new_comm_id_to_old_comm_id = partition.normalise_ids();
+
+int hierarchy = optimal_partitions.size();
+if (one_level_end == true) {
+	// Compile P into original partition size
 	if (hierarchy == 0) {
 		optimal_partitions.push_back(partition);
+	} else {
+		// get size of partition one level below, i.e. number of nodes in original graph
+		unsigned int original_number_of_nodes =
+		optimal_partitions[hierarchy - 1].element_count();
+		// create new empty partition of this size
+		P partition_original_nodes(original_number_of_nodes);
+
+		// loop over nodes one level below
+		int old_comm, new_comm;
+		for (unsigned int id = 0; id < original_number_of_nodes; id++) {
+			// get the communities for each node one level below
+			old_comm = optimal_partitions[hierarchy - 1].find_set(id);
+			// use this as node_id in the current partition as old community id
+			//is equivalent to new node id and read out new community id
+			new_comm = partition.find_set(old_comm);
+			// include pair (node, new community) id in the newly created partition
+			partition_original_nodes.add_node_to_set(id, new_comm);
+		}
+		optimal_partitions.push_back(partition_original_nodes);
 	}
-	return current_quality;
+
+	// Create graph from partition
+	T reduced_graph;
+	W reduced_weight_map(reduced_graph);
+	create_reduced_graph_from_partition(reduced_graph, reduced_weight_map,
+			graph, weights, partition, new_comm_id_to_old_comm_id,
+			internals);
+
+	P singleton_partition(lemon::countNodes(reduced_graph));
+	singleton_partition.initialise_as_singletons();
+
+	return cliques::find_optimal_partition_louvain<P>(reduced_graph,
+			reduced_weight_map, compute_quality, compute_quality_diff,
+			minimum_improve, singleton_partition, optimal_partitions, log);
+}
+if (hierarchy == 0) {
+	optimal_partitions.push_back(partition);
+}
+return current_quality;
 }
 
 }

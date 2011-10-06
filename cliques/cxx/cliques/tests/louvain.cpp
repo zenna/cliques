@@ -40,13 +40,14 @@ int main() {
 	double current_markov_time = 1;
 
 	//cliques::make_complete_graph(orange_graph,10,weights);
-	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/demograph_stability_n640.edj", orange_graph, weights);
+	cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj", orange_graph, weights);
 
 	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
 	singletons.initialise_as_singletons();
-	cliques::find_linearised_normalised_stability quality(current_markov_time);
+	cliques::find_linearised_combinatorial_stability quality(current_markov_time);
 
-	stability = quality(orange_graph, singletons, weights);
+	stability = quality(orange_graph, singletons, weights,singletons);
+	std::cout << "singleton stability: " <<stability << std::endl;
 
 	cliques::Logging<partition> log_louvain;
 	std::vector<partition> optimal_partitions;
@@ -55,7 +56,7 @@ int main() {
 
 	stability = cliques::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, quality,
-			cliques::linearised_normalised_stability_gain(current_markov_time),
+			cliques::linearised_combinatorial_stability_gain(current_markov_time),
 			1e-9, singletons, optimal_partitions, log_louvain);
 
 	partition best_partition = optimal_partitions.back();
