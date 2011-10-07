@@ -80,5 +80,34 @@ $(document).ready( function() {
 	$('#save').click(function(){
 		saveImage();
 	})
+	
+	$('#genUrl').click(function(){
+		var camera_data = {};
+		camera_data['px'] = landscape_view.camera.position.x;
+		camera_data['py'] = landscape_view.camera.position.y;
+		camera_data['pz'] = landscape_view.camera.position.z;
+		camera_data['tx'] = landscape_view.camera.target.position.x;
+		camera_data['ty'] = landscape_view.camera.target.position.y;
+		camera_data['tz'] = landscape_view.camera.target.position.z;
+		var cameraDataString = $.param(camera_data);
+		alert(cameraDataString);
+	})
+	
+	$(window).hashchange( function() {
+		var hash = location.hash;
+		landscape_view.camera.position.x = parseFloat($.url(hash).fparam('px'));
+		landscape_view.camera.position.y = parseFloat($.url(hash).fparam('py'));
+		landscape_view.camera.position.z = parseFloat($.url(hash).fparam('pz')); 
+		landscape_view.camera.target.position.x = parseFloat($.url(hash).fparam('tx')); 
+		landscape_view.camera.target.position.y = parseFloat($.url(hash).fparam('ty')); 
+		landscape_view.camera.target.position.z = parseFloat($.url(hash).fparam('tz')); 
+	})
+	
+	function loadHashData(hash) {
+		
+		
+	}
+	// On hash change, modify program
+	
 
 })
