@@ -60,7 +60,7 @@ struct LinearisedInternalsComb {
 			int new_comm_id = partition.find_set(old_comm_id);
 			comm_tot_nodes[new_comm_id]++;
 		}
-		cliques::print_collection(comm_tot_nodes);
+//		cliques::print_collection(comm_tot_nodes);
 
 
 
@@ -96,9 +96,9 @@ struct LinearisedInternalsComb {
 /**
  @brief  isolate a node into its singleton set & update internals
  */
-template<typename G, typename M, typename I, typename P>
+template<typename G, typename M, typename P>
 void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
-		I &internals, P &partition) {
+		LinearisedInternalsComb &internals, P &partition) {
 	int node_id = graph.id(node);
 	int comm_id = partition.find_set(node_id);
 
@@ -137,9 +137,9 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 /**
  @brief  insert a node into the best set & update internals
  */
-template<typename G, typename M, typename I, typename P>
+template<typename G, typename M, typename P>
 void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
-		I &internals, P &partition, int best_comm) {
+		LinearisedInternalsComb &internals, P &partition, int best_comm) {
 	int node_id = graph.id(node);
 	// insert node to partition/bookkeeping
 	//              std::cout << "node "<<node_id << " comm: to "<< best_comm << std::endl;

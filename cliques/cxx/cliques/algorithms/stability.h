@@ -264,7 +264,7 @@ struct find_full_normalised_stability {
 // Combinatorial Stability
 //////////////////////////////////////////////////////////////////////////////
 /**
- @brief  Functor for finding normalised linearised stability of weighted graph
+ @brief  Functor for finding combinatorial linearised stability of weighted graph
  */
 struct find_linearised_combinatorial_stability {
 	double markov_time;
@@ -303,7 +303,7 @@ struct find_linearised_combinatorial_stability {
 };
 
 /**
- @brief  Functor for finding stability gain (normalised Laplacian) with for weighted graph
+ @brief  Functor for finding stability gain (combinatorial Laplacian) with for weighted graph
  */
 struct linearised_combinatorial_stability_gain {
 	double markov_time;

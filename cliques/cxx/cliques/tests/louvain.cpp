@@ -3,7 +3,7 @@
 
 
 #include <cliques/algorithms/stability.h>
-//#include <cliques/algorithms/modularity.h>
+#include <cliques/algorithms/stability_corr.h>
 
 #include <cliques/structures/make_graphs.h>
 //#include <cliques/drawing/colour_maps.h>
@@ -44,9 +44,9 @@ int main() {
 
 	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
 	singletons.initialise_as_singletons();
-	cliques::find_linearised_combinatorial_stability quality(current_markov_time);
+	cliques::find_linearised_normalised_stability quality(current_markov_time);
 
-	stability = quality(orange_graph, singletons, weights,singletons);
+	stability = quality(orange_graph, singletons, weights);
 	std::cout << "singleton stability: " <<stability << std::endl;
 
 	cliques::Logging<partition> log_louvain;
@@ -56,7 +56,7 @@ int main() {
 
 	stability = cliques::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, quality,
-			cliques::linearised_combinatorial_stability_gain(current_markov_time),
+			cliques::linearised_normalised_stability_gain(current_markov_time),
 			1e-9, singletons, optimal_partitions, log_louvain);
 
 	partition best_partition = optimal_partitions.back();
