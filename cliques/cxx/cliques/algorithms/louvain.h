@@ -56,8 +56,10 @@ double find_optimal_partition_louvain(T &graph, W &weights, QF compute_quality,
 	partition = initial_partition;
 	P partition_init = initial_partition;
 	if (!optimal_partitions.empty()) {
-		P partition_init = optimal_partitions.back();
-	}auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init);
+		partition_init = optimal_partitions.back();
+	}
+
+	auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init);
 
 	//double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);
@@ -239,7 +241,8 @@ template<typename P, typename T, typename W, typename QF, typename QFDIFF,
 double find_optimal_partition_gen_louvain(T &graph, W &weights, std::vector<
 		double> null_model_vec, QF compute_quality,
 		QFDIFF compute_quality_diff, P initial_partition,
-		std::vector<P> &optimal_partitions, double minimum_improve, Logger log, bool log_switch =false) {
+		std::vector<P> &optimal_partitions, double minimum_improve, Logger log,
+		bool log_switch = false) {
 
 	typedef typename T::Node Node;
 	typedef typename T::Edge Edge;
@@ -251,9 +254,8 @@ double find_optimal_partition_gen_louvain(T &graph, W &weights, std::vector<
 	partition = initial_partition;
 	P partition_init = initial_partition;
 	if (!optimal_partitions.empty()) {
-		P partition_init = optimal_partitions.back();
-	}
-	auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init, null_model_vec);
+		partition_init = optimal_partitions.back();
+	} auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init, null_model_vec);
 
 	//double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);

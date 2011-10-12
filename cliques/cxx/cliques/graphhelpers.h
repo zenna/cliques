@@ -70,10 +70,71 @@ float find_total_weight(G &graph, M &weights) {
 	}
 	return total_weight;
 }
+
+template<typename G, typename W>
+std::vector<double> create_correlation_graph_from_graph(G &graph, W &weights) {
+
+	// some typedefs
+	typedef typename G::EdgeIt EdgeIt;
+	typedef typename G::Edge Edge;
+	typedef typename G::NodeIt NodeIt;
+	typedef typename G::Node Node;
+
+	// get number of nodes and preallocate null_model_vec
+	unsigned int num_nodes = lemon::countNodes(graph);
+	std::vector<double> null_model_vec(num_nodes, 0);
+	double two_m = 0;
+
+	// get weights of each node (temp stored in null_model_vec) and total graph weight
+	for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
+		int node_u_id = graph.id(graph.u(edge));
+		int node_v_id = graph.id(graph.v(edge));
+
+		// weight of edge
+		double weight = weights[edge];
+
+		// if selfloop, only half of the weight has to be considered
+		if (node_u_id == node_v_id) {
+			weight = weight / 2;
+		}
+
+		// add weight to node weight and sum up total weight
+		null_model_vec[node_u_id] += weight;
+		null_model_vec[node_v_id] += weight;
+		two_m += 2*weight;
+
+	}
+
+	// normalise link weights by std deviations
+	for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
+		int node_u_id = graph.id(graph.u(edge));
+		int node_v_id = graph.id(graph.v(edge));
+
+		// weight of edge
+		double weight = weights[edge];
+		// std deviations: remember that null_model_vec stores weighted degree temporarily
+		double sigma_u_times_sqrt_two_m = sqrt(null_model_vec[node_u_id] * (1
+				- null_model_vec[node_u_id] / two_m));
+		double sigma_v_times_sqrt_two_m = sqrt(null_model_vec[node_v_id] * (1
+				- null_model_vec[node_v_id] / two_m));
+		// renormalize edge weight
+		weights[edge] = weight / (sigma_u_times_sqrt_two_m
+				* sigma_v_times_sqrt_two_m);
+
+	}
+
+	// compute null model vector
+	for (unsigned int node_id = 0; node_id < num_nodes; ++node_id) {
+		null_model_vec[node_id] = null_model_vec[node_id] / two_m;
+	}
+	//cliques::print_collection(null_model_vec);
+	return null_model_vec;
+}
+
 template<typename G, typename P, typename W, typename I>
-void create_reduced_graph_from_partition(G &reduced_graph, W &reduced_weight_map, G &graph, W &weights,
-		P &partition, std::map<int, int> new_comm_id_to_old_comm_id,
-		I &internals) {
+void create_reduced_graph_from_partition(G &reduced_graph,
+		W &reduced_weight_map, G &graph, W &weights, P &partition, std::map<
+				int, int> new_comm_id_to_old_comm_id, I &internals) {
 
 	typedef typename G::EdgeIt EdgeIt;
 	typedef typename G::Edge Edge;

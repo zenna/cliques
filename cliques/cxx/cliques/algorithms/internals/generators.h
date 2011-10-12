@@ -50,8 +50,8 @@ cliques::LinearisedInternalsComb gen(find_linearised_combinatorial_stability,
 // Linearised normalised correlation stability w/o partition
 template<typename G, typename M>
 cliques::LinearisedInternalsCorr gen(find_linearised_normalised_corr_stability,
-		G &graph, M &weights) {
-	LinearisedInternalsCorr internals(graph, weights);
+		G &graph, M &weights, std::vector<double> null_model_vec) {
+	LinearisedInternalsCorr internals(graph, weights, null_model_vec);
 	return internals;
 }
 
@@ -60,7 +60,7 @@ template<typename G, typename M, typename P>
 cliques::LinearisedInternalsCorr gen(find_linearised_normalised_corr_stability,
 		G &graph, M &weights, P &partition, P & partition_init, std::vector<
 				double> null_model_vec) {
-	LinearisedInternalsCorr internals(graph, weights, partition);
+	LinearisedInternalsCorr internals(graph, weights, partition,partition_init,null_model_vec);
 	return internals;
 }
 
