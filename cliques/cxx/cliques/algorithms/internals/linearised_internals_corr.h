@@ -14,7 +14,7 @@ struct LinearisedInternalsCorr {
 	double two_m; // 2 times total weight
 	range_map node_to_w; // weighted degree of each node
 	range_map comm_loss; // loss for each community (second/null model term)
-	range_map comm_gain; // gain for each community (first/gain term)
+	range_map comm_w_in; // gain for each community (first/gain term)
 
 	std::vector<double> node_weight_to_communities; //mapping: node weight to each community
 	std::vector<unsigned int> neighbouring_communities_list; // associated list of neighbouring communities
@@ -25,7 +25,7 @@ struct LinearisedInternalsCorr {
 	template<typename G, typename M>
 	LinearisedInternalsCorr(G &graph, M &weights) :
 		num_nodes(lemon::countNodes(graph)), comm_loss(num_nodes, 0),
-				comm_gain(num_nodes, 0), node_to_w(num_nodes, 0),
+				comm_w_in(num_nodes, 0), node_to_w(num_nodes, 0),
 				node_weight_to_communities(num_nodes, 0),
 				neighbouring_communities_list() {
 
@@ -36,7 +36,7 @@ struct LinearisedInternalsCorr {
 			node_to_w[i] = find_weighted_degree(graph, weights, temp_node);
 			// correlation => normalised by variance (time 0)
 			double var_times_2m = node_to_w[i] * (1 - node_to_w[i] / two_m);
-			comm_gain[i] = find_weight_selfloops(graph, weights, temp_node)
+			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node)
 					/ var_times_2m;
 			comm_loss[i] = node_to_w[i] / sqrt(node_to_w[i] * (two_m
 					- node_to_w[i]));
@@ -48,7 +48,7 @@ struct LinearisedInternalsCorr {
 	template<typename G, typename M, typename P>
 	LinearisedInternalsCorr(G &graph, M &weights, P &partition) :
 		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
-				comm_loss(num_nodes, 0), comm_gain(num_nodes, 0),
+				comm_loss(num_nodes, 0), comm_w_in(num_nodes, 0),
 				node_weight_to_communities(num_nodes, 0),
 				neighbouring_communities_list() {
 
@@ -89,7 +89,7 @@ struct LinearisedInternalsCorr {
 
 			if (comm_of_node_u == comm_of_node_v) {
 				// in case the weight stems from within the community add to internal weights
-				comm_gain[comm_of_node_u] += 2 * weight * two_m
+				comm_w_in[comm_of_node_u] += 2 * weight * two_m
 						/ (sigma_u_times_2m * sigma_v_times_2m);
 			}
 		}
@@ -145,7 +145,7 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 	internals.comm_loss[comm_id] -= internals.node_to_w[node_id]
 			/ sigma_i_times_2m;
 	//cliques::output("in", internals.comm_w_in[comm_id]);
-	internals.comm_gain[comm_id] -= 2
+	internals.comm_w_in[comm_id] -= 2
 			* internals.node_weight_to_communities[comm_id]
 			+ find_weight_selfloops(graph, weights, node) * internals.two_m
 					/ (sigma_i_times_2m * sigma_i_times_2m);
@@ -169,7 +169,7 @@ void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
 	internals.comm_loss[best_comm] += internals.node_to_w[node_id]
 			/ sigma_i_times_2m;
 	// update gain
-	internals.comm_gain[best_comm] += 2
+	internals.comm_w_in[best_comm] += 2
 			* internals.node_weight_to_communities[best_comm]
 			+ find_weight_selfloops(graph, weights, node) * internals.two_m
 					/ (sigma_i_times_2m * sigma_i_times_2m);
