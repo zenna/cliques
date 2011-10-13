@@ -44,16 +44,19 @@ int main() {
 			"/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
 			orange_graph, weights);
 
-	std::vector<double> null_model = cliques::create_correlation_graph_from_graph(
-			orange_graph, weights);
+	std::vector<double> null_model;
+	//std::vector<double> null_model = cliques::create_correlation_graph_from_graph(
+	//		orange_graph, weights);
+
+
 
 	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
 	singletons.initialise_as_singletons();
 
-	cliques::find_linearised_normalised_corr_stability quality(
+	cliques::find_linearised_combinatorial_stability quality(
 			current_markov_time);
 
-	stability = quality(orange_graph, singletons, weights, singletons,null_model);
+	//stability = quality(orange_graph, singletons, weights, singletons,null_model);
 	std::cout << "singleton stability: " << stability << std::endl;
 
 	cliques::Logging<partition> log_louvain;
@@ -61,9 +64,9 @@ int main() {
 
 	cliques::output("Start Louvain");
 
-	stability = cliques::find_optimal_partition_gen_louvain<partition>(
+	stability = cliques::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, null_model, quality,
-			cliques::linearised_normalised_corr_stability_gain(
+			cliques::linearised_combinatorial_stability_gain(
 					current_markov_time), singletons, optimal_partitions, 1e-9,
 			log_louvain);
 

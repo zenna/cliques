@@ -29,9 +29,9 @@ int main() {
 	partition initial_partition(countNodes(orange_graph));
 	initial_partition.initialise_as_singletons();
 	stability = cliques::find_optimal_partition_louvain<partition>(orange_graph,
-			weights, cliques::find_linearised_normalised_stability(current_markov_time),
-			cliques::linearised_normalised_stability_gain(current_markov_time), 1e-9,initial_partition,
-			optimal_partitions, no_log);
+			weights, markov_times, cliques::find_linearised_normalised_stability(current_markov_time),
+			cliques::linearised_normalised_stability_gain(current_markov_time),initial_partition,
+			optimal_partitions, 1e-9,no_log);
 
 	partition best_partition = optimal_partitions.back();
 	std::cout << "Stab louvain " << stability << std::endl;
