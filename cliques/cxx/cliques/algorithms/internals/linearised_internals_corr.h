@@ -134,7 +134,7 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 		}
 	}
 //	cliques::print_collection(internals.node_weight_to_communities);
-	cliques::print_partition_line(partition);
+//	cliques::print_partition_line(partition);
 //	cliques::output("loss", internals.comm_loss[comm_id]);
 	internals.comm_loss[comm_id] -= internals.node_to_w[node_id];
 //	cliques::output("loss", internals.comm_loss[comm_id]);
