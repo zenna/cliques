@@ -363,7 +363,8 @@ arma::mat find_split_merge_dists(S &partitions) {
 		i++;
 	}
 
-	arma::mat A(N, N) = X;
+	arma::mat A(N, N);
+	A= X;
 	int pathlength = 1;
 	// as long as we have not found all shortest paths continue.
 	while (num != total) {
@@ -395,31 +396,31 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 	if (std::abs(num_comm1 - num_comm2) != 1) {
 		return false;
 	}
-	VectorPartition greater_partition(p1);
-	VectorPartition smaller_partition(p2);
+	VectorPartition greater_partition(p1.return_partition_vector());
+	VectorPartition smaller_partition(p2.return_partition_vector());
 	if (num_comm1 - num_comm2 == -1) {
-		greater_partition(p2);
-		smaller_partition(p1);
+		greater_partition(p2.return_partition_vector());
+		smaller_partition(p1.return_partition_vector());
 	}
 
 	// initialise
 	int difference_size = 0;
 	int offset1, offset2;
-	offset1, offset2 = 0;
+	offset1 = offset2 = 0;
 	bool no_difference_so_far = true;
 
 	// normalise ids
 	greater_partition.normalise_ids();
 	smaller_partition.normalise_ids();
 
-	for (int i = 0; i < smaller_partition.size(); ++i) {
+	for (int i = 0; i < smaller_partition.element_count(); ++i) {
 		// get the two communities
 		std::vector<int> comm1 = greater_partition.get_nodes_from_set(i
 				+ offset1);
 		std::vector<int> comm2 = smaller_partition.get_nodes_from_set(i
 				+ offset2);
 		// in here the difference is stored
-		std::vector<int> difference(comm1 + comm2);
+		std::vector<int> difference(comm1.size() + comm2.szie());
 		vector<int>::iterator it;
 		it = std::set_difference(comm1.begin(), comm1.end(), comm2.begin(),
 				comm2.end(), difference.begin());
@@ -439,7 +440,7 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 				difference = difference(difference.begin(), it);
 
 				// initialise temp vector for union
-				std::vector<int> union1anddiff(comm1 + comm2);
+				std::vector<int> union1anddiff(comm1.size() + comm2.size());
 
 				// compute set union of comm1 and difference
 				it = std::set_union(comm1.begin(), comm1.end(),

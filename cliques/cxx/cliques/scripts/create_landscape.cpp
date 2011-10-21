@@ -250,13 +250,14 @@ int main(int ac, char* av[]) {
     }
 
     arma::mat X;
-    if (find_distances) {
-        cliques::output("Finding distances");
-        //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
-        //X = cliques::find_edit_dists(all_partitions);
-        X = cliques::find_split_merge_dists(all_partitions);
-        X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
-    }
+//    if (find_distances) {
+//        cliques::output("Finding distances");
+//        //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
+//        //X = cliques::find_edit_dists(all_partitions);
+//        X = cliques::find_split_merge_dists(all_partitions);
+//        X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
+//        cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
+//    }
 
     if (do_embedding) {
         cliques::output("finding embedding");
