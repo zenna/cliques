@@ -33,7 +33,7 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       used to compute the variation of
 %                       information.    
 %
-%        laplacian      Allows to choose which type of     'normalized'
+%        laplacian      Allows to choose which type of     'normalised'
 %                       laplacian should be used to 
 %                       calculate the stability. It can
 %                       either be 'combinatorial', or 
@@ -294,7 +294,7 @@ ComputeVI = true;                               % True if the variation of infor
 OutputFile = false;                             % No output file by default.
 NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
 Full = false;
-Laplacian = 'Normalised';
+Laplacian = 'normalised';
 Sanity = true;
 Precision = 10e-9; 
 plotStability = false; 
@@ -388,6 +388,10 @@ if Full
         StabilityFunction = @louvain_FCL;
     elseif strcmpi(Laplacian, 'normalised')
         StabilityFunction = @louvain_FNL;
+    elseif strcmpi(Laplacian, 'corr_normalised')
+        StabilityFunction = @louvain_FCNL;
+    elseif strcmpi(Laplacian, 'mi_normalised')
+        StabilityFunction = @louvain_MINL;
     else
         error('Please provide a valid matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
     end
@@ -396,6 +400,8 @@ else
         StabilityFunction = @louvain_LCL;
     elseif strcmpi(Laplacian, 'normalised')
         StabilityFunction = @louvain_LNL;
+    elseif strcmpi(Laplacian, 'corr_normalised')
+        StabilityFunction = @louvain_CLNL;
     else
         error('Please provide a valid matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
     end
@@ -426,19 +432,16 @@ clear solution
 graph=[col-1,row-1,val];
 
 % Optimize louvain NbLouvain times
-lnk = zeros(NbNodes, NbLouvain);
-lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain(graph, 1, precision);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
-    end
-end
+[stability, nb_comm, communities] = stability_louvain(graph, 1, NbLouvain, precision,'normalised');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
 
 clear communities;
 clear graph;
@@ -475,19 +478,16 @@ clear solution
 graph=[col-1,row-1,val];
 
 % Optimize louvain NbLouvain times
-lnk = zeros(NbNodes, NbLouvain);
-lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain(graph, 1, precision);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
-    end
-end
+[stability, nb_comm, communities] = stability_louvain(graph, 1, NbLouvain, precision,'combinatorial');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
 
 clear communities;
 clear graph;
@@ -501,27 +501,127 @@ end
 clear lnk;
 
 end
+%------------------------------------------------------------------------------
+function [S, N, C, VI] = louvain_FCNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+% Computes the full normalised corr stabilty
+
+% Generate the matrix exponential
+diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
+trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
+clear Graph;
+Lap=sparse(trans-eye(NbNodes));
+clear trans;
+exponential=sparse(expm(time.*Lap));
+clear Lap;
+solution=sparse(diagdeg*exponential);
+clear exponential;
+clear diagdeg;
+solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
+clear exponential;
+clear diagdeg;
+[row,col,val] = find(solution);
+clear solution
+graph=[col-1,row-1,val];
+
+% Optimize louvain NbLouvain times
+[stability, nb_comm, communities] = stability_louvain(graph, 1, NbLouvain, precision,'corr_normalised');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
+
+clear communities;
+clear graph;
+
+if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
+     VI = computeRobustness(lnk, lnkS, M);
+else
+    VI=0;
+end
+
+clear lnk;
+
+end
+
+%------------------------------------------------------------------------------
+function [S, N, C, VI] = louvain_MINL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+% Computes the full normalised mutual information stabilty
+%TODODODODODODOO
+% Generate the matrix exponential
+diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
+trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
+
+Lap=sparse(trans-eye(NbNodes));
+clear trans;
+exponential=sparse(expm(time.*Lap));
+solution=sparse(Lap*diagdeg*exponential);% changes in here
+%solution=sparse(diagdeg*exponential);% changes in here
+clear Lap;
+M_null = ones(size(sum(Graph)))'*sum(Graph)/sum(Graph(:));
+ solution = -solution;% +(eye(size(M_null))-M_null)*diagdeg*expm(-(eye(size(M_null))-M_null)*time);
+%solution = solution - diagdeg*expm(-(eye(size(M_null))-M_null)*time*.9);
+solution = (solution+solution')/2;
+clear exponential;
+clear diagdeg;
+solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
+clear exponential;
+clear diagdeg;
+% null_model = sum(Graph)'*sum(Graph)/(sum(Graph(:))^2);
+% solution = solution.*log2(solution./(null_model));
+% solution(isnan(solution))=0;
+clear Graph null_model;
+[row,col,val] = find(solution);
+clear solution
+graph=[col-1,row-1,val];
+
+% Optimize louvain NbLouvain times
+[stability, nb_comm, communities] = stability_louvain(graph, time, NbLouvain, precision,'mutual_information');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
+
+clear communities;
+clear graph;
+
+if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
+     VI = computeRobustness(lnk, lnkS, M);
+else
+    VI=0;
+end
+
+clear lnk;
+
+end
 
 %------------------------------------------------------------------------------
 function [S, N, C, VI] = louvain_LCL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
 
 % Optimize louvain NbLouvain times
-lnk = zeros(NbNodes, NbLouvain);
-lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain(Graph, time, precision);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
-    end
-end
+[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'combinatorial');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
+
 
 clear communities;
-clear graph;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
      VI = computeRobustness(lnk, lnkS, M);
@@ -536,7 +636,7 @@ end
 function [S, N, C, VI] = louvain_LNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
 
 % Optimize louvain NbLouvain times
-[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision);
+[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'normalised');
 lnk = communities;
 lnkS = stability;
 % Comment: maybe one should pick one of the best solutions at random,
@@ -550,7 +650,36 @@ N = nb_comm(index);
 
 
 clear communities;
-clear graph;
+clear Graph;
+
+if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
+    VI = computeRobustness(lnk,lnkS, M);
+else
+    VI = 0;
+end
+
+clear lnk;
+
+end
+%------------------------------------------------------------------------------
+function [S, N, C, VI] = louvain_CLNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+
+% Optimize louvain NbLouvain times
+[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'corr_normalised');
+lnk = communities;
+lnkS = stability;
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(stability==max(stability),1);
+
+S = stability(index);
+C = communities(:,index);
+N = nb_comm(index);
+
+
+
+clear communities;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
     VI = computeRobustness(lnk,lnkS, M);
@@ -672,8 +801,11 @@ set(ax(1),'YTickMode','auto','YTickLabelMode','auto','YMinorGrid','on');
 set(ax(2),'YTickMode','auto','YTickLabelMode','auto','YMinorGrid','on');
 set(get(ax(1),'Ylabel'),'String','Number of communities');
 set(get(ax(2),'Ylabel'),'String','Stability');
+% TODO compute limit, as corr stability has different normalization this
+% has to be recalculated..
+limits = [10^floor(log10(min(S(N>1)))) 1];
 set(ax(1),'XLim', [10^floor(log10(Time(1))) 10^ceil(log10(Time(end)))], 'YLim', [1 10^ceil(log10(max(N)))], 'XScale','log','XMinorGrid','on');
-set(ax(2),'XLim', [10^floor(log10(Time(1))) 10^ceil(log10(Time(end)))], 'YLim', [10^floor(log10(min(S(N>1)))), 1], 'XScale','log');
+set(ax(2),'XLim', [10^floor(log10(Time(1))) 10^ceil(log10(Time(end)))], 'YLim', limits, 'XScale','log');
 ylabel('Number of communities');
 if ComputeVI 
     subplot(2,1,2), semilogx(Time(1:t),VI(1:t));

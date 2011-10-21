@@ -13,6 +13,7 @@
 #include <map>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/algorithms/stability.h>
+#include <cliques/algorithms/stability_info.h>
 #include <cliques/structures/vector_partition.h>
 #include <vector>
 #include <string>
@@ -29,6 +30,10 @@
 // GLOBAL DATA
 double *data = NULL;
 double precision = 1e-9; // default value here
+int mode = 0;
+// 0 = normalised Laplacian;
+// 1 = combinatorial Laplacian
+// 2 = correlation normalised Laplacian
 
 std::vector<double> m_times;
 int num_iterations = 0;
@@ -64,7 +69,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 
 		// create time vector for internal use..
 		m_times.clear();
-		for (int i = 0; i < num_times; ++i) {
+		for (unsigned int i = 0; i < num_times; ++i) {
 			m_times.push_back(input_times[i]);
 		}
 		//std::cout << "number of times measured" << m_times.size() << std::endl;
@@ -86,14 +91,47 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 			return false;
 		}
 	}
-	// TODO: this is not implemented fully/has no effect so far.
-	//FIFTH ARGUMENT: hierarchical output
+	//FIFTH ARGUMENT
 	if (nrhs > 4) {
 		// get buffer length and allocate buffer
 		char *buf;
+		// read out argument, take care to use correct pointers!
 		mwSize buflen = mxGetN(prhs[4]) * sizeof(mxChar) + 1;
 		buf = (char*) mxMalloc(buflen);
-		if (!mxGetString(prhs[3], buf, buflen)) {
+		if (!mxGetString(prhs[4], buf, buflen)) {
+			//if reading successful string is created from matlab input
+			const std::string input(buf);
+			const std::string comparison1("normalised");
+			const std::string comparison2("combinatorial");
+			const std::string comparison3("corr_normalised");
+			const std::string comparison4("mutual_information");
+
+			// in case valid input change mode, else display error message
+			if (!comparison1.compare(input)) {
+				mode = 0;
+			} else if (!comparison2.compare(input)) {
+				mode = 1;
+			} else if (!comparison3.compare(input)) {
+				mode = 2;
+			} else if (!comparison4.compare(input)) {
+				mode = 3;
+			} else {
+				mexErrMsgTxt("No valid stability mode specified \n");
+				return false;
+			}
+		}
+		// free read buffer
+		mxFree(buf);
+	}
+
+	// TODO: this is not implemented fully/has no effect so far.
+	//SIXTH ARGUMENT: hierarchical output
+	if (nrhs > 5) {
+		// get buffer length and allocate buffer
+		char *buf;
+		mwSize buflen = mxGetN(prhs[5]) * sizeof(mxChar) + 1;
+		buf = (char*) mxMalloc(buflen);
+		if (!mxGetString(prhs[5], buf, buflen)) {
 			//if reading successful string is created from matlab input
 			const std::string input(buf);
 			const std::string comparison("h");
@@ -109,7 +147,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 	}
 
 	// SANITY CHECK for number of arguments
-	if (nrhs > 5 || nrhs < 1) {
+	if (nrhs > 6 || nrhs < 1) {
 		return false;
 	}
 	return true;
@@ -198,10 +236,19 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	//initialise stabilities
 	std::vector<double> stability(num_iterations, 0);
 
+	// randomize initial seed
 	srand(std::time(0));
 
-	// TODO: IMPORTANT implement iterations over time correctly
-	//atm this relies on the MATLAB input to be a single number
+	// initialise dummy null_model
+	std::vector<double> null_model(num_nodes, 0);
+	if (mode == 2) {
+		null_model = cliques::create_correlation_graph_from_graph(mygraph,
+				myweights);
+	}
+
+	// TODO: quality function initialisation could be more elegant
+	// TODO: Implement iterations over time correctly
+	// atm this relies on the MATLAB input to be a single number
 	for (int i = 0; i < num_iterations; ++i) {
 		for (unsigned int j = 0; j < num_times; ++j) {
 
@@ -211,15 +258,74 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			// create empty vector of partitions
 			std::vector<partition> hierarchical_louvain_partitions;
 
-			// initialise quality function
-			cliques::find_linearised_normalised_stability quality(m_times[j]);
+			// initialise quality functions
+			switch (mode) {
 
-			// now run Louvain method
-			stability[i] = cliques::find_optimal_partition_louvain<partition>(
-					mygraph, myweights, quality,
-					cliques::linearised_normalised_stability_gain(m_times[j]),
-					precision, singletons, hierarchical_louvain_partitions,
-					log_louvain);
+			// normalised Laplacian
+			case 0: {
+				cliques::find_linearised_normalised_stability quality(
+						m_times[j]);
+				cliques::linearised_normalised_stability_gain quality_gain(
+						m_times[j]);
+				// now run Louvain method
+				stability[i]
+						= cliques::find_optimal_partition_louvain<partition>(
+								mygraph, myweights, null_model, quality,
+								quality_gain, singletons,
+								hierarchical_louvain_partitions, precision,
+								log_louvain);
+				break;
+			}
+
+				// combinatorial Laplacian
+			case 1: {
+				cliques::find_linearised_combinatorial_stability quality(
+						m_times[j]);
+				cliques::linearised_combinatorial_stability_gain quality_gain(
+						m_times[j]);
+				// now run Louvain method
+				stability[i]
+						= cliques::find_optimal_partition_louvain<partition>(
+								mygraph, myweights, null_model, quality,
+								quality_gain, singletons,
+								hierarchical_louvain_partitions, precision,
+								log_louvain);
+				break;
+			}
+
+				// corr normalised Laplacian
+			case 2: {
+				cliques::find_linearised_normalised_corr_stability quality(
+						m_times[j]);
+				cliques::linearised_normalised_corr_stability_gain
+						quality_gain(m_times[j]);
+				// now run Louvain method
+				stability[i]
+						= cliques::find_optimal_partition_louvain<partition>(
+								mygraph, myweights, null_model, quality,
+								quality_gain, singletons,
+								hierarchical_louvain_partitions, precision,
+								log_louvain);
+				break;
+			}
+				// mutual information version
+			case 3: {
+				cliques::find_mutual_information_stability quality;
+				cliques::mutual_information_stability_gain quality_gain;
+
+				// now run Louvain method
+				stability[i]
+						= cliques::find_optimal_partition_louvain<partition>(
+								mygraph, myweights, null_model, quality,
+								quality_gain, singletons,
+								hierarchical_louvain_partitions, precision,
+								log_louvain);
+				break;
+			}
+			default:
+				mexErrMsgTxt("Error defining stability mode");
+
+			}
 
 			// last partition in vector == best partition
 			partition best_partition = hierarchical_louvain_partitions.back();
@@ -275,8 +381,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		double * output_tab = (double*) mxGetPr(plhs[2]);
 
 		// write out results
-		for (unsigned int iteration = 0; iteration < columns; ++iteration) {
-			for (unsigned int node = 0; node < rows; ++node) {
+		for (int iteration = 0; iteration < columns; ++iteration) {
+			for (int node = 0; node < rows; ++node) {
 				output_tab[iteration * num_nodes + node]
 						= double(optimal_partitions[iteration].find_set(node));
 			}

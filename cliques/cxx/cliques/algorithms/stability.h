@@ -107,6 +107,8 @@ struct linearised_normalised_stability_gain {
  @brief  Functor for finding full normalised stability of weighted graph
  */
 struct find_full_normalised_stability {
+
+	lemon::SmartGraph exp_graph;
 	std::vector<double> minus_t_D_inv_L;
 	std::vector<double> node_weighted_degree;
 	find_linearised_normalised_stability lin_norm_stability;
@@ -160,6 +162,17 @@ struct find_full_normalised_stability {
 					/ node_weighted_degree[node_id_u];
 		}
 
+		// create graph strucutre
+		//reserve memory space for number of nodes
+		exp_graph.reserveNode(N);
+		exp_graph.reserveEdge(N + (N * (N - 1)) / 2);
+
+		// add nodes
+		for (int i = 0; i < N; ++i) {
+			exp_graph.addNode();
+		}
+
+
 	}
 
 	template<typename P>
@@ -173,17 +186,7 @@ struct find_full_normalised_stability {
 		//		cliques::print_collection(exp_graph_vec);
 
 		// create new graph out of matrix find_stability<lemon::SmartGraph>(partiton,time)
-		lemon::SmartGraph exp_graph;
 		lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
-
-		// reserve memory space for number of nodes
-		exp_graph.reserveNode(N);
-		exp_graph.reserveEdge(N + (N * (N - 1)) / 2);
-
-		// add nodes
-		for (int i = 0; i < N; ++i) {
-			exp_graph.addNode();
-		}
 
 		for (int i = 0; i < N; ++i) {
 			for (int j = i; j < N; ++j) {
@@ -216,17 +219,8 @@ struct find_full_normalised_stability {
 		//        cliques::output("exp");
 		//        cliques::print_collection(exp_graph_vec, N);
 
-		// create new graph out of matrix find_stability<lemon::SmartGraph>(partiton,time)
-		lemon::SmartGraph exp_graph;
+		// create new weight map out of matrix find_stability<lemon::SmartGraph>(partiton,time)
 		lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
-
-		// reserve memory space for number of nodes
-		exp_graph.reserveNode(N);
-		exp_graph.reserveEdge(N + (N * (N - 1)) / 2);
-		// add nodes
-		for (int i = 0; i < N; ++i) {
-			exp_graph.addNode();
-		}
 
 		std::vector<double> effective_graph(N * N, 0);
 		for (int i = 0; i < N; ++i) {
@@ -242,16 +236,6 @@ struct find_full_normalised_stability {
 				}
 			}
 		}
-
-		//		cliques::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", N + (N * (N-1))/2, N*N, (N*N)/2);
-		//        cliques::print_collection(effective_graph,N);
-		//        double m = 0.0;
-		//        for (lemon::SmartGraph::EdgeIt e(exp_graph); e!= lemon::INVALID; ++e) {
-		//            m += exp_graph_weights[e];
-		//        }
-		//        cliques::output("edges", m);
-		//        cliques::output("num_edges 2", lemon::countEdges(exp_graph));
-
 
 		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);

@@ -101,7 +101,7 @@ std::vector<double> create_correlation_graph_from_graph(G &graph, W &weights) {
 		// add weight to node weight and sum up total weight
 		null_model_vec[node_u_id] += weight;
 		null_model_vec[node_v_id] += weight;
-		two_m += 2*weight;
+		two_m += 2 * weight;
 
 	}
 

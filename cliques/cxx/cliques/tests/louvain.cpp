@@ -47,17 +47,17 @@ int main() {
 	std::vector<double> null_model;
 	//std::vector<double> null_model = cliques::create_correlation_graph_from_graph(
 	//		orange_graph, weights);
-
-
+	cliques::create_mutual_information_graph_from_graph(orange_graph, weights,
+			current_markov_time);
 
 	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
 	singletons.initialise_as_singletons();
 
-	cliques::find_linearised_combinatorial_stability quality(
-			current_markov_time);
+	cliques::find_mutual_information_stability quality;
+	cliques::mutual_information_stability_gain quality_gain;
 
 	//stability = quality(orange_graph, singletons, weights, singletons,null_model);
-	std::cout << "singleton stability: " << stability << std::endl;
+//	std::cout << "singleton stability: " << stability << std::endl;
 
 	cliques::Logging<partition> log_louvain;
 	std::vector<partition> optimal_partitions;
@@ -65,10 +65,8 @@ int main() {
 	cliques::output("Start Louvain");
 
 	stability = cliques::find_optimal_partition_louvain<partition>(
-			orange_graph, weights, null_model, quality,
-			cliques::linearised_combinatorial_stability_gain(
-					current_markov_time), singletons, optimal_partitions, 1e-9,
-			log_louvain);
+			orange_graph, weights, null_model, quality, quality_gain,
+			singletons, optimal_partitions, 1e-9, log_louvain);
 
 	partition best_partition = optimal_partitions.back();
 
