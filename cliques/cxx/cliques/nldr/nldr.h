@@ -318,9 +318,9 @@ arma::mat find_edit_landmark_dists(S &partitions, S &landmarks) {
 	return D_l;
 }
 
-/**
- @brief  Find the pairwise partition hasse diagram distances
- */
+///**
+// @brief  Find the pairwise partition hasse diagram distances
+// */
 template<typename S>
 arma::mat find_split_merge_dists(S &partitions) {
 	// Get the number of partition (allowed)
@@ -353,11 +353,12 @@ arma::mat find_split_merge_dists(S &partitions) {
 				X(j, i) = 1;
 				X(i, j) = 1;
 				num++;
+				if (num % 1000000 == 0) {
+					cliques::output(i, j, X(i, j), num, ":", total);
+				}
 			}
 
-			if (num % 1000000 == 0) {
-				cliques::output(i, j, X(i, j), num, ":", total);
-			}
+
 			j++;
 		}
 		i++;
@@ -370,12 +371,8 @@ arma::mat find_split_merge_dists(S &partitions) {
 	while (num != total) {
 		A = A * X;
 		pathlength++;
-		// pre-allocate some counters
-		int i, j;
-		i = j = 0;
 		for (int i = 0; i < N; ++i) {
-			j = i + 1;
-			for (int j = 0; j < N; ++j) {
+			for (int j = i+1; j < N; ++j) {
 				if (A(i, j) != 0) {
 					X(i, j) = pathlength;
 					X(j, i) = pathlength;
@@ -396,11 +393,13 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 	if (std::abs(num_comm1 - num_comm2) != 1) {
 		return false;
 	}
+	cliques::print_partition_line(p1);
+	cliques::print_partition_line(p2);
 	VectorPartition greater_partition(p1.return_partition_vector());
 	VectorPartition smaller_partition(p2.return_partition_vector());
 	if (num_comm1 - num_comm2 == -1) {
-		greater_partition(p2.return_partition_vector());
-		smaller_partition(p1.return_partition_vector());
+		greater_partition = VectorPartition(p2.return_partition_vector());
+		smaller_partition = VectorPartition(p1.return_partition_vector());
 	}
 
 	// initialise
@@ -422,7 +421,7 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 		// in here the difference is stored
 		std::vector<int> difference(comm1.size() + comm2.size());
 		std::vector<int>::iterator it;
-		it = std::set_difference(comm1.begin(), comm1.end(), comm2.begin(),
+		it = std::set_symmetric_difference(comm1.begin(), comm1.end(), comm2.begin(),
 				comm2.end(), difference.begin());
 
 		// check if they overlap completely
@@ -437,7 +436,7 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 				// either comm1 was the bigger one or comm2
 
 				// cut difference to correct size
-				difference = difference(difference.begin(), it);
+				difference = std::vector<int>(difference.begin(), it);
 
 				// initialise temp vector for union
 				std::vector<int> union1anddiff(comm1.size() + comm2.size());
@@ -451,17 +450,17 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 
 				// check if comm1 was the bigger one, if that is the case set offset
 				// and merge smaller communities
-				if (size_union == comm1.size()) {
+				if (size_union == int(comm1.size())) {
 					offset1 = -1; // consider comm1 next round again
 					// merge communities in other partition
-					for (int k = 0; k < comm2.size(); ++k) {
-						smaller_partition.add_node_to_set(comm2[k]) = i + 1;
+					for (int k = 0; k < int(comm2.size()); ++k) {
+						smaller_partition.add_node_to_set(comm2[k], i + 1);
 					}
 				} else {
 					// do it the other way around
 					offset2 = -1;
-					for (int k = 0; k < comm1.size(); ++k) {
-						smaller_partition.add_node_to_set(comm1[k]) = i + 1;
+					for (int k = 0; k < int(comm1.size()); ++k) {
+						smaller_partition.add_node_to_set(comm1[k], i + 1);
 					}
 				}
 			} else { // otherwise the partitions are no neighbours
@@ -609,4 +608,5 @@ void convert_dists_to_graph(G &graph, M &weights, arma::mat &dists, T threshold)
 			}
 		}
 	}
+}
 }

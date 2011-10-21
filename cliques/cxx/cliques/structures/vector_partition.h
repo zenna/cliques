@@ -39,7 +39,8 @@ public:
 
 	// construct partition from vector
 	explicit VectorPartition(std::vector<int> partition) :
-		partition_vector(partition), is_normalised(false) {
+		num_nodes(partition.size()), partition_vector(partition),
+				is_normalised(false) {
 	}
 	// what is that for a horribly over complicated syntax?? --M
 	void initialise_as_singletons() {
@@ -118,7 +119,7 @@ public:
 	std::vector<int> get_nodes_from_set(int set_id) {
 		std::vector<int> nodes_in_set;
 		for (int i = 0; i < num_nodes; ++i) {
-			if(partition_vector[i] == set_id){
+			if (partition_vector[i] == set_id) {
 				nodes_in_set.push_back(i);
 			}
 		}

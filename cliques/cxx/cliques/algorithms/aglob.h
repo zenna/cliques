@@ -4,6 +4,7 @@
 #include <vector>
 #include <limits>
 #include <map>
+#include <cliques/structures/vector_partition.h>
 
 namespace cliques {
 
