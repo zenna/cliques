@@ -51,9 +51,9 @@ arma::mat convert_graph_to_geodesic_dists(G &graph, std::vector<
 	int total = N * (N - 1) / 2;
 	for (int i = 0; i < N - 1; ++i) {
 		for (int j = i + 1; j < N; ++j) {
-			mickeymouse d = lemon::Dijkstra<G, M>(graph, weights);
-			mickeymouse n1 = nodes[i];
-			mickeymouse n2 = nodes[j];
+			auto d = lemon::Dijkstra<G, M>(graph, weights);
+			auto n1 = nodes[i];
+			auto n2 = nodes[j];
 			d.run(n1, n2);
 			float dist = d.dist(n2);
 			X(i, j) = dist;
@@ -162,7 +162,7 @@ double find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) 
 	std::sort(comm1.begin(), comm1.end());
 	std::sort(comm2.begin(), comm2.end());
 
-	mickeymouse end = std::set_intersection(comm1.begin(), comm1.end(),
+	auto end = std::set_intersection(comm1.begin(), comm1.end(),
 			comm2.begin(), comm2.end(), diff_itr.begin());
 	int intersection_size = int(end - diff_itr.begin());
 
@@ -172,9 +172,9 @@ double find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) 
 	if (intersection_size == 0) {
 		difference_size = size1 + size2 - 1;
 		shortest_inter_comm_distance = std::numeric_limits<int>::max();
-		for (mickeymouse n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
-			for (mickeymouse n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
-				mickeymouse d = lemon::Dijkstra<G, M>(graph, weights);
+		for (auto n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
+			for (auto n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
+				auto d = lemon::Dijkstra<G, M>(graph, weights);
 				typename G::Node node1 = graph.nodeFromId(*n1);
 				typename G::Node node2 = graph.nodeFromId(*n2);
 				d.run(node1, node2);
@@ -208,9 +208,9 @@ arma::mat find_community_edit_dists(G &graph, S &communities) {
 	int i = 0;
 	int j = 0;
 	int num = 0;
-	for (mickeymouse comm1 = communities.begin(); comm1 != communities.end(); ++comm1) {
+	for (auto comm1 = communities.begin(); comm1 != communities.end(); ++comm1) {
 		j = i + 1;
-		for (mickeymouse comm2 = comm1; ++comm2 != communities.end();) {
+		for (auto comm2 = comm1; ++comm2 != communities.end();) {
 			float edit_distance = find_community_dist(graph, weights, *comm1,
 					*comm2, diff_itr);
 			X(i, j) = edit_distance;
@@ -240,10 +240,10 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes,
 	int total = N * (N - 1) / 2;
 	for (int i = 0; i < N - 1; ++i) {
 		for (int j = i + 1; j < N; ++j) {
-			mickeymouse n1 = nodes[i];
-			mickeymouse n2 = nodes[j];
-			mickeymouse p1 = map.right.at(n1);
-			mickeymouse p2 = map.right.at(n2);
+			auto n1 = nodes[i];
+			auto n2 = nodes[j];
+			auto p1 = map.right.at(n1);
+			auto p2 = map.right.at(n2);
 			cliques::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			X(i, j) = edit_distance;
@@ -272,11 +272,11 @@ arma::mat find_edit_dists(S &partitions) {
 	int i = 0;
 	int j = 0;
 	int num = 0;
-	for (mickeymouse itr1 = partitions.begin(); itr1 != partitions.end(); ++itr1) {
+	for (auto itr1 = partitions.begin(); itr1 != partitions.end(); ++itr1) {
 		j = i + 1;
-		for (mickeymouse itr2 = itr1; ++itr2 != partitions.end();) {
-			mickeymouse p1 = *itr1;
-			mickeymouse p2 = *itr2;
+		for (auto itr2 = itr1; ++itr2 != partitions.end();) {
+			auto p1 = *itr1;
+			auto p2 = *itr2;
 			cliques::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			X(i, j) = edit_distance;
@@ -303,11 +303,11 @@ arma::mat find_edit_landmark_dists(S &partitions, S &landmarks) {
 	D_l.zeros();
 
 	int i = 0;
-	for (mickeymouse l_itr = landmarks.begin(); l_itr != landmarks.end(); ++l_itr) {
+	for (auto l_itr = landmarks.begin(); l_itr != landmarks.end(); ++l_itr) {
 		int j = 0;
-		for (mickeymouse n_itr = landmarks.begin(); n_itr != landmarks.end(); ++n_itr) {
-			mickeymouse p1 = *n_itr;
-			mickeymouse p2 = *l_itr;
+		for (auto n_itr = landmarks.begin(); n_itr != landmarks.end(); ++n_itr) {
+			auto p1 = *n_itr;
+			auto p2 = *l_itr;
 			cliques::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			D_l(i, j) = edit_distance;
@@ -336,13 +336,13 @@ arma::mat find_split_merge_dists(S &partitions) {
 	i = j = num = 0;
 
 	// loop over all pairs of partitions
-	for (mickeymouse itr1 = partitions.begin(); itr1 != partitions.end(); ++itr1) {
+	for (auto itr1 = partitions.begin(); itr1 != partitions.end(); ++itr1) {
 		j = i + 1;
-		for (mickeymouse itr2 = itr1; ++itr2 != partitions.end();) {
+		for (auto itr2 = itr1; ++itr2 != partitions.end();) {
 
 			// get the partitions for comparisons
-			mickeymouse p1 = *itr1;
-			mickeymouse p2 = *itr2;
+			auto p1 = *itr1;
+			auto p2 = *itr2;
 
 			// get the difference of the partitions in terms of the number of communities
 			int nr_comm_diff = p1.set_count() - p2.set_count();
@@ -350,17 +350,40 @@ arma::mat find_split_merge_dists(S &partitions) {
 			// only partitions with difference one can be direct neighbours
 			if (std::abs(nr_comm_diff) == 1
 					&& are_partitions_connected_with_one_merge(p1, p2)) {
-				X(i, j) = X(j, i) = 1;
+				X(j, i) = 1;
+				X(i, j) = 1;
+				num++;
 			}
 
 			if (num % 1000000 == 0) {
 				cliques::output(i, j, X(i, j), num, ":", total);
 			}
-			num++;
 			j++;
 		}
 		i++;
 	}
+
+	arma::mat A(N, N) = X;
+	int pathlength = 1;
+	// as long as we have not found all shortest paths continue.
+	while (num != total) {
+		A = A * X;
+		pathlength++;
+		// pre-allocate some counters
+		int i, j;
+		i = j = 0;
+		for (int i = 0; i < N; ++i) {
+			j = i + 1;
+			for (int j = 0; j < N; ++j) {
+				if (A(i, j) != 0) {
+					X(i, j) = pathlength;
+					X(j, i) = pathlength;
+					num++;
+				}
+			}
+		}
+	}
+
 	return X;
 }
 
@@ -445,7 +468,7 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 			}
 		}
 	}
-return true;
+	return true;
 }
 
 /**
@@ -549,18 +572,18 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
 	}
 
 	cliques::output("choosing nodes");
-	mickeymouse X = cliques::convert_graph_to_geodesic_dists(graph,
+	auto X = cliques::convert_graph_to_geodesic_dists(graph,
 			landmark_nodes, weights);
 	X.print("X");
 
 	cliques::output("finding embedding");
-	mickeymouse L = cliques::embed_mds(X, num_dim);
+	auto L = cliques::embed_mds(X, num_dim);
 	L.print("L");
 
 	cliques::output("saving");
 	arma::mat L_t = arma::trans(L);
 
-	mickeymouse D_y = cliques::euclid_pairwise_dists(L_t);
+	auto D_y = cliques::euclid_pairwise_dists(L_t);
 	cliques::output("residual variance", cliques::residual_variance(X, D_y));
 
 	return L_t;
