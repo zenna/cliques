@@ -115,6 +115,16 @@ public:
 		return seen_nodes.size();
 	}
 
+	std::vector<int> get_nodes_from_set(int set_id) {
+		std::vector<int> nodes_in_set;
+		for (int i = 0; i < num_nodes; ++i) {
+			if(partition_vector[i] == set_id){
+				nodes_in_set.push_back(i);
+			}
+		}
+		return nodes_in_set;
+	}
+
 	std::vector<int> return_partition_vector() {
 		return partition_vector;
 	}

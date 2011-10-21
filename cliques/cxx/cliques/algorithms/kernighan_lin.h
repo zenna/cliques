@@ -69,7 +69,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
         // Initializations
         double best_gain = -std::numeric_limits<float>::max();
         Node node_to_move;
-        unsigned int comm_to_move_to;
+        unsigned int comm_to_move_to =-1;
         double absolute_gain;
 
         //		bool is_trapped_node = true;
@@ -218,7 +218,7 @@ double refine_partition_kernighan_lin_hijack(T &graph, W &weights, QF compute_qu
     for (int i = 0; i < num_nodes; ++i) {
         double best_gain = -std::numeric_limits<float>::max();
         Node node_to_move;
-        unsigned int comm_to_move_to;
+        unsigned int comm_to_move_to = -1;
         double absolute_gain;
 
         //      bool is_trapped_node = true;
