@@ -420,13 +420,13 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 		std::vector<int> comm2 = smaller_partition.get_nodes_from_set(i
 				+ offset2);
 		// in here the difference is stored
-		std::vector<int> difference(comm1.size() + comm2.szie());
-		vector<int>::iterator it;
+		std::vector<int> difference(comm1.size() + comm2.size());
+		std::vector<int>::iterator it;
 		it = std::set_difference(comm1.begin(), comm1.end(), comm2.begin(),
 				comm2.end(), difference.begin());
 
 		// check if they overlap completely
-		difference_size = int(it - difference.begin);
+		difference_size = int(it - difference.begin());
 
 		// if they do not check difference
 		if (difference_size != 0) {
@@ -454,13 +454,13 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 				if (size_union == comm1.size()) {
 					offset1 = -1; // consider comm1 next round again
 					// merge communities in other partition
-					for (k = 0; k < comm2.size(); ++k) {
+					for (int k = 0; k < comm2.size(); ++k) {
 						smaller_partition.add_node_to_set(comm2[k]) = i + 1;
 					}
 				} else {
 					// do it the other way around
 					offset2 = -1;
-					for (k = 0; k < comm1.size(); ++k) {
+					for (int k = 0; k < comm1.size(); ++k) {
 						smaller_partition.add_node_to_set(comm1[k]) = i + 1;
 					}
 				}
