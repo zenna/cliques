@@ -373,7 +373,7 @@ arma::mat find_split_merge_dists(S &partitions) {
 		pathlength++;
 		for (int i = 0; i < N; ++i) {
 			for (int j = i+1; j < N; ++j) {
-				if (A(i, j) != 0) {
+				if (A(i, j) != 0 && X(i,j)!=0) {
 					X(i, j) = pathlength;
 					X(j, i) = pathlength;
 					num++;
