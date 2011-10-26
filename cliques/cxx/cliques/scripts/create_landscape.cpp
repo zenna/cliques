@@ -212,9 +212,9 @@ int main(int ac, char* av[]) {
             cliques::partition_equal>, boost::bimaps::set_of<lemon::SmartGraph::Node> > map;
     if (create_space) {
         cliques::output("Creating space graph");
-        map = cliques::create_space(orange_graph, all_partitions, space);
-        //		lemon::SmartGraph::EdgeMap<float> space_weights(space);
-        cliques::make_weights_from_edges(space, space_weights);
+        //map = cliques::create_space(orange_graph, all_partitions, space);
+//        		lemon::SmartGraph::EdgeMap<float> space_weights(space);
+        //cliques::make_weights_from_edges(space, space_weights);
         cliques::output("number of nodes", lemon::countNodes(space));
         cliques::output("number of edges", lemon::countEdges(space));
     }
@@ -252,11 +252,14 @@ int main(int ac, char* av[]) {
     arma::mat X;
     if (find_distances) {
         cliques::output("Finding distances");
+        //TODO comment out appropriately..
         //auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
         //X = cliques::find_edit_dists(all_partitions);
         X = cliques::find_split_merge_dists(all_partitions);
         X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
         cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
+        cliques::graph_to_edgelist_file(
+                filename_prefix + "_landscape_edgelist.edj", space);
     }
 
     if (do_embedding) {
@@ -302,7 +305,7 @@ int main(int ac, char* av[]) {
             lemon::SmartGraph exp_graph;
             lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
             cliques::graph_to_exponential_graph(orange_graph, weights,exp_graph, exp_graph_weights, *time);
-
+            //TODO map is not initialised for hasse distances.
             auto basins = cliques::compute_kernighan_lin_basins(orange_graph,weights,
                     cliques::find_linearised_normalised_stability(*time),
                     cliques::linearised_normalised_stability_gain(*time),

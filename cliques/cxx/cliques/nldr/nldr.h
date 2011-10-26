@@ -155,15 +155,15 @@ std::vector<typename G::Node> randomly_choose_nodes(G &graph,
 //view.js:114[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0]
 
 template<typename G, typename M, typename C>
-double find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) {
-	int size1 = comm1.size();
-	int size2 = comm2.size();
+double find_community_dist(G &graph, M &weights, C commi, C commj, C &diff_itr) {
+	int size1 = commi.size();
+	int size2 = commj.size();
 
-	std::sort(comm1.begin(), comm1.end());
-	std::sort(comm2.begin(), comm2.end());
+	std::sort(commi.begin(), commi.end());
+	std::sort(commj.begin(), commj.end());
 
-	auto end = std::set_intersection(comm1.begin(), comm1.end(),
-			comm2.begin(), comm2.end(), diff_itr.begin());
+	auto end = std::set_intersection(commi.begin(), commi.end(),
+			commj.begin(), commj.end(), diff_itr.begin());
 	int intersection_size = int(end - diff_itr.begin());
 
 	int difference_size = size1 + size2 - intersection_size * 2;
@@ -172,8 +172,8 @@ double find_community_dist(G &graph, M &weights, C comm1, C comm2, C &diff_itr) 
 	if (intersection_size == 0) {
 		difference_size = size1 + size2 - 1;
 		shortest_inter_comm_distance = std::numeric_limits<int>::max();
-		for (auto n1 = comm1.begin(); n1 != comm1.end(); ++n1) {
-			for (auto n2 = comm2.begin(); n2 != comm2.end(); ++n2) {
+		for (auto n1 = commi.begin(); n1 != commi.end(); ++n1) {
+			for (auto n2 = commj.begin(); n2 != commj.end(); ++n2) {
 				auto d = lemon::Dijkstra<G, M>(graph, weights);
 				typename G::Node node1 = graph.nodeFromId(*n1);
 				typename G::Node node2 = graph.nodeFromId(*n2);
@@ -208,11 +208,11 @@ arma::mat find_community_edit_dists(G &graph, S &communities) {
 	int i = 0;
 	int j = 0;
 	int num = 0;
-	for (auto comm1 = communities.begin(); comm1 != communities.end(); ++comm1) {
+	for (auto commi = communities.begin(); commi != communities.end(); ++commi) {
 		j = i + 1;
-		for (auto comm2 = comm1; ++comm2 != communities.end();) {
-			float edit_distance = find_community_dist(graph, weights, *comm1,
-					*comm2, diff_itr);
+		for (auto commj = commi; ++commj != communities.end();) {
+			float edit_distance = find_community_dist(graph, weights, *commi,
+					*commj, diff_itr);
 			X(i, j) = edit_distance;
 			X(j, i) = edit_distance;
 			if (num % 1000000 == 0) {
@@ -346,6 +346,7 @@ arma::mat find_split_merge_dists(S &partitions) {
 
 			// get the difference of the partitions in terms of the number of communities
 			int nr_comm_diff = p1.set_count() - p2.set_count();
+			//cliques::output("difference:", nr_comm_diff);
 
 			// only partitions with difference one can be direct neighbours
 			if (std::abs(nr_comm_diff) == 1
@@ -353,6 +354,7 @@ arma::mat find_split_merge_dists(S &partitions) {
 				X(j, i) = 1;
 				X(i, j) = 1;
 				num++;
+//				cliques::output("direct neighbour", num);
 				if (num % 1000000 == 0) {
 					cliques::output(i, j, X(i, j), num, ":", total);
 				}
@@ -388,85 +390,83 @@ arma::mat find_split_merge_dists(S &partitions) {
 bool are_partitions_connected_with_one_merge(VectorPartition p1,
 		VectorPartition p2) {
 	// get difference in number of communities, only partitions with difference one can be direct neighbours
-	int num_comm1 = p1.set_count();
-	int num_comm2 = p2.set_count();
-	if (std::abs(num_comm1 - num_comm2) != 1) {
+	int num_commi = p1.set_count();
+	int num_commj = p2.set_count();
+	if (std::abs(num_commi - num_commj) != 1) {
 		return false;
 	}
-	cliques::print_partition_line(p1);
-	cliques::print_partition_line(p2);
+//	cliques::output("comparison");
+//	cliques::print_partition_line(p1);
+//	cliques::print_partition_line(p2);
 	VectorPartition greater_partition(p1.return_partition_vector());
 	VectorPartition smaller_partition(p2.return_partition_vector());
-	if (num_comm1 - num_comm2 == -1) {
+	if (num_commi - num_commj == -1) {
 		greater_partition = VectorPartition(p2.return_partition_vector());
 		smaller_partition = VectorPartition(p1.return_partition_vector());
 	}
 
 	// initialise
 	int difference_size = 0;
-	int offset1, offset2;
-	offset1 = offset2 = 0;
-	bool no_difference_so_far = true;
 
 	// normalise ids
 	greater_partition.normalise_ids();
 	smaller_partition.normalise_ids();
-
-	for (int i = 0; i < smaller_partition.element_count(); ++i) {
+	int maxi = greater_partition.set_count();
+	int i = 0;
+	while(i<maxi){
 		// get the two communities
-		std::vector<int> comm1 = greater_partition.get_nodes_from_set(i
-				+ offset1);
-		std::vector<int> comm2 = smaller_partition.get_nodes_from_set(i
-				+ offset2);
-		// in here the difference is stored
-		std::vector<int> difference(comm1.size() + comm2.size());
-		std::vector<int>::iterator it;
-		it = std::set_symmetric_difference(comm1.begin(), comm1.end(), comm2.begin(),
-				comm2.end(), difference.begin());
+		std::vector<int> commi = greater_partition.get_nodes_from_set(i);
+		std::vector<int> commj = smaller_partition.get_nodes_from_set(i);
 
-		// check if they overlap completely
+//		cliques::output("communities");
+//		cliques::print_collection(commi);
+//		cliques::print_collection(commj);
+
+		// in here the difference is stored
+		std::vector<int> difference(commi.size() + commj.size());
+		std::vector<int>::iterator it;
+		it = std::set_symmetric_difference(commi.begin(), commi.end(), commj.begin(),
+				commj.end(), difference.begin());
+
+		// check if communities match
 		difference_size = int(it - difference.begin());
 
 		// if they do not check difference
 		if (difference_size != 0) {
 			// if this is the only difference we got one more chance
-			if (no_difference_so_far) {
-				no_difference_so_far = false;
-				// there are two options:
-				// either comm1 was the bigger one or comm2
 
 				// cut difference to correct size
 				difference = std::vector<int>(difference.begin(), it);
+//				cliques::print_collection(difference);
 
-				// initialise temp vector for union
-				std::vector<int> union1anddiff(comm1.size() + comm2.size());
-
-				// compute set union of comm1 and difference
-				it = std::set_union(comm1.begin(), comm1.end(),
-						difference.begin(), difference.end(),
-						union1anddiff.begin());
-				// size of the union
-				int size_union = int(it - union1anddiff.begin());
-
-				// check if comm1 was the bigger one, if that is the case set offset
-				// and merge smaller communities
-				if (size_union == int(comm1.size())) {
-					offset1 = -1; // consider comm1 next round again
+				// difference should be smaller then each community
+				if (difference.size() >= commi.size() && difference.size() >= commj.size()){
+					return false;
+				}
+				// check if commi was the bigger one, merge smaller communities
+				if (commi.size() > commj.size()) {
 					// merge communities in other partition
-					for (int k = 0; k < int(comm2.size()); ++k) {
-						smaller_partition.add_node_to_set(comm2[k], i + 1);
+					for (int k = 0; k < int(commj.size()); ++k) {
+						smaller_partition.add_node_to_set(commj[k], smaller_partition.find_set(difference[0]));
 					}
+					smaller_partition.normalise_ids();
 				} else {
 					// do it the other way around
-					offset2 = -1;
-					for (int k = 0; k < int(comm1.size()); ++k) {
-						smaller_partition.add_node_to_set(comm1[k], i + 1);
+					for (int k = 0; k < int(commi.size()); ++k) {
+						greater_partition.add_node_to_set(commi[k], greater_partition.find_set(difference[0]));
+					}
+					greater_partition.normalise_ids();
+				}
+
+				for(int k = 0; k<greater_partition.element_count();++k){
+					if(greater_partition.find_set(k)!=smaller_partition.find_set(k)){
+						return false;
 					}
 				}
-			} else { // otherwise the partitions are no neighbours
-				return false;
-			}
+
+
 		}
+	i++;
 	}
 	return true;
 }
