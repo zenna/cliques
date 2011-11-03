@@ -193,7 +193,7 @@ struct find_full_normalised_stability {
 				double weight = exp_graph_vec[N * i + j]
 						* node_weighted_degree[j];
 				if (weight > 0) {
-					lemon::SmartGraph::Edge edge = exp_graph.addEdge(
+					lemon::SmartGraph::Edge edge = exp_graph.findEdge(
 							exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
 					exp_graph_weights.set(edge, weight);
 				}
@@ -230,7 +230,7 @@ struct find_full_normalised_stability {
 				effective_graph[N * i + j] = effective_graph[N * j + i]
 						= weight;
 				if (weight > 0) {
-					lemon::SmartGraph::Edge edge = exp_graph.addEdge(
+					lemon::SmartGraph::Edge edge = exp_graph.findEdge(
 							exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
 					exp_graph_weights.set(edge, weight);
 				}
