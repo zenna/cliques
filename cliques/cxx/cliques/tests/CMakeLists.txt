@@ -4,20 +4,17 @@ include_directories(${graphviz_INCLUDE_DIRECTORIES})
 
 set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 
+if (UseFortran)
+  set ( cliques_LIBRARIES expokit gfortran lapack blas ${Boost_LIBRARIES})
+else()
+  set ( cliques_LIBRARIES expokit lapack blas ${Boost_LIBRARIES})
+endif()
+
 ADD_EXECUTABLE(test_louvain louvain.cpp)
-target_link_libraries(test_louvain expokit)
-#target_link_libraries(test_louvain gfortran)
-target_link_libraries(test_louvain lapack)
-target_link_libraries(test_louvain blas)
-target_link_libraries(test_louvain ${Boost_LIBRARIES})
+target_link_libraries(test_louvain ${cliques_LIBRARIES})
 
 add_executable(test_kernighanlin kernighanlin.cpp)
-target_link_libraries(test_kernighanlin expokit)
-target_link_libraries(test_kernighanlin lapack)
-target_link_libraries(test_kernighanlin blas)
-#target_link_libraries(test_kernighanlin gfortran)
-
-
+target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
 
 #add_executable(test_edit_distance edit_distance.cpp)
 
