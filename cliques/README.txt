@@ -19,6 +19,14 @@ note you may have to set flags to use a newer C++ compiler, and also to use gfor
 
 e..g cmake REPOSITORY_ROOT -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.2
 
+Using JSON viewer
+
+You will need to open your browser with support for opening local files. e.g. for chrome:
+
+/Applications/Google\ Chrome.app/ContentMacOS/Google\ Chrome --allow-file-access-from-files
+
+This is not needed for firefox 
+
 DOCUMENTATION
 
 >> cd REPOSITORY_ROOT/doc
