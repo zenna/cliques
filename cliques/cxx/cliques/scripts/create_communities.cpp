@@ -157,13 +157,6 @@ int main(int ac, char* av[]) {
 	    }
 	}
 
-    std::vector<std::vector<double> > all_stabilities;
-    auto all_maxima = cliques::find_optimal_communities_huxley(orange_graph, weights, func, 1.0, all_stabilities, communities);
-    cliques::output("maximum");
-    for (auto maximum = all_maxima.begin(); maximum != all_maxima.end(); ++maximum) {
-        cliques::print_collection(*maximum);
-    }
-
 	std::vector<double> markov_times;
 	std::vector<std::vector<double> > all_stabilities;
 	if (find_stabs) {
@@ -174,6 +167,7 @@ int main(int ac, char* av[]) {
 		markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
 		cliques::output("time_steps", markov_times.size());
 		for (unsigned int i = 0; i < markov_times.size(); ++i) {
+			cliques::output("time",markov_times[i]);
 			std::vector<double> stabilities;
 			stabs_file << markov_times[i] << " ";
 			for (auto itr = communities.begin(); itr != communities.end(); ++itr) {

@@ -15,6 +15,10 @@ create a build directory e.g. >> mkdir ~/cliques/
 >> cmake REPOSITORY_ROOT
 >> make
 
+note you may have to set flags to use a newer C++ compiler, and also to use gfortran
+
+e..g cmake REPOSITORY_ROOT -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.2
+
 DOCUMENTATION
 
 >> cd REPOSITORY_ROOT/doc
