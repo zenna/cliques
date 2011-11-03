@@ -109,13 +109,19 @@ struct linearised_normalised_stability_gain {
 struct find_full_normalised_stability {
 
 	lemon::SmartGraph exp_graph;
+	lemon::SmartGraph::EdgeMap<double> exp_graph_weight;
 	std::vector<double> minus_t_D_inv_L;
 	std::vector<double> node_weighted_degree;
 	find_linearised_normalised_stability lin_norm_stability;
+	double m_time = -1;
+	double threshold = 1e-9;
 
 	template<typename G, typename M>
-	find_full_normalised_stability(G &graph, M &weights) :
+	find_full_normalised_stability(G &graph, M &weights, double thres) :
 		lin_norm_stability(1) {
+
+		// get threshold
+		threshold = thres;
 
 		typedef typename G::Node Node;
 		typedef typename G::NodeIt NodeIt;
@@ -162,7 +168,7 @@ struct find_full_normalised_stability {
 					/ node_weighted_degree[node_id_u];
 		}
 
-		// create graph strucutre
+		// create graph structure
 		//reserve memory space for number of nodes
 		exp_graph.reserveNode(N);
 		exp_graph.reserveEdge(N + (N * (N - 1)) / 2);
@@ -171,7 +177,6 @@ struct find_full_normalised_stability {
 		for (int i = 0; i < N; ++i) {
 			exp_graph.addNode();
 		}
-
 
 	}
 
@@ -192,8 +197,8 @@ struct find_full_normalised_stability {
 			for (int j = i; j < N; ++j) {
 				double weight = exp_graph_vec[N * i + j]
 						* node_weighted_degree[j];
-				if (weight > 0) {
-					lemon::SmartGraph::Edge edge = exp_graph.findEdge(
+				if (weight > threshold) {
+					lemon::SmartGraph::Edge edge = exp_graph.addEdge(
 							exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
 					exp_graph_weights.set(edge, weight);
 				}
@@ -220,19 +225,35 @@ struct find_full_normalised_stability {
 		//        cliques::print_collection(exp_graph_vec, N);
 
 		// create new weight map out of matrix find_stability<lemon::SmartGraph>(partiton,time)
-		lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
 
-		std::vector<double> effective_graph(N * N, 0);
-		for (int i = 0; i < N; ++i) {
-			for (int j = i; j < N; ++j) {
-				double weight = exp_graph_vec[N * i + j]
-						* node_weighted_degree[j];
-				effective_graph[N * i + j] = effective_graph[N * j + i]
-						= weight;
-				if (weight > 0) {
-					lemon::SmartGraph::Edge edge = exp_graph.findEdge(
-							exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
-					exp_graph_weights.set(edge, weight);
+
+		if (markov_time != m_time) {
+			// reassign markov time
+			m_time = markov_time;
+			exp_graph.clear();
+
+			// Create new graph
+			exp_graph.reserveNode(N);
+			exp_graph.reserveEdge(N + (N * (N - 1)) / 2);
+
+			// add nodes
+			for (int i = 0; i < N; ++i) {
+				exp_graph.addNode();
+			}
+
+			// new edges
+			exp_graph_weights(exp_graph);
+
+			for (int i = 0; i < N; ++i) {
+				for (int j = i; j < N; ++j) {
+					double weight = exp_graph_vec[N * i + j]
+							* node_weighted_degree[j];
+					if (weight > threshold) {
+						lemon::SmartGraph::Edge edge = exp_graph.addEdge(
+								exp_graph.nodeFromId(i),
+								exp_graph.nodeFromId(j));
+						exp_graph_weights.set(edge, weight);
+					}
 				}
 			}
 		}
@@ -258,8 +279,9 @@ struct find_linearised_combinatorial_stability {
 	}
 
 	template<typename G, typename P, typename W>
-	double operator ()(G &graph, P &partition, W &weights,P &partition_init) {
-		cliques::LinearisedInternalsComb internals(graph, weights, partition, partition_init);
+	double operator ()(G &graph, P &partition, W &weights, P &partition_init) {
+		cliques::LinearisedInternalsComb internals(graph, weights, partition,
+				partition_init);
 		return (*this)(internals);
 	}
 
@@ -270,7 +292,7 @@ struct find_linearised_combinatorial_stability {
 		//				cliques::output("time", markov_time, "size", size);
 
 		for (int i = 0; i < size; i++) {
-//			cliques::print_collection(internals.comm_tot_nodes);
+			//			cliques::print_collection(internals.comm_tot_nodes);
 			if (internals.comm_tot_nodes[i] > 0) {
 				q += markov_time * double(internals.comm_w_in[i]
 						/ internals.two_m)
