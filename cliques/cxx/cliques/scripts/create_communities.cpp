@@ -119,6 +119,7 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 }
 
 int main(int ac, char* av[]) {
+	double precision = 1e-9;
 	typedef cliques::VectorPartition VecPartition;
 	typedef boost::unordered_set<VecPartition, cliques::partition_hash,
 			cliques::partition_equal> VecPartitionSet;
@@ -163,7 +164,7 @@ int main(int ac, char* av[]) {
 		cliques::output("Finding stabilities");
 		std::ofstream stabs_file;
 		stabs_file.open(filename_prefix + "_energy.mat");
-		cliques::find_full_normalised_stability func(orange_graph, weights);
+		cliques::find_full_normalised_stability func(orange_graph, weights, precision);
 		markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
 		cliques::output("time_steps", markov_times.size());
 		for (unsigned int i = 0; i < markov_times.size(); ++i) {

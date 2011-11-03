@@ -229,7 +229,8 @@ int main(int ac, char* av[]) {
         markov_times = cliques::create_exponential_markov_times(start_time,
                 end_time, num_timesteps);
         cliques::output(markov_times.size(), "time steps");
-        cliques::find_full_normalised_stability func(orange_graph, weights);
+        double precision = 1e-9;
+        cliques::find_full_normalised_stability func(orange_graph, weights,precision);
         for (unsigned int i = 0; i < markov_times.size(); ++i) {
             std::vector<double> stabilities;
             stabs_file << markov_times[i] << " ";
