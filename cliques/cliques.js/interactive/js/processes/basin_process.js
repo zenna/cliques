@@ -121,3 +121,7 @@ BasinProcess.prototype.handleIsolateBasin = function(event) {
 		this.graph.match_edge_colours_to_node();
 	}
 }
+
+BasinProcess.prototype.showNodeData = function(nodeId) {
+	return "I'm a basin process stabilty of node" + nodeId;
+}

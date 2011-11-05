@@ -2,6 +2,7 @@ var NodeProcess = function(process, graph, dynamicColors) {
 	this.type = process.type;
 	this.data = process.data;
 	this.graph = graph;
+	this.currentTime = 0;
 
 	// if true, scale coloring to data at particular point
 	// as opposed to absolute range over all data points
@@ -52,4 +53,7 @@ NodeProcess.prototype.render = function(dataId) {
 }
 NodeProcess.prototype.updateMeta = function(time) {
 	return "";
+}
+NodeProcess.prototype.showNodeData = function(nodeId, currentTime) {
+	return this.data[currentTime]['values'][nodeId];
 }

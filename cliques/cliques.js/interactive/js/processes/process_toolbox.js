@@ -4,13 +4,17 @@ dynamicProcessTemplate = "<div><span class='processName'></span>\
 <div class = 'meta'></div>\
 </div>\
 <br/>\
-"
+";
 
-processSliderTemplate = "<input class = 'processSlider' name='r' type='range' min='0' max='10' value='0'/>"
+processSliderTemplate = "<input class = 'processSlider' name='r' type='range' min='0' max='10' value='0'/>";
+
+processPopup = "<div class='processPopup'></div>";
 
 var ProcessToolbox = function(view) {
 	this.domElement = $("<div></div>").addClass('toolbox');
 	$(view.renderer.domElement).parent().append(this.domElement);
+	this.processPopup = $("<div></div>").addClass('processPopup');
+	$(view.renderer.domElement).parent().append(this.processPopup);
 	this.processes = {};
 }
 ProcessToolbox.prototype.addProcess = function(process) {
@@ -57,6 +61,7 @@ ProcessToolbox.prototype.handleTimeChange = function(event) {
 	var processGroup = event.data.processGroup;
 	var process = processGroup[0]; // This will fail for a dynamic process dependent on stability
 	var time = process.data[dataId]['time'];
+	process['currentTime'] = dataId;
 	$(this).next('.time').text(time);
 	var metaHtml = process.updateMeta(dataId);
 	$(this).siblings('.meta').html(metaHtml);
@@ -72,46 +77,13 @@ ProcessToolbox.prototype.updateSliderFromProcess = function(process, slider) {
 	slider.attr('max', num_steps);
 }
 
-louvain = {
-	type:'louvain',
-	dependencies: {
-		type:'stability',
-		time:0.234
-	},
-	data:[{
-		partition:'034202',
-		action:'consider',
-		time:0
-	},{
-		partition:'034202',
-		action:'consider',
-		time:0
-	},{
-		partition:'034202',
-		action:'position',
-		time:1
-	},
-	]
-}
-
-louvain2 = {
-	type:'louvain',
-	dependencies: {
-		type:'stability',
-		time:4.3
-	},
-	data:[{
-		partition:'034202',
-		action:'consider',
-		time:0
-	},{
-		partition:'034202',
-		action:'consider',
-		time:0
-	},{
-		partition:'034202',
-		action:'position',
-		time:1
-	},
-	]
+ProcessToolbox.prototype.popupNodeDataFunctions = function(data) {
+	// Call
+	var nodeDataHtml = "";
+	
+	for (var i=0; i<this.processes['stability'].length;++i) {
+		var currentTime = this.processes['stability'][i]['currentTime'];
+		nodeDataHtml += this.processes['stability'][i].showNodeData(data,currentTime);
+	}
+	this.processPopup.text(nodeDataHtml);
 }

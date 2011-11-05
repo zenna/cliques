@@ -70,6 +70,8 @@ function App(width, height, name) {
 		} else {
 			document.body.style.cursor = 'default';
 		}
+		$('.processPopup').css('left',mouseX+15).css('top',mouseY+15);
+
 
 	}
 	this.onDocumentMouseClick = function(event) {
@@ -121,7 +123,14 @@ function App(width, height, name) {
 		var partition_colors = colorMap.getColors(partition);
 		orig_graph.paint_nodes(partition_colors);
 		orig_graph.match_edge_colours_to_node();
-
+		
+		//Quick way is just to look up stability in process toolbox and then find stability and render an insibile box
+		// More elegant way is to let each process influence a box shown by the cusor with metadata. e.g. if we also want to
+		// show metadata for a node, e.g. its probability of going to all the different basins.
+		// How to do this, when we click a node and have ound its id, we want to trigger off all the basin.  
+		// Complexation
+		toolbox.popupNodeDataFunctions(id);
+		
 	}
 	this.render = function() {
 		$(document).trigger('render');

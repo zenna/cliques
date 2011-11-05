@@ -23,7 +23,7 @@ Using JSON viewer
 
 You will need to open your browser with support for opening local files. e.g. for chrome:
 
-/Applications/Google\ Chrome.app/ContentMacOS/Google\ Chrome --allow-file-access-from-files
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --allow-file-access-from-files
 
 This is not needed for firefox 
 
