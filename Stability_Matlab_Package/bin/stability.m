@@ -78,7 +78,7 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %
 %
 %
-%   Revision: 1.2 
+%   Revision: 1.0 
 %   Date: 01/12/2011 
 
 

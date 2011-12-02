@@ -84,9 +84,10 @@ void stability_dist_sample(G &graph, Q quality_function, double markov_time,
 			double a1 = std::exp(prop_energy - curr_energy);
 
 			int num_proposed_neighs = proposed_neighs.size();
-			double a_2 = double(num_proposed_neighs)/ double(num_current_neighs);
+			double a_2 = double(num_proposed_neighs)
+					/ double(num_current_neighs);
 
-			double alpha =a1*a2;
+			double alpha = a1 * a2;
 
 			std::uniform_real_distribution<double> rand_float(0, 1);
 			double rand_num = rand_float();
