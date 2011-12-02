@@ -1,18 +1,3 @@
-// File: graph_binary.cpp
-// -- graph handling source
-//-----------------------------------------------------------------------------
-// Community detection 
-// Based on the article "Fast unfolding of community hierarchies in large networks"
-// Copyright (C) 2008 V. Blondel, J.-L. Guillaume, R. Lambiotte, E. Lefebvre
-//
-// This program must not be distributed without agreement of the above mentionned authors.
-//-----------------------------------------------------------------------------
-// Author   : E. Lefebvre, adapted by J.-L. Guillaume
-// Email    : jean-loup.guillaume@lip6.fr
-// Location : Paris, France
-// Time	    : February 2008
-//-----------------------------------------------------------------------------
-// see readme.txt for more details
 
 #if defined(macintosh) || defined(MACOS) || defined(_MACOS)  || defined(__APPLE__)  || defined(_MAC)   || defined(MAC)  || defined(mac)  || defined(MACINTOSH)
 #define __MAC__
@@ -56,12 +41,7 @@ Graph::Graph(char *filename, char *filename_w, int type) {
 	finput.read((char *) &nb_nodes, 4);
 	assert(finput.rdstate() == ios::goodbit);
 
-	// Read cumulative degree sequence: 8 bytes for each node
-	// cum_degree[0]=degree(0); cum_degree[1]=degree(0)+degree(1), etc.
-
-	// ligne modifiee par Antoine : 4 bytes au lieu de 8
 	degrees = (unsigned long *) malloc((long) nb_nodes * sizeof(long));
-	// ligne modifiee par Antoine : 4 bytes au lieu de 8
 	finput.read((char *) degrees, (long) nb_nodes * sizeof(long));
 	assert(finput.rdstate() == ios::goodbit);
 
@@ -97,7 +77,6 @@ Graph::Graph(char *filename, char *filename_w, int type) {
 Graph::Graph(double * data, int length_data, int type) {
 
 	//Print the integer avg of each col to matlab console
-
 	nb_nodes = int(data[length_data - 1]) + 1;
 
 	degrees = (unsigned long *) malloc((long) nb_nodes * sizeof(long));//new unsigned long[nb_nodes];
@@ -134,15 +113,6 @@ Graph::Graph(double * data, int length_data, int type) {
 		}
 	}
 
-}
-
-Graph::Graph(int n, int m, double t, int *d, int *l, float *w) {
-	/*  nb_nodes     = n;
-	 nb_links     = m;
-	 total_weight = t;
-	 degrees      = d;
-	 links        = l;
-	 weights      = w;*/
 }
 
 void Graph::display() {

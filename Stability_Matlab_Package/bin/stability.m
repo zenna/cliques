@@ -63,7 +63,7 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %                       the graph has not been properly
 %                       encoded.
 %
-%       prec            Precision: defines a threshold for     10e-9  
+%       prec            Precision: defines a threshold for      1e-9  
 %                       the range of weights allowed in  
 %                       the laplacian exponential matrix 
 %                       of the full stability.
@@ -79,7 +79,7 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %
 %
 %   Revision: 1.2 
-%   Date: 01/04/2011 
+%   Date: 01/12/2011 
 
 
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
@@ -521,7 +521,7 @@ for l=1:NbLouvain
 end
 
 clear communities;
-clear graph;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
      VI = computeRobustness(lnk, lnkS, M);
@@ -551,7 +551,7 @@ for l=1:NbLouvain
 end
 
 clear communities;
-clear graph;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
     VI = computeRobustness(lnk,lnkS, M);
