@@ -78,8 +78,8 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %
 %
 %
-%   Revision: 1.2 
-%   Date: 01/04/2011 
+%   Revision: 2.0 
+%   Date: 22/11/2011 
 
 
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
@@ -92,6 +92,7 @@ Graph = [];                                     % List of edges of the graph to 
 Time = 1;                                       % Markov times at which the graph should be partitioned
 StabilityFunction = @louvain_LNL;    	        % Linearised stability with normalised laplacian is used by default
 ComputeVI = true;                               % True if the variation of information should be computed
+ComputeES = false;                               % True if edge statistics should be computed
 OutputFile = false;                             % No output file by default.
 NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
 NbNodes = 0;                                    % Total number of nodes;
@@ -211,12 +212,21 @@ if verbose
     tstart=tic;
 end
 
+if(Full)
+    nr_edges = length(find(tril(Graph)~=0));
+else
+    nr_edges = length(Graph)/2;
+end
+
 
 % Initialisation
 S = zeros(1, length(Time));
 N = zeros(1, length(Time));
 VI = zeros(1, length(Time));
 C = zeros(NbNodes, length(Time));
+if ComputeES
+    ES = zeros(nr_edges, length(Time));
+end
 
 if OutputFile
     mkdir(['Partitions_' prefix]);
@@ -237,7 +247,11 @@ for t=1:length(Time)
         disp(['   Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
     end
     
-    [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
+    if(ComputeES)
+        [S(t), N(t), C(:,t), VI(t) ES(:,t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
+    else      
+        [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
+    end
     
     if plotStability && t>1
         stability_plot(Time,t,S,N,VI,ComputeVI);
@@ -410,13 +424,12 @@ end
 end
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_FNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+function [S, N, C, VI, edge_statistics] = louvain_FNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
 % Computes the full normalised stabilty
 
 % Generate the matrix exponential
 diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
 trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
-clear Graph;
 Lap=sparse(trans-eye(NbNodes));
 clear trans;
 exponential=sparse(expm(time.*Lap));
@@ -446,10 +459,11 @@ N = nb_comm(index);
 clear communities;
 clear graph;
 
-if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+if ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
+    [VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
+    % VI = computeRobustness(lnk, lnkS, M);
 else
-    VI=0;
+    VI=0; 
 end
 
 clear lnk;
