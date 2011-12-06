@@ -8,11 +8,11 @@
 namespace cliques {
 
 /**
- @brief  Uniformly sample partition space using Metropolis-Hastings
+ @brief  Use Metropolis Hastings to approximate distribution of stability values
  // TODO make type partition type independent
  */
 template<typename G, typename Q, typename M, typename Logger>
-void sample_uniform_metropolis(G &graph, Q &quality_function,
+void sample_metropolis(G &graph, Q &quality_function,
 		double markov_time, int num_samples, int num_steps_per_sample,
 		M &sample_to_count, Logger &logger) {
 	typedef typename boost::unordered_set<cliques::VectorPartition,
@@ -38,8 +38,17 @@ void sample_uniform_metropolis(G &graph, Q &quality_function,
 		double curr_energy = quality_function(current_partition, markov_time);
 
 		while (true) {
+			// Record sample if at multiple of num_steps_per_sample
+			if (num_steps % num_steps_per_sample == 0) {
+				current_partition.normalise_ids();
+				sample_to_count[current_partition]++;
+				logger.log(current_partition);
+				num_sampled++;
+			}
+
 			int rand_neigh = distribution(engine);
 
+			// (slow) way to get nth neigh partition
 			auto set_itr = neigh_partitions.begin();
 			for (int i = 0; i < rand_neigh; ++i) {
 				++set_itr;
@@ -47,6 +56,8 @@ void sample_uniform_metropolis(G &graph, Q &quality_function,
 			cliques::VectorPartition proposed_partition = *set_itr;
 			logger.log(proposed_partition);
 			partition_set proposed_neighs;
+
+			// Need num neighbours to compute Q(x_t ; x_p)
 			cliques::find_neighbours(graph, proposed_partition, proposed_neighs);
 			int num_proposed_neighs = proposed_neighs.size();
 
@@ -61,20 +72,16 @@ void sample_uniform_metropolis(G &graph, Q &quality_function,
 			double alpha = a1 * a2;
 
 			double rand_uniform_num = real_distribution(m_engine);
+
+			// Increment time and do move to new state if accepted
+			num_steps++;
 			if (rand_uniform_num < alpha) {
-				num_steps++;
 				current_partition = proposed_partition;
 				break;
 			}
 		}
-		if (num_steps % num_steps_per_sample == 0) {
-			current_partition.normalise_ids();
-			sample_to_count[current_partition]++;
-			logger.log(current_partition);
-			num_sampled++;
-//			cliques::output(num_sampled, sample_to_count.size());
-		}
-		if (num_sampled == num_samples) {
+
+		if (num_sampled >= num_samples) {
 			break;
 		}
 	}
