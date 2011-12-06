@@ -10,10 +10,13 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/unordered_set.hpp>
 #include <boost/bimap/multiset_of.hpp>
 
 #include <cliques/graphhelpers.h>
 #include <cliques/structures/vector_partition.h>
+#include <cliques/structures/common.h>
+
 #include <cliques/algorithms/kernighan_lin.h>
 
 

@@ -11,6 +11,8 @@
 
 #include <cliques/graphhelpers.h>
 #include <cliques/algorithms/internals/internals.h>
+#include <cliques/algorithms/internals/generators.h>
+
 
 namespace cliques {
 /**

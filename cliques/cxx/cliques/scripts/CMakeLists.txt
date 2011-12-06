@@ -24,3 +24,6 @@ target_link_libraries(create_communities  ${cliques_LIBRARIES})
 
 ADD_EXECUTABLE(find_communities find_communities.cpp)
 target_link_libraries(find_communities ${cliques_LIBRARIES})
+
+ADD_EXECUTABLE(sample_landscape sample_landscape.cpp)
+target_link_libraries(sample_landscape ${cliques_LIBRARIES})
