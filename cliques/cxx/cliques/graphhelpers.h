@@ -324,6 +324,33 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	maxima_file.close();
 }
 
+template<typename G, typename E>
+void write_edgelist_weighted(std::string filename, G &graph, E &weights) {
+	// initialise input stream and strings for readout
+	std::ofstream maxima_file(filename.c_str(), std::ios_base::app);
+	std::string maxima;
+
+	// check if file is open
+	if (!maxima_file.is_open()) {
+		std::cout << "couldn't open file" << std::endl;
+		exit(1);
+	}
+
+
+	for(typename G::EdgeIt e(graph); e!=lemon::INVALID; ++e){
+		int node1 = graph.id(graph.u(e));
+		int node2 = graph.id(graph.v(e));
+		double weigth = weights[e];
+
+		maxima_file << node1 << " " << node2 << " " << weigth << "\n";
+
+
+	}
+
+
+	maxima_file.close();
+}
+
 /**
  @brief  Checks whether a partition is still connected
 

@@ -66,7 +66,7 @@ int main() {
 
 	stability = cliques::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, null_model, quality, quality_gain,
-			singletons, optimal_partitions, 1e-9, log_louvain);
+			singletons, optimal_partitions, 1e-9, log_louvain,true);
 
 	partition best_partition = optimal_partitions.back();
 

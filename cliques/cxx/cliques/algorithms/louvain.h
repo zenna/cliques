@@ -203,7 +203,11 @@ double find_optimal_partition_louvain(T &graph, W &weights, std::vector<
 		create_reduced_graph_from_partition(reduced_graph, reduced_weight_map,
 				graph, weights, partition, new_comm_id_to_old_comm_id,
 				internals);
-
+		if(log_switch){
+			std::string filename("intermediate_graphs");
+			filename += char(hierarchy);
+			write_edgelist_weighted(filename, reduced_graph, reduced_weight_map);
+		}
 		P singleton_partition(lemon::countNodes(reduced_graph));
 		singleton_partition.initialise_as_singletons();
 

@@ -460,8 +460,8 @@ clear communities;
 clear graph;
 
 if ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    [VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
-    % VI = computeRobustness(lnk, lnkS, M);
+    %[VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
+    VI = computeRobustness(lnk, lnkS, M);
 else
     VI=0; 
 end
