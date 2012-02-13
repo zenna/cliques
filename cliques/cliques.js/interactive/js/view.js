@@ -1,6 +1,7 @@
 function App(width, height, name) {
 	var	width = typeof width  == "undefined" ? window.innerWidth : width;
 	var	height = typeof height  == "undefined" ? window.innerHeight : height;
+	var name = typeof name  == "undefined" ? "" : name;
 
 	this.setup = function() {
 		if (!Detector.webgl)
@@ -27,7 +28,7 @@ function App(width, height, name) {
 		var renderer = this.renderer;
 		renderer.setSize(width, height);
 		container.appendChild(renderer.domElement);
-		$(container).addClass(name);
+		$(renderer.domElement).addClass(name);
 
 		this.camera = new THREE.TrackballCamera({
 
@@ -137,7 +138,8 @@ function App(width, height, name) {
 		this.renderer.render(this.scene, this.camera);
 
 	}
-	this.save = function() {
+	this.save = function(sizeX, sizeY) {
+		this.renderer.setSize(sizeX, sizeY);
 		this.render();
 		window.open(this.renderer.domElement.toDataURL("image/png"));
 	}
