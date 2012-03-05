@@ -24,8 +24,11 @@
 #include <cliques/helpers.h>
 //#include <cliques/helpers/math.h>
 
+// Save partition to file
+// Write multi
 
-int main() {
+
+int main(int argc, char *argv []) {
 	//std::vector<double> matrix = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 	//auto a = cliques::exp(matrix,1.0,3);
 	//cliques::print_2d_vector(a);
@@ -40,8 +43,7 @@ int main() {
 	double current_markov_time = 1;
 
 	//cliques::make_complete_graph(orange_graph,10,weights);
-	cliques::read_edgelist_weighted(
-			"/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
+	cliques::read_edgelist_weighted(argv[1],
 			orange_graph, weights);
 
 	std::vector<double> null_model;
@@ -67,6 +69,8 @@ int main() {
 	stability = cliques::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, null_model, quality, quality_gain,
 			singletons, optimal_partitions, 1e-9, log_louvain,true);
+	cliques::partitions_to_file("optimal_partitions.mat", optimal_partitions);
+
 
 	partition best_partition = optimal_partitions.back();
 

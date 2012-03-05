@@ -266,7 +266,7 @@ void read_edgelist(G &graph, std::string filename) {
 }
 
 template<typename G, typename E>
-void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
+bool read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	// initialise input stream and strings for readout
 	std::ifstream maxima_file(filename.c_str());
 	std::string line;
@@ -274,8 +274,8 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 
 	// check if file is open
 	if (!maxima_file.is_open()) {
-		std::cout << "couldn't open file" << std::endl;
-		exit(1);
+		std::cout << "couldn't open file:" << filename << std::endl;
+		return false;
 	}
 
 	// define Node class for convenience
@@ -322,12 +322,13 @@ void read_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	}
 
 	maxima_file.close();
+	return true;
 }
 
 template<typename G, typename E>
 void write_edgelist_weighted(std::string filename, G &graph, E &weights) {
 	// initialise input stream and strings for readout
-	std::ofstream maxima_file(filename.c_str(), std::ios_base::app);
+	std::ofstream maxima_file(filename.c_str()); // This was std::ios_base, any reason?
 	std::string maxima;
 
 	// check if file is open
@@ -336,19 +337,41 @@ void write_edgelist_weighted(std::string filename, G &graph, E &weights) {
 		exit(1);
 	}
 
-
 	for(typename G::EdgeIt e(graph); e!=lemon::INVALID; ++e){
 		int node1 = graph.id(graph.u(e));
 		int node2 = graph.id(graph.v(e));
 		double weigth = weights[e];
 
 		maxima_file << node1 << " " << node2 << " " << weigth << "\n";
-
-
 	}
 
 
 	maxima_file.close();
+}
+
+template<typename P>
+void read_partitions_file(std::vector<P> &all_partitions, std::string filename) {
+	std::ifstream partitions_file(filename.c_str());
+	std::string line;
+	std::string set;
+
+	if (!partitions_file.is_open()) {
+		std::cout << "couldn't open file:" << filename << std::endl;
+		exit(1);
+	}
+
+	while (std::getline(partitions_file, line)) {
+		std::stringstream lineStream(line);
+		std::set<int> current_maxima;
+
+		std::vector<int> raw_partition;
+		while(std::getline(lineStream, set, ' ')) {
+			raw_partition.push_back(atoi(set.c_str()));
+		}
+		P nth_partition(raw_partition);
+		all_partitions.push_back(nth_partition);
+	}
+	partitions_file.close();
 }
 
 /**

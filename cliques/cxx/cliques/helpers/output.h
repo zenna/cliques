@@ -121,6 +121,23 @@ void basins_to_file(std::string filename,
     basins_file.close();
 }
 
+template <typename P>
+void partitions_to_file(std::string filename,
+        P all_partitions) {
+    std::ofstream partitions_file;
+    partitions_file.open(filename);
+
+    for (auto itr = all_partitions.begin();
+        itr != all_partitions.end();++itr) {
+		int length = itr->element_count();
+		for (int i = 0; i < length; i++) {
+			partitions_file << itr->find_set(i) << " ";
+		}
+		partitions_file << std::endl;
+	}
+	partitions_file.close();
+}
+
 template <typename G>
 void graph_to_edgelist_file(std::string filename,G &graph) {
     typedef typename G::EdgeIt EdgeIt;
