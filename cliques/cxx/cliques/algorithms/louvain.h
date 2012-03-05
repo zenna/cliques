@@ -204,9 +204,9 @@ double find_optimal_partition_louvain(T &graph, W &weights, std::vector<
 				graph, weights, partition, new_comm_id_to_old_comm_id,
 				internals);
 		if(log_switch){
-			std::string filename("intermediate_graphs");
+			std::string filename("intermediate_graphs_");
 			std::stringstream hierarchy_level_sstream;
-			hierarchy_level_sstream << hierarchy;
+			hierarchy_level_sstream << hierarchy + 1;
 			std::string hierarchy_level(hierarchy_level_sstream.str());
 			filename += hierarchy_level_sstream.str();
 			write_edgelist_weighted(filename, reduced_graph, reduced_weight_map);

@@ -8,7 +8,7 @@ from collections import defaultdict
 # Can't handle multiple basins
 
 def usage():
-    print """-i input prefix e.g. ~/path_graph (where files ~/path_graph_coords.mat etc have been generated
+    print """-x input prefix e.g. ~/path_graph (where files ~/path_graph_coords.mat etc have been generated
     or you can be specific (will override prefix):
     -e edges_file
     -r energy_file (e.g. stability)
@@ -17,17 +17,19 @@ def usage():
     -p partitions
     -o output_file
     -b basin_file
+    -m multi_level
     -i input_data (if you want to modify an existing json file)
     """
 
 def parse_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "y:ti:b:g:p:r:c:e:h:o:x:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "y:ti:b:g:p:r:c:e:h:o:x:m", ["help", "output="])
     except getopt.GetoptError, err:
         print str(err)
         usage()
         sys.exit(2)
     
+    multi_level = False
     coords_file = None
     edges_file = None
     energy_file = None
@@ -78,11 +80,20 @@ def parse_args():
             input_file = a
         elif o in ("-y", "--type"):
             landscape_type = a
+        elif o in ("-m", "--multi"):
+            multi_level = True
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
    
-    return coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file, landscape_type
+    return {'coords_file':coords_file, 
+     'edges_file':edges_file,'energy_file':energy_file,
+     'output_file':output_file, 'partition_file':partitions_file,
+     'graph_file':graph_file,
+     'basins_file':basins_file,
+     'input_file':input_file,
+     'landscape_type':landscape_type,
+     'multi_level':multi_level}
 
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
@@ -169,9 +180,42 @@ def file_to_basin_sizes(filename, energies, time_limit):
     
     f.close()
     return basin_to_values
+
+def do_level(params):
+    output = defaultdict(list)
+    if coords_file in params:
+        print "processing coords"
+        try:
+            output['coords'] = file_to_nested_list(params['coords_file'], float)
+        except:
+            pass
+    if edges_file in params:
+        output['edges'] = file_to_nested_list(params['edges_file'], int)
+    if energy_file in params:
+        print "processing energy"
+        process = file_to_energy_process(params['energy_file'], float)
+        output['processes'].append(process)
+    if partitions_file in params:
+        try:
+            output['partitions'] = file_to_nested_list(params['partitions_file'], int)
+        except:
+            print "couldnt open partitions"
+    if graph_file in params:
+        import networkx as nx
+        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
+        pos = nx.spring_layout(graph,iterations=100)
+        output['graph'] = {}
+        output['graph']['coords'] = [x.tolist() for x in pos.values()]
+        output['graph']['edges'] = file_to_nested_list(params['graph_file'], float)
+    if basins_file in params:
+        process = file_to_basin_process(params['basins_file'], float)
+        output['processes'].append(process)
+
+    if landscape_type:
+        output['landscapeType'] = landscape_type
     
 def main():
-    coords_file, edges_file, energy_file, output_file, partitions_file, graph_file, basins_file, input_file, landscape_type = parse_args()
+    params = parse_args()
     
     if input_file:
         print "we have input coords"
@@ -181,36 +225,14 @@ def main():
     else:
         output = defaultdict(list)
     
-    if coords_file:
-        print "processing coords"
-        try:
-            output['coords'] = file_to_nested_list(coords_file, float)
-        except:
-            pass
-    if edges_file:
-        output['edges'] = file_to_nested_list(edges_file, int)
-    if energy_file:
-        print "processing energy"
-        process = file_to_energy_process(energy_file, float)
-        output['processes'].append(process)
-    if partitions_file:
-        try:
-            output['partitions'] = file_to_nested_list(partitions_file, int)
-        except:
-            print "couldnt open partitions"
-    if graph_file:
-        import networkx as nx
-        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
-        pos = nx.spring_layout(graph,iterations=100)
-        output['graph'] = {}
-        output['graph']['coords'] = [x.tolist() for x in pos.values()]
-        output['graph']['edges'] = file_to_nested_list(graph_file, float)
-    if basins_file:
-        process = file_to_basin_process(basins_file, float)
-        output['processes'].append(process)
+    output = do_level(params)
 
-    if landscape_type:
-        output['landscapeType'] = landscape_type
+    if multi_level:
+	    output['multi_levels'] = []
+        while (True)
+            new_params = [x+]
+            output['multi_levels'].append(do_level(params))
+
     f = open(output_file, 'w')
     simplejson.dump(output, f)
 

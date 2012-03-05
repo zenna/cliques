@@ -171,7 +171,7 @@ int main(int ac, char* av[]) {
 			create_space, find_stabs, find_distances, do_embedding,
 			find_basins, num_timesteps, start_time, end_time, merge_moveset);
 
-	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
+	cliques::graph_to_edgelist_file(filename_prefix + "_0_graph_edgelist.edj",
 			orange_graph);
 
 	VecPartitionSet all_partitions;
@@ -183,7 +183,7 @@ int main(int ac, char* av[]) {
 		cliques::output("complete size:", all_partitions.size());
 
 		std::ofstream vector_file;
-		vector_file.open(filename_prefix + "_partitions.mat");
+		vector_file.open(filename_prefix + "_0_partitions.mat");
 		for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
 			int length = itr->element_count();
 			for (int i = 0; i < length; i++) {
@@ -212,7 +212,7 @@ int main(int ac, char* av[]) {
 	if (find_stabs) {
 		cliques::output("Finding stabilities");
 		std::ofstream stabs_file;
-		stabs_file.open(filename_prefix + "_energy.mat");
+		stabs_file.open(filename_prefix + "_0_energy.mat");
 		cliques::output(start_time, end_time, num_timesteps);
 		markov_times = cliques::create_exponential_markov_times(start_time,
 				end_time, num_timesteps);
@@ -236,7 +236,7 @@ int main(int ac, char* av[]) {
 		}
 		stabs_file.close();
 		cliques::graph_to_edgelist_file(
-				filename_prefix + "_landscape_edgelist.edj", space);
+				filename_prefix + "_0_landscape_edgelist.edj", space);
 	}
 
 	arma::mat X;
@@ -250,10 +250,10 @@ int main(int ac, char* av[]) {
 			X = cliques::find_split_merge_dists(all_partitions);
 			cliques::convert_dists_to_graph(space, space_weights, X, 1.0);
 			cliques::graph_to_edgelist_file(
-					filename_prefix + "_landscape_edgelist.edj", space);
+					filename_prefix + "_0_landscape_edgelist.edj", space);
 		}
 
-		X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
+		X.save(filename_prefix + "_0_dists.mat", arma::raw_ascii);
 	}
 
 	arma::mat L_t;
@@ -261,7 +261,7 @@ int main(int ac, char* av[]) {
 		cliques::output("finding embedding");
 		auto L = cliques::embed_mds(X, num_dim);
 		L_t = arma::trans(L);
-		L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
+		L_t.save(filename_prefix + "_0_coords.mat", arma::raw_ascii);
 
 		auto D_y = cliques::euclid_pairwise_dists(L_t);
 		cliques::output("residual variance", cliques::residual_variance(X, D_y));
@@ -272,14 +272,14 @@ int main(int ac, char* av[]) {
 
 	int size_original_graph = lemon::countNodes(orange_graph);
 	std::string hierarchy_prefix = vm["intermediate_graphs"].as<std::string> ();
-	int i = 0;
+	int i = 1;
 	while (true) {
 		std::stringstream hierarchy_level_sstream;
 		hierarchy_level_sstream << i;
 		std::string hierarchy_level(hierarchy_level_sstream.str());
 
 		std::string current_hierarchy_filename = hierarchy_prefix
-				+ hierarchy_level;
+				+ "_" + hierarchy_level;
 		lemon::SmartGraph tangerine_graph;
 		lemon::SmartGraph::EdgeMap<double> weights(tangerine_graph);
 
@@ -287,6 +287,9 @@ int main(int ac, char* av[]) {
 				tangerine_graph, weights) != true) {
 			break;
 		}
+
+		cliques::graph_to_edgelist_file(filename_prefix + "_" + hierarchy_level +  + "_graph_edgelist.edj",
+					tangerine_graph);
 
 		cliques::output("Building landscape at level: ", i);
 
@@ -297,7 +300,7 @@ int main(int ac, char* av[]) {
 			cliques::find_connected_partitions(tangerine_graph, all_partitions,
 					no_logging);
 			cliques::output("complete size:", all_partitions.size());
-			cliques::partitions_to_file(filename_prefix + "_hierarchy" + hierarchy_level + "_partitions.mat",
+			cliques::partitions_to_file(filename_prefix + "_" + hierarchy_level + "_partitions.mat",
 					all_partitions);
 		}
 
@@ -321,7 +324,7 @@ int main(int ac, char* av[]) {
 			cliques::output("Finding stabilities");
 			std::ofstream stabs_file;
 			stabs_file.open(
-					filename_prefix + "_hierarchy" + hierarchy_level
+					filename_prefix + "_" + hierarchy_level
 							+ "_energy.mat");
 			cliques::output(start_time, end_time, num_timesteps);
 			markov_times = cliques::create_exponential_markov_times(start_time,
@@ -347,7 +350,7 @@ int main(int ac, char* av[]) {
 			}
 			stabs_file.close();
 			cliques::graph_to_edgelist_file(
-					filename_prefix + "_hierarchy" + hierarchy_level
+					filename_prefix + "_" + hierarchy_level
 							+ "_landscape_edgelist.edj", space);
 		}
 
@@ -372,7 +375,7 @@ int main(int ac, char* av[]) {
 			new_L_t.row(h) = L_t.row(id_in_orig_landscape);
 			h += 1;
 		}
-		new_L_t.save(filename_prefix + "_hierarchy" + hierarchy_level
+		new_L_t.save(filename_prefix + "_" + hierarchy_level
 							+ "_coords.mat");
 		i += 1;
 	}
