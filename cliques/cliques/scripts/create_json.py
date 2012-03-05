@@ -228,10 +228,10 @@ def main():
     output = do_level(params)
 
     if multi_level:
-	    output['multi_levels'] = []
-        while (True)
-            new_params = [x+]
-            output['multi_levels'].append(do_level(params))
+		output['multi_levels'] = []
+    while (True):
+        new_params = [x+]
+        output['multi_levels'].append(do_level(params))
 
     f = open(output_file, 'w')
     simplejson.dump(output, f)
