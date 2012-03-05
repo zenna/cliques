@@ -20,7 +20,7 @@ DIR_BIN="$HOME/PhD/ext_programmes_and_lib/clique"
 fi
 
 # check if argument 2 is empty if yes use default test graph otherwise use graph provided
-if [ -z $2] ; then
+if [ -z $2 ] ; then
 GRAPH="barbell_n8.edj"
 else 
 GRAPH=$2
@@ -30,6 +30,6 @@ echo `$DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH`
 echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_REP/data/graphs/$GRAPH -I ./intermediate_graphs -H ./optimal_partitions.mat`
 echo `python $DIR_REP/cliques/scripts/create_json.py -x ./out_hierarchy1 -o $DIR_REP/cliques.js/interactive/js/data/$GRAPH.json`
 
-if [ $3 = "R" ] ; then
+if [ -n $3  -a $3 = "R" ] ; then
 	echo `rm out_* intermediate_graphs* optimal_partitions.mat`
 fi 
