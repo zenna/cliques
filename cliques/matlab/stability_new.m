@@ -562,6 +562,8 @@ clear lnk;
 
 end
 
+
+%THIS FUNCTION IS A TESTBED ATM!!!!!!!!!!!! BE AWARE!
 %------------------------------------------------------------------------------
 function [S, N, C, VI] = louvain_MINL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
 % Computes the full normalised mutual information stabilty
@@ -573,16 +575,18 @@ trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transiti
 Lap=sparse(trans-eye(NbNodes));
 clear trans;
 exponential=sparse(expm(time.*Lap));
-solution=sparse(Lap*diagdeg*exponential);% changes in here
-%solution=sparse(diagdeg*exponential);% changes in here
+%solution=sparse(Lap*diagdeg*exponential);% changes in here
+solution=sparse(diagdeg*exponential);% changes in here
 clear Lap;
 M_null = ones(size(sum(Graph)))'*sum(Graph)/sum(Graph(:));
- solution = -solution;% +(eye(size(M_null))-M_null)*diagdeg*expm(-(eye(size(M_null))-M_null)*time);
+pi = sum(Graph)/sum(sum(Graph));
+solution = (solution+pi'*pi).*log2(solution./(pi'*pi));
+% solution = solution.*log2(solution./(pi'*pi));% +(eye(size(M_null))-M_null)*diagdeg*expm(-(eye(size(M_null))-M_null)*time);
 %solution = solution - diagdeg*expm(-(eye(size(M_null))-M_null)*time*.9);
 solution = (solution+solution')/2;
 clear exponential;
 clear diagdeg;
-solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
+%solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
 clear exponential;
 clear diagdeg;
 % null_model = sum(Graph)'*sum(Graph)/(sum(Graph(:))^2);

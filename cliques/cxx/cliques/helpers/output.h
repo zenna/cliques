@@ -123,7 +123,7 @@ void basins_to_file(std::string filename,
 
 template <typename P>
 void partitions_to_file(std::string filename,
-        P all_partitions) {
+        P & all_partitions) {
     std::ofstream partitions_file;
     partitions_file.open(filename);
 
