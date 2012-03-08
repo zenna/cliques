@@ -13,11 +13,8 @@
 #include <cliques/algorithms/internals/internals.h>
 #include <cliques/algorithms/internals/generators.h>
 
-// TODO: Louvain gets noticeably slower on second iteration
-// TODO: It Doesn't even when map of different graph is passed, this is wrong
-// TODO: On profiling, isolate_and_update_internals and find_selfloops seems to be bottleneck
+
 // TODO: Separate out louvain into smaller functions
-// TODO: Make new version for Hijacking etc
 // TODO: update random shuffling to not depend on time random seed
 
 namespace cliques {

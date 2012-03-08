@@ -389,4 +389,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		}
 	}
 
-}// end namespace matlab_interface
+}

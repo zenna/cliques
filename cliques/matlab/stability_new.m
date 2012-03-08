@@ -106,7 +106,7 @@ ComputeES = false;                              % True if edge statistics should
 OutputFile = false;                             % No output file by default.
 NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
 NbNodes = 0;                                    % Total number of nodes;
-Full = false;                                   % If true, performs the full stability
+Full = true;                                    % If true, performs the full stability
 Sanity = true;                                  % If true, performs the graph sanity checks
 Precision = 10e-9;                              % Threshold for stability and edges weigths
 plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
@@ -166,12 +166,8 @@ if nargin > 0
                 Graph=[cols-1, rows-1, vals];
             end
             clear rows cols vals;
-        elseif size(G,2)==2 
-            Graph=G;
-            weighted='u';
         elseif size(G,2)==3
             Graph=G;
-            weighted='w';
         else
             error('Wrong size for G: G should be a graph saved either as a list of edges (size(G)=[N,3] if weighted, size(G)=[N,2] if unweighted) or as an adjacency matrix (size(G)=[N,N])');
         end
@@ -263,6 +259,7 @@ PARAMS.NbLouvain = NbLouvain;
 PARAMS.M =M;
 PARAMS.NbNodes =NbNodes;
 PARAMS.K = K;
+PARAMS.ComputeParallel = ComputeParallel;
 
 
 % Loop over all Markov times
@@ -352,6 +349,7 @@ M = 100;
 prefix = '';
 ComputeParallel = false;
 TextOutput = false;
+K=NaN;
 attributes={'novi', 'l', 'm', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k'};
 
 if options > 0
@@ -492,7 +490,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
-
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Generate the matrix exponential
 diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
@@ -528,7 +526,7 @@ clear graph;
 
 if ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
     %[VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
-    VI = computeRobustness(lnk, lnkS, M);
+    VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
 else
     VI=0; 
 end
@@ -548,6 +546,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Generate the matrix exponential
 diagdeg=sparse(1/NbNodes .* eye(NbNodes));
@@ -581,7 +580,7 @@ clear communities;
 clear graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
 else
     VI = 0;
 end
@@ -601,6 +600,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Generate the matrix exponential
 diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
@@ -658,6 +658,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
+ComputeParallel = PARAMS.ComputeParallel;
 
 %TODODODODODODOO
 % Generate the matrix exponential
@@ -705,7 +706,7 @@ clear communities;
 clear graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
 else
     VI=0;
 end
@@ -764,7 +765,7 @@ else
     
     if PARAMS.ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
         %[VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
-        VI = computeRobustness(lnk, lnkS, PARAMS.M);
+        VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
     else
         VI=0;
     end
@@ -773,6 +774,59 @@ else
 end
 end
 
+%------------------------------------------------------------------------------
+function [S, N, C, VI] = louvain_Ruelle_k_stability(Graph, time, PARAMS)
+% Computes the full k-Laplacian stabilty
+if(isnan(PARAMS.K))
+    error('Please provide a value for K if using k-Ruelle stability');
+else
+    k = PARAMS.K;
+    precision = PARAMS.Precision;
+    
+    % Generate the matrix exponential
+    D=sparse(diag(sum(Graph)));  %diag matrix with stat distr
+    M=sparse(diag(  (sum(Graph)).^(-1) ) * Graph);  %(stochastic) transition matrix
+    d_mk_av = mean( diag(D).^(-k) ); % vector with mean of degree to the minus k-th power 
+    Lap=D^(-k)\sparse(M-eye(PARAMS.NbNodes)); % k-Laplacian, actually minus L_k
+    clear M;
+    exponential=sparse(expm(time*Lap/d_mk_av));
+    clear Lap;
+    clear d_mk_av;
+    solution=sparse(D^(k+1)*exponential);
+    clear exponential;
+    clear D;
+    clear k;
+    solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
+    clear exponential;
+    [row,col,val] = find(solution);
+    clear solution
+    graph=[col-1,row-1,val];
+    
+    % Optimize louvain NbLouvain times
+    [stability, nb_comm, communities] = stability_louvain(graph, 1, PARAMS.NbLouvain, precision,'normalised');
+    lnk = communities;
+    lnkS = stability;
+    % Comment: maybe one should pick one of the best solutions at random,
+    % if two solutions have the same value;
+    index = find(stability==max(stability),1);
+    
+    S = stability(index);
+    C = communities(:,index);
+    N = nb_comm(index);
+    
+    clear communities;
+    clear graph;
+    
+    if PARAMS.ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
+        %[VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
+        VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
+    else
+        VI=0;
+    end
+    
+    clear lnk;
+end
+end
 
 %------------------------------------------------------------------------------
 function [S, N, C, VI] = louvain_LCL(Graph, time, PARAMS)
@@ -784,7 +838,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
-
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Optimize louvain NbLouvain times
 [stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'combinatorial');
@@ -803,7 +857,7 @@ clear communities;
 clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
 else
     VI = 0;
 end
@@ -821,6 +875,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Optimize louvain NbLouvain times
 [stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'normalised');
@@ -840,7 +895,7 @@ clear communities;
 clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    VI = computeRobustness(lnk,lnkS, M);
+    VI = computeRobustness(lnk,lnkS, M,ComputeParallel);
 else
     VI = 0;
 end
@@ -858,7 +913,7 @@ precision = PARAMS.Precision;
 NbLouvain = PARAMS.NbLouvain;
 M = PARAMS.M ;
 NbNodes = PARAMS.NbNodes;
-
+ComputeParallel = PARAMS.ComputeParallel;
 
 % Optimize louvain NbLouvain times
 [stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'corr_normalised');
@@ -878,7 +933,7 @@ clear communities;
 clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    VI = computeRobustness(lnk,lnkS, M);
+    VI = computeRobustness(lnk,lnkS, M,ComputeParallel);
 else
     VI = 0;
 end
