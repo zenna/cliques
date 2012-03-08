@@ -13,7 +13,7 @@ disp('Compiling files...');
 
 % Compile with :
 !g++-4.6 -c -I./ -I/usr/local/MATLAB/R2010b/extern/include -I/usr/local/MATLAB/R2010b/simulink/include -DMATLAB_MEX_FILE -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -std=gnu++0x  -DUSE_BOOST -DMX_COMPAT_32 -O3 -DNDEBUG  ./cliques/louvain_matlab_interface.cpp -lemon -L/usr/local/include/lemon 
-%-Wall
+%-Wall g++ is sufficient if version >=4.4
 
 !gfortran -c -I./ -I/usr/local/MATLAB/R2010b/extern/include -I/usr/local/MATLAB/R2010b/simulink/include -fexceptions -fPIC -fno-omit-frame-pointer  -DUSE_BOOST -DMX_COMPAT_32 -O3  /home/mts09/repositories/group_repository/graph-codes/cliques/cxx/cliques/expokit.f 
 %-Wall
