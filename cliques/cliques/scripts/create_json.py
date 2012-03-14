@@ -208,8 +208,11 @@ def do_level(params):
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(params['graph_file'], float)
     if basins_file in params:
-        process = file_to_basin_process(params['basins_file'], float)
-        output['processes'].append(process)
+	    try:
+            process = file_to_basin_process(params['basins_file'], float)
+            output['processes'].append(process)
+        except IOError as e:
+	        print "no basin file"
 
     if landscape_type:
         output['landscapeType'] = landscape_type
