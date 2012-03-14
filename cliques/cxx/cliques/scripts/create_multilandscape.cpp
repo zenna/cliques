@@ -360,7 +360,7 @@ int main(int ac, char* av[]) {
 		for (auto coarse_partition = all_partitions.begin(); coarse_partition
 				!= all_partitions.end(); ++coarse_partition) {
 			VecPartition flat_partition(size_original_graph);
-			cliques::VectorPartition &optimal_partition = optimal_partitions[i];
+			cliques::VectorPartition &optimal_partition = optimal_partitions[i-1];
 
 			// Find which partition in original landscape new partition refers to
 			for (int j = 1; j < size_original_graph; j++) {
@@ -376,7 +376,7 @@ int main(int ac, char* av[]) {
 			h += 1;
 		}
 		new_L_t.save(filename_prefix + "_" + hierarchy_level
-							+ "_coords.mat");
+							+ "_coords.mat",  arma::raw_ascii);
 		i += 1;
 	}
 

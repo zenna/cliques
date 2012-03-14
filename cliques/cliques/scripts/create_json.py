@@ -1,6 +1,7 @@
 import getopt, sys
 import simplejson
 from collections import defaultdict
+from pdb import set_trace
 
 # Problems
 # Can't handle missing files
@@ -40,6 +41,7 @@ def parse_args(args, level):
     input_file = None
     landscape_type = 'partition'
     output_file = "out"
+    prefix = None
       
     for o, a in opts:
         if o in ("-t", "--timestamp"):
@@ -53,6 +55,7 @@ def parse_args(args, level):
     for o, a in opts:
         if o in ("-x", "--prefix"):
             print "araraad", a
+            prefix = a
             coords_file = '%s_%s_%s.mat' % (a, level, 'coords')
             edges_file = '%s_%s_%s.edj' % (a, level, 'landscape_edgelist')
             energy_file = '%s_%s_%s.mat' % (a, level, 'energy')
@@ -95,7 +98,8 @@ def parse_args(args, level):
      'basins_file':basins_file,
      'input_file':input_file,
      'landscape_type':landscape_type,
-     'multi_level':multi_level}
+     'multi_level':multi_level,
+     'prefix':prefix}
 
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
@@ -187,10 +191,8 @@ def do_level(params):
     output = defaultdict(list)
     if params['coords_file'] is not None:
         print "processing coords"
-        try:
-            output['coords'] = file_to_nested_list(params['coords_file'], float)
-        except:
-            pass
+        output['coords'] = file_to_nested_list(params['coords_file'], float)
+
     if params['edges_file'] is not None:
         output['edges'] = file_to_nested_list(params['edges_file'], int)
     if params['energy_file'] is not None:
@@ -221,9 +223,11 @@ def do_level(params):
     if params['landscape_type'] is not None:
         output['landscapeType'] = params['landscape_type']
     
-def main():
-    params = parse_args(sys.argv[1:], 0)
+    return output
     
+def main():
+    level = 0
+    params = parse_args(sys.argv[1:], level)
     if params['input_file'] is not None:
         print "we have input coords"
         f = open(params['input_file'], 'r')
@@ -232,15 +236,20 @@ def main():
     else:
         output = defaultdict(list)
     
-    output = do_level(params)
+    output = [do_level(params)]
 
     if params['multi_level']:
-        output['multi_levels'] = []
-#    while (True):
-#        new_params = [x + ]
-#        output['multi_levels'].append(do_level(params))
+        while (True):
+            level += 1
+            print "trying level", level
+            new_params = parse_args(sys.argv[1:], level)
+            try:
+                output.append(do_level(new_params))
+            except:
+                break
 
     f = open(params['output_file'], 'w')
+    set_trace()
     simplejson.dump(output, f)
 
 if __name__ == "__main__":
