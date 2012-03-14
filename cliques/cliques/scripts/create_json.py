@@ -21,9 +21,9 @@ def usage():
     -i input_data (if you want to modify an existing json file)
     """
 
-def parse_args():
+def parse_args(args, level):
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "y:ti:b:g:p:r:c:e:h:o:x:m", ["help", "output="])
+        opts, args = getopt.getopt(args, "y:ti:b:g:p:r:c:e:h:o:x:m", ["help", "output="])
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -53,13 +53,13 @@ def parse_args():
     for o, a in opts:
         if o in ("-x", "--prefix"):
             print "araraad", a
-            coords_file = '%s_%s.mat'%(a, 'coords')
-            edges_file = '%s_%s.edj'%(a, 'landscape_edgelist')
-            energy_file = '%s_%s.mat'%(a, 'energy')
-            output_file = '%s_%s.mat'%(a, 'out.json')
-            basins_file = '%s_%s.mat'%(a, 'greedy_basins')
-            partitions_file = '%s_%s.mat'%(a, 'partitions')
-            graph_file = '%s_%s.edj'%(a, 'graph_edgelist')
+            coords_file = '%s_%s_%s.mat' % (a, level, 'coords')
+            edges_file = '%s_%s_%s.edj' % (a, level, 'landscape_edgelist')
+            energy_file = '%s_%s_%s.mat' % (a, level, 'energy')
+            output_file = '%s_%s_%s.mat' % (a, level, 'out.json')
+            basins_file = '%s_%s_%s.mat' % (a, level, 'greedy_basins')
+            partitions_file = '%s_%s_%s.mat' % (a, level, 'partitions')
+            graph_file = '%s_%s_%s.edj' % (a, level, 'graph_edgelist')
     
     for o, a in opts:
         if o in ("-c", "--coordinates"):
@@ -86,9 +86,11 @@ def parse_args():
             usage()
             sys.exit()
    
-    return {'coords_file':coords_file, 
-     'edges_file':edges_file,'energy_file':energy_file,
-     'output_file':output_file, 'partition_file':partitions_file,
+    return {'coords_file':coords_file,
+     'edges_file':edges_file,
+     'energy_file':energy_file,
+     'output_file':output_file, 
+     'partitions_file':partitions_file,
      'graph_file':graph_file,
      'basins_file':basins_file,
      'input_file':input_file,
@@ -141,7 +143,7 @@ def file_to_basin_process(filename, cast_type):
             except:
                 print "error"
                 #set_trace()            
-            time_to_values[float(l[0])].append({'basin':l[1],'nodes':nodes,'metas':metas})
+            time_to_values[float(l[0])].append({'basin':l[1], 'nodes':nodes, 'metas':metas})
         
     for time in sorted(time_to_values.keys()):
         data.append({'time':float(time), 'values':time_to_values[time]})
@@ -183,46 +185,48 @@ def file_to_basin_sizes(filename, energies, time_limit):
 
 def do_level(params):
     output = defaultdict(list)
-    if coords_file in params:
+    if params['coords_file'] is not None:
         print "processing coords"
         try:
             output['coords'] = file_to_nested_list(params['coords_file'], float)
         except:
             pass
-    if edges_file in params:
+    if params['edges_file'] is not None:
         output['edges'] = file_to_nested_list(params['edges_file'], int)
-    if energy_file in params:
+    if params['energy_file'] is not None:
         print "processing energy"
         process = file_to_energy_process(params['energy_file'], float)
         output['processes'].append(process)
-    if partitions_file in params:
+    if params['partitions_file'] is not None:
         try:
             output['partitions'] = file_to_nested_list(params['partitions_file'], int)
         except:
             print "couldnt open partitions"
-    if graph_file in params:
+    if params['graph_file'] is not None:
         import networkx as nx
-        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
-        pos = nx.spring_layout(graph,iterations=100)
+        graph = nx.read_edgelist(params['graph_file'], nodetype=int, data=(('weight', float),))
+        pos = nx.spring_layout(graph, iterations=100)
         output['graph'] = {}
         output['graph']['coords'] = [x.tolist() for x in pos.values()]
         output['graph']['edges'] = file_to_nested_list(params['graph_file'], float)
-    if basins_file in params:
-	    try:
+    if params['basins_file'] is not None:
+        try:
             process = file_to_basin_process(params['basins_file'], float)
             output['processes'].append(process)
         except IOError as e:
-	        print "no basin file"
+            print "no basin file"
+        else:
+            print "Other exception!"
 
-    if landscape_type:
-        output['landscapeType'] = landscape_type
+    if params['landscape_type'] is not None:
+        output['landscapeType'] = params['landscape_type']
     
 def main():
-    params = parse_args()
+    params = parse_args(sys.argv[1:], 0)
     
-    if input_file:
+    if params['input_file'] is not None:
         print "we have input coords"
-        f = open(input_file, 'r')
+        f = open(params['input_file'], 'r')
         output = simplejson.load(f)
         f.close()
     else:
@@ -230,13 +234,13 @@ def main():
     
     output = do_level(params)
 
-    if multi_level:
-		output['multi_levels'] = []
-    while (True):
-        new_params = [x+]
-        output['multi_levels'].append(do_level(params))
+    if params['multi_level']:
+        output['multi_levels'] = []
+#    while (True):
+#        new_params = [x + ]
+#        output['multi_levels'].append(do_level(params))
 
-    f = open(output_file, 'w')
+    f = open(params['output_file'], 'w')
     simplejson.dump(output, f)
 
 if __name__ == "__main__":

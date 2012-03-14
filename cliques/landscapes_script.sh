@@ -15,8 +15,8 @@ fi
 
 if [ $1 = "Z" ] ; then
 # Zenna's DIR
-DIR_REP="$HOME/repositories/group_repository/graph-codes/cliques"
-DIR_BIN="$HOME/PhD/ext_programmes_and_lib/clique"
+DIR_REP="$HOME/repos/graph-codes/cliques"
+DIR_BIN="$HOME/cliques2"
 fi
 
 # check if argument 2 is empty if yes use default test graph otherwise use graph provided
@@ -28,7 +28,7 @@ fi
 
 echo `$DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH`
 echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_REP/data/graphs/$GRAPH -I ./intermediate_graphs -H ./optimal_partitions.mat`
-echo `python $DIR_REP/cliques/scripts/create_json.py -x ./out_hierarchy1 -o $DIR_REP/cliques.js/interactive/js/data/$GRAPH.json`
+echo `python $DIR_REP/cliques/scripts/create_json.py -x ./out -o $DIR_REP/cliques.js/interactive/js/data/$GRAPH.json`
 
 if [ -n $3  -a $3 = "R" ] ; then
 	echo `rm out_* intermediate_graphs* optimal_partitions.mat`
