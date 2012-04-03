@@ -1,62 +1,98 @@
+###############################################################################
+Copyright (C) 2012, <authors> TODO
 
-         ====================================================
-         ||                                                ||
-         ||      How to install the stability package      ||
-         ||                                                ||
-         ====================================================
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-1) Make sure you have a c++ compiler installed
-        - For linux, you can find one here: 
-            http://www.gnu.org/software/gcc/
-        - For windows, you can use Visual C++ express: 
-            http://www.microsoft.com/express/Windows/
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-2) Make sur mex is properly configured in Matlab:
-        - Type "mex -setup" in Matlab, and choose your compiler.
+###############################################################################
 
-3) Run "Install_Stability" in Matlab
-        - If you get an error message concerning the libstdc++.so file, 
-            do the following manipulation:
-            $ cd "Matlab_root_directory"/sys/os/glnx86/
-            $ sudo mv libgcc_s.so.1 libgcc_s.so.1.back
-            $ sudo mv libstdc++.so.6 libstdc++.so.6.back
-            
-        - If you are a Mac user and get an error message concerning 
-            malloc.h or any other error, please contact me (Antoine). 
-            I have not tested this code on a Mac.
+-----------------------------------------------------------------------------
+Community Detection using the stability of a graph partition.
+-----------------------------------------------------------------------------
 
-4) Type "help stability" in Matlab to discover how to use the code.
+The code implements the stability method as discussed in the articles
 
-5) Try this example to check that everything is working:
-    cd('demo');
-    load data;
-    [S, N, VI, C] = stability(Graph,Time,'plot','v');
+"Stability of graph communities across time scales" 
+Delvenne, J.-C.; Yaliraki, S. N. & Barahona, M.
+Proceedings of the National Academy of Sciences, 2010, 107, 12755-12760 
 
+and
+
+"Laplacian Dynamics and Multiscale Modular Structure in Networks"
+Lambiotte, R.; Delvenne, J.-C. & Barahona, M.
+http://arxiv.org/abs/0812.1770, 2009
 
 
-NOTES:
-------
 
-* The install script adds the bin folder to your Matlab path. 
-This will enable you to use stability as a standard Matlab function form 
-everywhere. If you don't want that, just remove it from the path by going 
-in File/Set Path.
+For optimizing the stability quality function the Louvain algorithm as described 
+in the publication
 
-* If you get a warning message concerning savepath, and you want the 
-stability code to be in your path, go, after the installation, in 
-File/Set Path, and choose "save". Then choose where you want pathdef.m
-to be saved. If at the next matlab startup, you notice that stability is
-not in your matlab path anymore, try editing/creating the "startup.m" file
-from your matlab user folder (type userpath to know where it is located)
-and add the following line: addpath(' path to bin folder of stability 
-package ').
+"Fast unfolding of communities in large networks",
+Vincent D Blondel, Jean-Loup Guillaume, Renaud Lambiotte, Etienne Lefebvre,
+Journal of Statistical Mechanics: Theory and Experiment 2008 (10), P10008
 
-* If you want to speed up the calculations, you might consider adding the
-option 'noVI', when computing the stability. This will disable the 
-calculation of the variation of information, which is usually slow at small
-Markov times, when the number of communities found is big. Another option
-is to decrease the number of optimisations on which the variation of 
-information is calculated. To do so, add the option 'M' and put a value
-such that M < L (L is the number of louvain optimisations).
-ex: [S, N, VI, C] = stability(Graph,time,'plot','v', 'L', 100, 'M', 10);
+is used.
+A simple example graph is included in the folder /demo/ that demonstrates the 
+main functionality of the program.
+As a second example a graph representation of Adenylate Kinase (AdK) as it has 
+been used in
+
+"Protein multi-scale organization through graph partitioning and robustness 
+analysis: application to the myosin–myosin light chain interaction"
+Delmotte, A.; Tate, E. W.; Yaliraki, S. N. & Barahona, M. 
+Physical Biology, 2011, 8, 055010
+
+and
+
+"Markov dynamics as a zooming lens for multiscale community detection: 
+non clique-like communities and the field-of-view limit"
+Schaub, M. T.; Delvenne, J.-C.; Yaliraki, S. N. & Barahona, M. 
+http://arxiv.org/abs/1109.5593, 2011
+
+is included as well as the "Ring-of-rings" graph from the latter publication.
+Further example graphs that have been used in these analyses are available on 
+request. If you make use of any part of this toolbox, please refer to the 
+respective articles.
+For detailed instructions on how to compile the code in MATLAB see the file
+INSTALL.txt.
+
+If you find a bug or have further comments, please send an email and if 
+necessary the input file and the parameters that caused the error.
+
+-----------------------------------------------------------------------------
+Authors   : M. Schaub and A. Delmotte
+Email     : michael.schaub09@imperial.ac.uk , antoine.delmotte09@imperial.ac.uk 
+-----------------------------------------------------------------------------
+
+###############################################################################
+
+-----------------------------------------------------------------------------
+Contributions to the code
+-----------------------------------------------------------------------------
+
+The C++ code performing the stability optimization is based on the 
+implementation of the Louvain method as available from 
+http://sites.google.com/site/findcommunities/ 
+(Author: Jean-Loup Guillaume)
+
+The code has then been further adapted and extended by R. Lambiotte 
+(http://www.lambiotte.be) to allow for the optimization of the stability quality 
+function and subsequently been refined by Yun William Yu and Antoine 
+Delmotte. 
+
+The MATLAB frontend has been added by Antoine Delmotte. 
+Final adjustments and additions, testing, and mainenance is due to 
+Antoine Delmotte and Michael Schaub.
+
+
+

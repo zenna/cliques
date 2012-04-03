@@ -45,12 +45,14 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %                       speed up the calculations.
 %
 %        out            Enables saving step by step the         ''
-%                       partitions found at each Markov 
-%                       time in a file located in a 
-%                       folder named 'Partitions', as 
-%                       well as the outputs in a text 
-%                       file output_'...'.stdout matlab 
-%                       file output_'...'.mat
+%                       partitions found in a .mat file 
+%                       located in the current folder, 
+%                       along with the number of 
+%                       communities (N), the value of 
+%                       Stability (S), and the variation 
+%                       of information (VI) for the 
+%                       partitions obtained at each 
+%                       Markov Time
 %
 %       full            Enables the calculation of the          none
 %                       full stability instead of the 
@@ -63,7 +65,7 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %                       the graph has not been properly
 %                       encoded.
 %
-%       prec            Precision: defines a threshold for     10e-9  
+%       prec            Precision: defines a threshold for      1e-9  
 %                       the range of weights allowed in  
 %                       the laplacian exponential matrix 
 %                       of the full stability.
@@ -76,10 +78,20 @@ function [S, N, VI, C] = stability(G, T, varargin)
 %
 %       v               Verbose mode                            none
 %
+%       p               Parallel mode                           none
+%
+%       t               Output as text files:                   none
+%                       Enables saving step by step the         
+%                       partitions found at each Markov 
+%                       time in a text file located in a 
+%                       folder named 'Partitions', as 
+%                       well as the outputs in a text 
+%                       file output_'...'.stdout matlab 
+%                       The option 'out' must be on.
 %
 %
-%   Revision: 1.2 
-%   Date: 01/04/2011 
+%
+%   Date: 21/01/2012
 
 
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
@@ -99,10 +111,13 @@ Full = false;                                   % If true, performs the full sta
 Sanity = true;                                  % If true, performs the graph sanity checks
 Precision = 10e-9;                              % Threshold for stability and edges weigths
 plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
-verbose = false;                                % Toggle verbose mode
+verbose = false;                                % Toggles verbose mode
 weighted = 'u';                                 % 'u' for unweighted graph, 'w' for weighted graph
 prefix = '';                                    % Output prefix
 M = 100;                                        % Top M partitions among the L found by louvain are used to compute the variation of information
+ComputeParallel = false;                        % Toggles the computation in parallel
+TextOutput = false;                             % Toggles the computation in parallel
+flag_matlabpool = false;
 
 
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
@@ -114,7 +129,7 @@ M = 100;                                        % Top M partitions among the L f
 % Options
 
 if nargin > 2
-    [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose] = parseinput(length(varargin),varargin);
+    [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose, ComputeParallel, TextOutput] = parseinput(length(varargin),varargin);
 end
 
 % Argument 1: G
@@ -185,6 +200,13 @@ if nargin > 1
     end
 end
 
+% Parallel computation: Initialize the number of cores if matlabpool is not
+% yet running.
+if ComputeParallel && matlabpool('size') == 0
+    flag_matlabpool = true;
+    matlabpool
+end
+
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
 %$                                          $%
 %$      Computation of the stability        $%
@@ -194,8 +216,20 @@ end
 % Display starting time
 if verbose
     c = clock;
-    disp('');
-    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
+    disp(' ');
+    disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS') ' with the following parameters:']);
+    disp(['      Stability function: ' func2str(StabilityFunction)]);
+    disp(['      Compute the variation of information: ' int2str(ComputeVI)]);
+    disp(['      Save the results in files: ' int2str(OutputFile)]);
+    if OutputFile; disp(['      Prefix of the output files: ' prefix]); end
+    disp(['      Number of Louvain iterations: ' int2str(NbLouvain)]);
+    disp(['      Number of Louvain iterations used for the computation of VI: ' int2str(M)]);
+    disp(['      Full stability: ' int2str(Full)]);
+    disp(['      Check the input graph: ' int2str(Sanity)]);
+    disp(['      Precision used: ' num2str(Precision)]);
+    disp(['      Plot the results: ' int2str(plotStability)]);
+    disp(['      Verbose mode: ' int2str(verbose)]);    
+    disp(' ');
     tstart=tic;
 end
 
@@ -206,8 +240,12 @@ N = zeros(1, length(Time));
 VI = zeros(1, length(Time));
 C = zeros(NbNodes, length(Time));
 
-if OutputFile
+if TextOutput
     mkdir(['Partitions_' prefix]);
+end
+
+if OutputFile
+    save(['Stability_' prefix '.mat'],'Time','S','N','VI','C');
 end
 
 if plotStability
@@ -222,29 +260,36 @@ end
 for t=1:length(Time)
 
     if verbose
-        disp(['        Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
+        disp(['   Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
     end
     
-    [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes);
+    [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), Precision, weighted, ComputeVI, NbLouvain, M, NbNodes, ComputeParallel);
     
     if plotStability && t>1
         stability_plot(Time,t,S,N,VI,ComputeVI);
     end
     
-    if OutputFile
+    if TextOutput
         cd(['Partitions_' prefix]);
         dlmwrite(['Partition_' prefix '_' num2str(Time(t),'%10.6f') '.dat'],[[1:NbNodes]',C(:,t)],'delimiter','\t');
         cd ..;        
         dlmwrite(['Stability_' prefix '.stdout'],[Time(t), S(t), N(t), VI(t)],'-append', 'delimiter','\t')
     end   
     
-    if verbose && 100*t/length(Time) >= step_prec+10
-        disp(['     ' num2str(round(100*t/length(Time)),10) '% done.']);
+    if OutputFile
+        save(['Stability_' prefix '.mat'],'Time','S','N','VI','C','-append');
+    end
+
+    
+    if verbose && 100*t/length(Time) >= step_prec+10        
+        disp(' ');
+        disp(['   Completed: ' num2str(round(100*t/length(Time)),10) '%']);
         remaining_time=toc(tstart)*(1-t/length(Time))/(t/length(Time));
         nb_hours = floor(remaining_time/3600);
         nb_min = floor((remaining_time - nb_hours*3600)/60);
         nb_sec = round(remaining_time - nb_hours*3600 - nb_min*60);
-        disp(['     Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(['   Estimated time remaining: ' datestr([2011  1 1 nb_hours nb_min nb_sec], 'HH:MM:SS')]);%num2str(nb_hours) ':' num2str(nb_min) ':' num2str(nb_sec)]);
+        disp(' ');
         step_prec = floor(100*t/length(Time));
     end
 
@@ -252,6 +297,7 @@ end
 
 if verbose
     c = clock;
+    disp(' ');
     disp(['   Partitioning of the graph finished at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS')]);
     remaining_time=toc(tstart);
     nb_hours = floor(remaining_time/3600);
@@ -262,14 +308,19 @@ end
 
 
 if OutputFile
-    save(['Stability_' prefix '.mat'],'Time','S','N','VI','C');
+    save(['Stability_' prefix '.mat'],'Time','S','N','VI','C','-append');
 end
+
+if flag_matlabpool
+    matlabpool close;
+end
+
 
 
 end
 
 %------------------------------------------------------------------------------
-function [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose] = parseinput(options,varargin)
+function [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose, ComputeParallel, TextOutput] = parseinput(options,varargin)
 % Parse the options
 
 % Initialise parameters
@@ -286,7 +337,9 @@ plotStability = false;
 verbose = false;
 M = 100;
 prefix = '';
-attributes={'noVI', 'L', 'M', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v'};
+ComputeParallel = false;
+TextOutput = false;
+attributes={'novi', 'l', 'm', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p'};
 
 if options > 0
     
@@ -303,7 +356,7 @@ if options > 0
             if strcmpi(varargin{i},'full')
                 Full = true;
                 i = i+1;
-            elseif strcmpi(varargin{i},'noVI')
+            elseif strcmpi(varargin{i},'novi')
                 ComputeVI = false;
                 i = i+1;
             elseif strcmpi(varargin{i},'nocheck')
@@ -315,12 +368,23 @@ if options > 0
             elseif strcmpi(varargin{i},'v')
                 verbose = true;
                 i = i+1;
+            elseif strcmpi(varargin{i},'p')
+                if exist('matlabpool','file')
+                    ComputeParallel = true;
+                else
+                    ComputeParallel = false;
+                    warning('The Parallel Computing Toolbox of Matlab does not appear to be installed. Defaulting to single node computation...');
+                end
+                i = i+1;
+            elseif strcmpi(varargin{i},'t')
+                TextOutput = true;
+                i = i+1;
             else
                 %Check to make sure that there is a pair to go with
                 %this argument.
                 if length(varargin) < i + 1
-                    error('MATLAB:dlmwrite:AttributeList', ...
-                        'Attribute %s requires a matching value', varargin{i})
+                    error('MATLAB:stability:AttributeList', ...
+                        'Attribute %s requires a matching value', varargin{i});
                 elseif strcmpi(varargin{i},'laplacian')
                     if ischar(varargin{i+1})
                         Laplacian = varargin{i+1};
@@ -328,7 +392,7 @@ if options > 0
                         error('MATLAB:stability:laplacian',...
                             'Please provide a matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
                     end
-                elseif strcmpi(varargin{i},'L')
+                elseif strcmpi(varargin{i},'l')
                     if isnumeric(varargin{i+1})
                         NbLouvain = round(varargin{i+1});
                         M = round(varargin{i+1});
@@ -337,7 +401,7 @@ if options > 0
                     if isnumeric(varargin{i+1})
                         Precision = varargin{i+1};
                     end
-                elseif strcmpi(varargin{i},'M')
+                elseif strcmpi(varargin{i},'m')
                     if isnumeric(varargin{i+1})
                         M = varargin{i+1};
                     end
@@ -350,24 +414,24 @@ if options > 0
                             'Please provide a matching value for attribute out. It must be a string.');
                     end
                 else
-                    error('MATLAB:dlmwrite:Attribute',...
-                        'Invalid attribute tag: %s', varargin{i})
+                    error('MATLAB:stability:Attribute',...
+                        'Invalid attribute tag: %s', varargin{i});
                 end
                 i = i+2;
             end
         end
-    else % arguments are in fixed parameter order
-        if options > 0  
-            Full = varargin{1};
-        end
-        if options > 1 && ~isempty(varargin{2})
-            ComputeVI = varargin{2};
-        end
-        if options > 2 && ~isempty(varargin{3})
-            NbLouvain = varargin{3};
+    else 
+        if ischar(varargin{1})
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %s', varargin{1});
+        else
+            error('MATLAB:stability:Attribute',...
+                            'Invalid attribute tag: %d', varargin{1});
         end
     end
 end
+
+TextOutput = TextOutput & OutputFile;
 
 % Choose which type of stability is to be computed
 if Full
@@ -391,7 +455,7 @@ end
 end
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_FNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+function [S, N, C, VI] = louvain_FNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes, ComputeParallel)
 % Computes the full normalised stabilty
 
 % Generate the matrix exponential
@@ -415,23 +479,28 @@ graph=[col-1,row-1,val];
 % Optimize louvain NbLouvain times
 lnk = zeros(NbNodes, NbLouvain);
 lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
+if ComputeParallel
+    parfor l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
+    end
+else
+    for l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
     end
 end
+[S,indexS]=max(lnkS);
+C=lnk(:,indexS);
+N=max(C)+1;
 
 clear communities;
 clear graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M, ComputeParallel);
 else
     VI=0;
 end
@@ -442,7 +511,7 @@ end
 
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_FCL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+function [S, N, C, VI] = louvain_FCL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes, ComputeParallel)
 % Computes the full combinatorial stability
 
 % Generate the matrix exponential
@@ -464,23 +533,28 @@ graph=[col-1,row-1,val];
 % Optimize louvain NbLouvain times
 lnk = zeros(NbNodes, NbLouvain);
 lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
+if ComputeParallel
+    parfor l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
+    end
+else
+    for l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(graph, 1, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
     end
 end
+[S,indexS]=max(lnkS);
+C=lnk(:,indexS);
+N=max(C)+1;
 
 clear communities;
 clear graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M, ComputeParallel);
 else
     VI = 0;
 end
@@ -490,28 +564,33 @@ clear lnk;
 end
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_LCL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+function [S, N, C, VI] = louvain_LCL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes, ComputeParallel)
 
 % Optimize louvain NbLouvain times
 lnk = zeros(NbNodes, NbLouvain);
 lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain_LCL(Graph, time, precision, weighted);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
+if ComputeParallel
+    parfor l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LCL(Graph, time, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
+    end
+else
+    for l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LCL(Graph, time, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
     end
 end
+[S,indexS]=max(lnkS);
+C=lnk(:,indexS);
+N=max(C)+1;
 
 clear communities;
-clear graph;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M);
+     VI = computeRobustness(lnk, lnkS, M, ComputeParallel);
 else
     VI = 0;
 end
@@ -520,28 +599,33 @@ clear lnk;
 
 end
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_LNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes)
+function [S, N, C, VI] = louvain_LNL(Graph, time, precision, weighted, ComputeVI, NbLouvain, M, NbNodes, ComputeParallel)
 
 % Optimize louvain NbLouvain times
 lnk = zeros(NbNodes, NbLouvain);
 lnkS = zeros(NbLouvain,1);
-stability_best = -1;
-for l=1:NbLouvain
-    [stability, nb_comm, communities] = stability_louvain_LNL(Graph, time, precision, weighted);
-    lnk(:,l) = communities;
-    lnkS(l) = stability;
-    if stability>stability_best
-        S = stability;
-        C = communities;
-        N = nb_comm;
+if ComputeParallel
+    parfor l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(Graph, time, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
+    end
+else
+    for l=1:NbLouvain
+        [stability, nb_comm, communities] = stability_louvain_LNL(Graph, time, precision, weighted);
+        lnk(:,l) = communities;
+        lnkS(l) = stability;
     end
 end
+[S,indexS]=max(lnkS);
+C=lnk(:,indexS);
+N=max(C)+1;
 
 clear communities;
-clear graph;
+clear Graph;
 
 if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    VI = computeRobustness(lnk,lnkS, M);
+    VI = computeRobustness(lnk,lnkS, M, ComputeParallel);
 else
     VI = 0;
 end
@@ -553,6 +637,7 @@ end
 function Graph = check(Graph, verbose)
 % Check that the graph is properly encoded.
     if verbose
+        disp(' ');
         disp('   Graph sanity check...');
     end
     
@@ -633,14 +718,14 @@ function Graph = check(Graph, verbose)
     end
 end
 %------------------------------------------------------------------------------
-function VI = computeRobustness(lnk, lnkS, M)
+function VI = computeRobustness(lnk, lnkS, M, ComputeParallel)
 
 % Parameter
 
 [i,i] = sort(lnkS);
 lnk=lnk(:,i);
 lnk=lnk(:,end-M+1:end);
-VI = varinfo(lnk');
+VI = varinfo(lnk',ComputeParallel);
 clear i;
 end
 

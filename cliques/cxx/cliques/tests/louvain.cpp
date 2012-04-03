@@ -1,77 +1,84 @@
 #include <iostream>
-#include <cliques/algorithms/complexity.h>
-#include <cliques/algorithms/all_partitions.h>
-#include <cliques/helpers.h>
+//#include <cliques/algorithms/all_partitions.h>
+
+
 #include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/modularity.h>
+#include <cliques/algorithms/stability_corr.h>
 
 #include <cliques/structures/make_graphs.h>
-
-#include <cliques/drawing/draw.h>
-#include <cliques/drawing/colour_maps.h>
-
+//#include <cliques/drawing/colour_maps.h>
+//
 #include <cliques/algorithms/louvain.h>
 
 #include <cliques/structures/vector_partition.h>
 
-#include <lemon/list_graph.h>
+//#include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
-#include <lemon/concepts/graph_components.h>
-#include <lemon/concepts/graph.h>
-#include <lemon/connectivity.h>
+//#include <lemon/concepts/graph_components.h>
+//#include <lemon/concepts/graph.h>
+//#include <lemon/connectivity.h>
 
 #include <vector>
 
 #include <cliques/graphhelpers.h>
+#include <cliques/helpers.h>
+//#include <cliques/helpers/math.h>
 
-//TODO
-//REMOVE NEIGHBOURS TO SELF
-int main() {
+// Save partition to file
+// Write multi
+
+
+int main(int argc, char *argv []) {
+	//std::vector<double> matrix = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+	//auto a = cliques::exp(matrix,1.0,3);
+	//cliques::print_2d_vector(a);
+	//cliques::print_collection(a);
+
+
 	typedef cliques::VectorPartition partition;
 	lemon::SmartGraph orange_graph;
-	lemon::SmartGraph::EdgeMap<float> weights(orange_graph);
-    typedef cliques::VectorPartition VecPartition;
-
+	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
 
 	double stability = 0;
-	//cliques::read_edgelist_weighted("/home/mts09/repositories/group_repository/graph-codes/cliques/data/triangletest.edj",
+	double current_markov_time = 1;
+
+	//cliques::make_complete_graph(orange_graph,10,weights);
+	cliques::read_edgelist_weighted(argv[1],
+			orange_graph, weights);
+
+	std::vector<double> null_model;
+	//std::vector<double> null_model = cliques::create_correlation_graph_from_graph(
 	//		orange_graph, weights);
+	cliques::create_mutual_information_graph_from_graph(orange_graph, weights,
+			current_markov_time);
 
-	cliques::make_complete_graph(orange_graph,5);
+	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
+	singletons.initialise_as_singletons();
 
-	double current_markov_time = 1.0;
-	std::vector<double> markov_times = {1.0};
+	cliques::find_mutual_information_stability quality;
+	cliques::mutual_information_stability_gain quality_gain;
 
-    cliques::Logging<VecPartition> log_louvain;
+	//stability = quality(orange_graph, singletons, weights, singletons,null_model);
+//	std::cout << "singleton stability: " << stability << std::endl;
+
+	cliques::Logging<partition> log_louvain;
 	std::vector<partition> optimal_partitions;
-	stability = cliques::find_optimal_partition_louvain_with_gain<partition>(orange_graph,
-			weights, cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_gain_louvain(current_markov_time),
-			optimal_partitions, log_louvain);
+
+	cliques::output("Start Louvain");
+
+	stability = cliques::find_optimal_partition_louvain<partition>(
+			orange_graph, weights, null_model, quality, quality_gain,
+			singletons, optimal_partitions, 1e-9, log_louvain,true);
+	cliques::partitions_to_file("optimal_partitions.mat", optimal_partitions);
+
 
 	partition best_partition = optimal_partitions.back();
+
 	int length = best_partition.element_count();
 	for (int i = 0; i < length; i++) {
 		std::cout << i << " " << best_partition.find_set(i) << "\n";
 	}
 	std::cout << stability << std::endl;
 
-	/*	cliques::print_partition(optimal_partitions.back());
-
-	 //Drawing
-	 float start = -10;
-	 std::vector<float> energies;
-	 for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
-	 energies.push_back(start);
-	 start += 12.0;
-	 std::cout << orange_graph.id(e) << std::endl;
-	 }
-
-	 cliques::draw_graph canvas(orange_graph);
-	 canvas.add_node_map(cliques::make_partition_colour_map<
-	 cliques::DisjointSetForest<int> >(best_partition));
-	 canvas.add_edge_map(cliques::make_energy_edge_colour_map(energies));
-	 canvas.draw("test_louvain_out");
-	 */
 	return 0;
 }

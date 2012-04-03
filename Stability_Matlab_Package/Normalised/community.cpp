@@ -1,18 +1,3 @@
-// File: community.h
-// -- community detection source file
-//-----------------------------------------------------------------------------
-// Community detection
-// Based on the article "Fast unfolding of community hierarchies in large networks"
-// Copyright (C) 2008 V. Blondel, J.-L. Guillaume, R. Lambiotte, E. Lefebvre
-//
-// This program must not be distributed without agreement of the above mentionned authors.
-//-----------------------------------------------------------------------------
-// Author   : E. Lefebvre, adapted by J.-L. Guillaume
-// Email    : jean-loup.guillaume@lip6.fr
-// Location : Paris, France
-// Time	    : February 2008
-//-----------------------------------------------------------------------------
-// see readme.txt for more details
 
 #include "community.h"
 extern "C" {
@@ -223,7 +208,7 @@ vector<vector<int> > Community::display_partition2(vector<vector<int> > output) 
 	return output;
 }
 
-// This function has to be revisited
+// This function is not so nice
 // malloc is dirty
 Graph Community::partition2graph_binary() {
 
@@ -247,11 +232,8 @@ Graph Community::partition2graph_binary() {
 	// Compute weighted graph
 	Graph g2;
 	g2.nb_nodes = comm_nodes.size();
-	// ligne modifiee par Antoine : 4 bytes au lieu de 8
 	g2.degrees = (unsigned long *) malloc(comm_nodes.size() * sizeof(long));
-	// ligne moidifiee par Antoine : 4 bytes au lieu de 8
 	g2.links = (unsigned int *) malloc((long) g.nb_links * sizeof(int));
-	// ligne moidifiee par Antoine : 4 bytes au lieu de 8
 	g2.weights = (float *) malloc((long) g.nb_links * sizeof(float));
 
 	long where = 0;
@@ -292,7 +274,6 @@ Graph Community::partition2graph_binary() {
 		//    cout << comm << " " << g2.weighted_degrees[comm] << endl;
 	}
 
-	// ligne moidifiee par Antoine : 4 bytes au lieu de 8
 	g2.links = (unsigned int*) realloc(g2.links, (long) g2.nb_links
 			* sizeof(int));
 	g2.weights = (float*) realloc(g2.weights, (long) g2.nb_links
@@ -368,7 +349,6 @@ bool Community::one_level() {
 				nb_moves++;
 
 		}
-        
 
 		new_mod = modularity();
 

@@ -1,0 +1,24 @@
+-------------------------------------
+CODE HISTORY Stability MATLAB Toolbox
+-------------------------------------
+The C++ code is based on the implementation of the Louvain method as available 
+from http://sites.google.com/site/findcommunities/ 
+(Author: Jean-Loup Guillaume)
+
+The code has then been further adapted and extended by R. Lambiotte 
+(http://www.lambiotte.be) to allow for the optimization of the stability quality 
+function and subsequently been refined by Yun William Yu and Antoine 
+Delmotte. 
+
+The MATLAB frontend has been added by Antoine Delmotte. 
+Final adjustments and additions, testing, and mainenance is due to 
+Antoine Delmotte and Michael Schaub.
+
+London, 1.4.2012
+
+######################################
+Version history and bugfixes
+######################################
+
+1.4.2012 - Version 1.0: 
+Release of the first public version of the stability MATLAB toolbox.

@@ -21,7 +21,7 @@ namespace cliques {
  @tparam G graph type
  */
 template<typename G>
-std::set<int> find_maxima(G &graph, float *stabilities) {
+std::set<int> find_maxima(G &graph, double *stabilities) {
     std::set<int> maxima;
     int num_iterations = 0;
     for (typename G::NodeIt n(graph); n != lemon::INVALID; ++n) {
@@ -35,7 +35,7 @@ std::set<int> find_maxima(G &graph, float *stabilities) {
         typename G::Node best_neighbour = n;
         while (1) {
             bool has_improved = false;
-            float best_score = stabilities[graph.id(best_neighbour)];
+            double best_score = stabilities[graph.id(best_neighbour)];
             for (typename G::OutArcIt a(graph, best_neighbour); a
                     != lemon::INVALID; ++a) {
                 if (best_score < stabilities[graph.id(graph.target(a))]) {
@@ -60,9 +60,8 @@ std::set<int> find_maxima(G &graph, float *stabilities) {
 
  This is an sampled search to find maximal points on a landscape
  */
-template<typename T, typename W, typename QF, typename QFDIFF, typename P, typename Logger>
-void sample_maxima(T &graph, W &weights, QF compute_quality,
-        QFDIFF compute_quality_diff, boost::unordered_set<P,
+template<typename T, typename W, typename QF, typename P, typename Logger>
+void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, boost::unordered_set<P,
                 cliques::partition_hash, cliques::partition_equal> &maxima,
         boost::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &sampled_partitions, Logger log) {
@@ -70,7 +69,6 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
     typedef typename boost::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
 
-    auto internals = cliques::gen(compute_quality, graph, weights);
     P partition(lemon::countNodes(graph));
     partition.initialise_as_singletons();
 
@@ -80,13 +78,11 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
         while (true) {
             bool has_improved = false;
             partition_set neighs;
-            cliques::find_neighbours(graph, *set_itr, neighs);
-            auto internals = cliques::gen(compute_quality, graph, weights, best_neighbour);
-            double best_quality = compute_quality(internals);
+            cliques::find_neighbours(graph, best_neighbour, neighs);
+            double best_quality = compute_quality(best_neighbour, time);
+
             for (auto neigh_itr = neighs.begin(); neigh_itr != neighs.end(); ++neigh_itr) {
-                auto neigh_internals = cliques::gen(compute_quality, graph, weights, *neigh_itr);
-                //Internals neigh_internals(graph, weights, *neigh_itr);
-                double neigh_quality = compute_quality(neigh_internals);
+                double neigh_quality = compute_quality(*neigh_itr, time);
                 if (best_quality < neigh_quality) {
                     best_quality = neigh_quality;
                     best_neighbour = *neigh_itr;
@@ -94,6 +90,7 @@ void sample_maxima(T &graph, W &weights, QF compute_quality,
                 }
             }
             if (has_improved == false) {
+            	best_neighbour.normalise_ids();
                 maxima.insert(best_neighbour);
                 break;
             }

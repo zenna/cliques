@@ -1,6 +1,5 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
-#ifndef CLIQUES_HSG_H
-#define CLIQUES_HSG_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -84,6 +83,24 @@ void create_hsg (G &graph, std::vector<float> &markov_times, G &hsg,
     		}
     	}
 	}
+}
+
+template <typename G, typename P>
+void create_hsg (G &graph, std::vector<float> &markov_times, G &hsg,
+        std::map<int,std::vector<float> > positions) {
+    std::vector<float> layer_stabilities;
+
+    typedef cliques::DisjointSetForest<int> DjForest;
+    typedef typename G::Node Node;
+    typedef typename G::Edge Edge;
+    std::vector<DjForest> layers = create_hsg_layers<DjForest>(graph, markov_times, layer_stabilities);
+
+    std::map<Node,Node> graph_to_hsg;
+
+    // Over span of time
+        // Find optimal partition according to stability
+            // For each group in graph, check its robustness
+                // If group is robust
 }
 
 }

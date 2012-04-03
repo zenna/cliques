@@ -270,7 +270,9 @@ c_graph *convert_lemon_to_c_graph(G &graph) {
     for (typename G::NodeIt itr(graph); itr != lemon::INVALID; ++itr) {
         int degree = 0;
         for (typename G::IncEdgeIt e_itr(graph, itr); e_itr != lemon::INVALID; ++e_itr) {
-            degree++;
+            if (graph.u(e_itr) != graph.v(e_itr)) {
+                degree++;
+            }
         }
         g->degrees[graph.id(itr)] = degree;
 
@@ -278,8 +280,10 @@ c_graph *convert_lemon_to_c_graph(G &graph) {
 
         int i = 0;
         for (typename G::IncEdgeIt e_itr(graph, itr); e_itr != lemon::INVALID; ++e_itr) {
-            g->links[graph.id(itr)][i] = graph.id(graph.runningNode(e_itr));
-            ++i;
+            if (graph.u(e_itr) != graph.v(e_itr)) {
+				g->links[graph.id(itr)][i] = graph.id(graph.runningNode(e_itr));
+				++i;
+            }
         }
     }
     return g;
@@ -304,14 +308,19 @@ int find_connected_partitions(G &graph, boost::unordered_set<P,
     int num_partitions = 0;
 
     nodes_to_place = empty_set();
-    for (int i = 1; i < g->n; i++)
+    // Add all nodes to a set -> nodes_to_place
+    for (int i = 1; i < g->n; i++) {
         nodes_to_place = add_to_set(i, nodes_to_place);
+    }
     part = create_partition(g->n);
     part_union = empty_set();
 
     comp_tmp = empty_set();
     comp_tmp = add_to_set(0, comp_tmp);
     neighbours = empty_set();
+
+    // For all neighbours of first node (node 0):
+    // add to neighbours set
     for (int i = 0; i < g->degrees[0]; i++)
         neighbours = add_to_set(g->links[0][i], neighbours);
     forbidden = empty_set();

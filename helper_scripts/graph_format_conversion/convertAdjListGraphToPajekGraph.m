@@ -4,11 +4,15 @@ function convertAdjListGraphToPajekGraph(AdjGraph, filename)
 % Inputs:
 %           AdjGraph -- n x 3 matrix (from_node, to_node, weight), node
 %                       numbering can start either with 0 or 1.
+%                       The format is assumed to be "two way", i.e. for each
+%                       link between nodes a and b, there should be 
+%                       (a,b,w) and (b,a,w) present in the list.
+%                       The graph should contain no self loops.
 %           filename -- string with filename of output file,
 %                       e.g. 'pajekgraph.net'. If file already exists
 %                       contents are overwritten
 %
-% last revision: 20/5/2010 by Michael  
+% last revision: 21/6/2011 by Michael  
 
 
 % NOTE: the 0/1 functionaliy has not been thoroughly tested

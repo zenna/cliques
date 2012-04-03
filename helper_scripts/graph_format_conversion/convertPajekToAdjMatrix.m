@@ -10,7 +10,7 @@ function A= convertPajekToAdjMatrix(filename)
 %           A:          Adjacency matrix of undirected graph in sparse data
 %                       format
 %
-% last revision: 25/3/2010 by Michael  
+% last revision: 14/6/2011 by Michael  
 
 % open file
 fid = fopen(filename ,'r','n','ascii');
@@ -37,7 +37,7 @@ N= max([G(1,:) G(2,:)]);
 % allocate and fill in adjacency matrix
 A= sparse(G(1,:),G(2,:),G(3,:),N,N);
 
-% undirected pajek graphs are "one way"/nonsymmetric, hence symmetrize
-A = A+A';
+% undirected pajek graphs are "one way"/nonsymmetric, hence symmetrize and remove double counting of self loops
+A = A+A'-diag(diag(A));
 
 end

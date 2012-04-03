@@ -1,18 +1,4 @@
-// File: graph_binary.h
-// -- graph handling header file
-//-----------------------------------------------------------------------------
-// Community detection 
-// Based on the article "Fast unfolding of community hierarchies in large networks"
-// Copyright (C) 2008 V. Blondel, J.-L. Guillaume, R. Lambiotte, E. Lefebvre
-//
-// This program must not be distributed without agreement of the above mentionned authors.
-//-----------------------------------------------------------------------------
-// Author   : E. Lefebvre, adapted by J.-L. Guillaume
-// Email    : jean-loup.guillaume@lip6.fr
-// Location : Paris, France
-// Time	    : February 2008
-//-----------------------------------------------------------------------------
-// see readme.txt for more details
+
 
 #if defined(macintosh) || defined(MACOS) || defined(_MACOS)  || defined(__APPLE__)  || defined(_MAC)   || defined(MAC)  || defined(mac)  || defined(MACINTOSH)
 #define __MAC__
@@ -69,7 +55,6 @@ class Graph {
   unsigned long *degrees;
   unsigned int *links;
   float *weights;
-  // Antoine
   // It is important to save at each step the number of nodes in each community.
   int *nb_nodes_per_comm;
 
@@ -120,12 +105,11 @@ Graph::nb_neighbors(unsigned int node) {
     return degrees[node]-degrees[node-1];
 }
 
-// Renvoie le poids du lien entre un noeud et lui-meme
+
 inline double
 Graph::nb_selfloops(unsigned int node) {
   assert(node>=0 && node<nb_nodes);
 
-  // p contient les noeuds a qui node est lie (p.first) et les poids des liens (p.second)
   pair<unsigned int *,float *> p = neighbors(node);
   for (unsigned int i=0 ; i<nb_neighbors(node) ; i++) {
     if (*(p.first+i)==node) {
@@ -154,8 +138,6 @@ Graph::weighted_degree(unsigned int node) {
   }
 }
 
-// Renvoie une paire de tableau: 1) le tableau des noeuds avec qui le noeud est lie.
-// 2) les poids des liens.
 inline pair<unsigned int *, float *>
 Graph::neighbors(unsigned int node) {
   assert(node>=0 && node<nb_nodes);

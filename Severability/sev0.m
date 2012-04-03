@@ -1,6 +1,12 @@
-% Computes a sev0, which takes the already exponentiated Q-transition
-% submatrix and spits back the severability, retention, and mixing
 function [sev retention mixing ] = sev0(Q_power)
+%SEV0 Computes the severability of a submatrix power
+%   [sev retention mixing] = sev0(Q_power)
+%   Computes a sev0, which takes the already exponentiated Q-transition
+%   submatrix and spits back the severability, retention, and mixing
+%
+%   Copyright (c) 2010-2011 Yun William Yu
+%   Revision 2011-06-22
+
     if max(size(Q_power))==0
         sev = 0;
         retention = 0;

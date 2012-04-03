@@ -1,7 +1,21 @@
 function [ commrun commsize sev ] = sev_node( start_node, adj_matrix, t, max_size)
 %SEV_NODE Greedy optimisation for the sev-community of a node, with EM
+%   [commrun commsize sev]=sev_node(start_node, adj_matrix, t, max_size)
 %   Will always give you a community with the original node in it.
-%   Copyright (c) 2010 Yun William Yu
+%
+%   start_node: starting node/community. start_node(1) = original node
+%   adj_matrix: adjacency matrix
+%            t: Markov time
+%     max_size: size limit in the community of the search algorithm
+%
+%     commsize: the size of the community found
+%      commrun: 1x[graph_size] vector, specifying the community
+%               commrun(1:commsize) gives you all community members
+%          sev: severability of the found community
+%   
+%   Copyright (c) 2010-2011 Yun William Yu
+%   Revision 2011-06-22
+
 commrun=[];
 commsize=0;
 sev=-1;

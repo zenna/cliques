@@ -15,6 +15,18 @@ create a build directory e.g. >> mkdir ~/cliques/
 >> cmake REPOSITORY_ROOT
 >> make
 
+note you may have to set flags to use a newer C++ compiler, and also to use gfortran
+
+e..g cmake REPOSITORY_ROOT -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.2
+
+Using JSON viewer
+
+You will need to open your browser with support for opening local files. e.g. for chrome:
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --allow-file-access-from-files
+
+This is not needed for firefox 
+
 DOCUMENTATION
 
 >> cd REPOSITORY_ROOT/doc
@@ -26,3 +38,6 @@ GUIDELINES FOR EXTENSION
 *keep within the 'cliques' namespaces, do not use 'using' keyword
 *keep modular by using templates and function objects (see existing code for reference)
 *Document using doxygen format (see existing code)
+
+make ;./scripts/create_communities -G ~/repos/graph-codes/cliques/data/graphs/random.edj -D2 -x barbell_n6; python ~/repos/graph-codes/cliques/cliques/scripts/create_json.py -x ~/cliques/barbell_n6 -o ~/repos/graph-codes/cliques/cliques.js/interactive/js/data/barbell_n6.json
+px=1000&py=-8000&pz=6000&tx=-1000&ty=-1001&tz=-360
