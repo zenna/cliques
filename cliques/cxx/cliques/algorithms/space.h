@@ -622,6 +622,7 @@ bool does_set_contain_other(std::vector<int> larger_set,
     }
 }
 
+
 /**
  @brief  Convert a set of partitions into a graph
 
@@ -654,6 +655,7 @@ void create_hasse_community_space(G &graph,
             int comm2_size = comm2.size();
             int size_difference = comm1_size - comm2_size;
 
+            // TODO: Does this really work here??
             // Communities of the same size cannot contain one another
             if (std::abs(size_difference) <= 13) {
                 std::vector<int> &larger_comm = comm1_size > comm2_size ? comm1
