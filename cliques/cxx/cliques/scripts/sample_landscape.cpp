@@ -91,9 +91,10 @@ int main(int ac, char* av[]) {
 
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);
+	std::vector<VecPartition> test = cliques::uniform_sample<VecPartition>(orange_graph,num_samples, num_steps_per_sample);
 
-	cliques::sample_metropolis(orange_graph, func, markov_time,
-			num_samples, num_steps_per_sample, sample_to_count, log_uniform);
+//	cliques::sample_metropolis(orange_graph, func, markov_time,
+//			num_samples, num_steps_per_sample, sample_to_count, log_uniform);
 	cliques::output("size:", sample_to_count.size());
 
 	for (std::unordered_map<cliques::VectorPartition, int, cliques::partition_hash>::iterator itr = sample_to_count.begin(); itr != sample_to_count.end(); ++itr) {
