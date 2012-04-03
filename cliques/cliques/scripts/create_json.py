@@ -249,7 +249,6 @@ def main():
                 break
 
     f = open(params['output_file'], 'w')
-    set_trace()
     simplejson.dump(output, f)
 
 if __name__ == "__main__":

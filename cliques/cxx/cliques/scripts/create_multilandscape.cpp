@@ -339,6 +339,9 @@ int main(int ac, char* av[]) {
 				for (auto itr = all_partitions.begin(); itr
 						!= all_partitions.end(); ++itr) {
 					double stability = func(*itr, markov_times[i]);
+					if (std::isnan(stability)) {
+						stability = 0.0;
+					}
 					stabilities.push_back(stability);
 					stabs_file << stability << " ";
 				}
