@@ -1,7 +1,5 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
-#ifndef CLIQUES_NEIGHBOURS_H
-#define CLIQUES_NEIGHBOURS_H
-
+#pragma once
 namespace cliques {
 /**
  @brief  Louvain method - greedy algorithm to find community structure of a network.
@@ -55,5 +53,3 @@ for (std::map<int,int>::iterator itr = current_partition.begin(); itr != current
 }
 
 }
-
-#endif

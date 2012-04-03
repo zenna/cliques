@@ -1,6 +1,5 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
-#ifndef CLIQUES_NEIGHBOURS_H
-#define CLIQUES_NEIGHBOURS_H
+#pragma once
 
 namespace cliques
 {
@@ -54,5 +53,3 @@ bool is_connected(P std::vector<int> part, G) {
 
 
 }
-
-#endif
