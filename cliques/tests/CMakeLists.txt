@@ -13,13 +13,9 @@ endif()
 ADD_EXECUTABLE(test_louvain louvain.cpp)
 target_link_libraries(test_louvain ${cliques_LIBRARIES})
 
-<<<<<<< HEAD
-#add_executable(test_edit_distance edit_distance.cpp)
-=======
 add_executable(test_kernighanlin kernighanlin.cpp)
 target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
 
 #add_executable(test_edit_distance edit_distance.cpp)
 
 #add_executable(test_varofinf varofinf.cpp)
->>>>>>> 4a6afd8a5cc4722f927bcf3150e6e70582adc0c7

@@ -5,11 +5,11 @@
 2) Landscapes induced by optimisation processes.
 
 ### Dependencies
-
-lemon graph library
-boost or new g++  version with c++0x support
-doxygen to build documentation (apt-get install doxygen)
-cmake for building (apt-get install cmake)
+* lemon graph library
+* Boost or g++ with C++ 11 support (apt-get install g++-4.7)
+* Doxygen to build documentation (apt-get install doxygen)
+* cmake for building (apt-get install cmake)
+* armadillo matrix library
 
 ### How to build
 Make a build directory (preferably outside the source code directory)
@@ -21,7 +21,7 @@ Make a build directory (preferably outside the source code directory)
 
 Note you may have to set flags to use a newer C++ compiler, and also to use gfortran, e.g
 
-    cmake REPOSITORY_ROOT -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.2
+    cmake -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.6 REPOSITORY_ROOT
 
 ### Using JSON viewer
 
@@ -40,9 +40,3 @@ Then open your browser at <http://localhost:8888/>
     doxygen
 
 The documentation home page will now be doc/html/index.html
-
-### Guidelines for extension
-
-*keep within the 'cliques' namespaces, do not use 'using' keyword
-*keep modular by using templates and function objects (see existing code for reference)
-*Document using doxygen format (see existing code)

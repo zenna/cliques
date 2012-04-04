@@ -3,12 +3,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(GraphViz REQUIRED)
 include_directories(${BOOST_INCLUDE_DIRS})
 include_directories(${graphviz_INCLUDE_DIRECTORIES})
-<<<<<<< HEAD
-message(STATUS ${graphviz_LIBRARIES})
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -llapack -lblas -DUSE_BOOST")
-=======
->>>>>>> 4a6afd8a5cc4722f927bcf3150e6e70582adc0c7
 
 if (UseFortran)
   set ( cliques_LIBRARIES expokit gfortran lapack blas ${Boost_LIBRARIES})
