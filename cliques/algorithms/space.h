@@ -19,7 +19,6 @@
 
 #include <cliques/algorithms/kernighan_lin.h>
 
-
 namespace cliques {
 
 // TODO - check num neighbours of space corresponds to algorithm exactly
@@ -124,13 +123,14 @@ bool will_move_break_partition(G &graph, const P &partition_const,
  * isolating a node would not break a partition
  */
 template<typename G, typename P>
-void find_neighbours(
+boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_neighbours(
         G &graph,
-        P const &partition,
-        boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &neighbour_partitions) {
+        P const &partition) {
     typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
+
+    boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
+            neighbour_partitions;
 
     for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
         Node n1 = graph.u(edge);
@@ -171,6 +171,7 @@ void find_neighbours(
             }
         }
     }
+    return neighbour_partitions;
 }
 
 template<typename G, typename P, typename E, typename R>
@@ -281,8 +282,7 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
         if (space.id(current_node) % 1000 == 0) {
             std::cout << space.id(current_node) << "\n";
         }
-        partition_set neighbour_partitions;
-        cliques::find_neighbours(graph, *itr, neighbour_partitions);
+        partition_set neighbour_partitions = cliques::find_neighbours(graph, *itr);
 
         for (partition_set_itr neigh_itr = neighbour_partitions.begin(); neigh_itr
                 != neighbour_partitions.end(); ++neigh_itr) {
@@ -525,37 +525,36 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins_new(
  @brief  Compute the probabalistic basins defined by kernginal lin
  algorithm
  */
-template<typename G, typename M, typename QF, typename QFDIFF, typename MAP, typename COMM>
+template<typename G, typename M, typename QF, typename QFDIFF, typename MAP,
+        typename COMM>
 std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
-        M &weights, QF compute_quality, QFDIFF compute_quality_diff, MAP &map, G &space, double time, COMM &all_partitions) {
+        M &weights, QF compute_quality, QFDIFF compute_quality_diff, MAP &map,
+        G &space, double time, COMM &all_partitions) {
 
     std::map<int, std::map<int, int> > node_to_basin_to_count;
     typedef cliques::VectorPartition VecPartition;
     const int TOTAL_COUNT_INDEX = -1; // Magic number to store total count
     int num_nodes = lemon::countNodes(graph);
 
-    for (auto start_partition = all_partitions.begin(); start_partition != all_partitions.end(); ++start_partition) {
+    for (auto start_partition = all_partitions.begin(); start_partition
+            != all_partitions.end(); ++start_partition) {
 
         std::vector<VecPartition> path_partitions;
         VecPartition output_partition(num_nodes);
 
-
-        cliques::refine_partition_kernighan_lin_hijack(graph,
-                weights,
-                compute_quality,
-                compute_quality_diff,
-                path_partitions,
-                *start_partition,
-                output_partition);
+        cliques::refine_partition_kernighan_lin_hijack(graph, weights,
+                compute_quality, compute_quality_diff, path_partitions,
+                *start_partition, output_partition);
 
         output_partition.normalise_ids();
 
         //Convert path_partitions into path_nodes
         std::vector<int> path_nodes;
-//        cliques::output("paths");
-        for (auto partition = path_partitions.begin(); partition != path_partitions.end(); ++partition) {
+        //        cliques::output("paths");
+        for (auto partition = path_partitions.begin(); partition
+                != path_partitions.end(); ++partition) {
             partition->normalise_ids();
-//            cliques::print_partition_line(*partition);
+            //            cliques::print_partition_line(*partition);
             auto p = map.left.find(*partition);
             if (p != map.left.end()) {
                 auto node_id = space.id(p->second);
@@ -563,9 +562,9 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
             }
         }
 
-//        cliques::output("start then output:");
-//        cliques::print_partition_line(*start_partition);
-//        cliques::print_partition_line(output_partition);
+        //        cliques::output("start then output:");
+        //        cliques::print_partition_line(*start_partition);
+        //        cliques::print_partition_line(output_partition);
 
         auto p = map.left.find(output_partition);
         if (p != map.left.end()) {
@@ -576,10 +575,9 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
                 node_to_basin_to_count[*node][optimum]++;
                 node_to_basin_to_count[*node][TOTAL_COUNT_INDEX]++;
 
-//                cliques::output(*node,optimum,node_to_basin_to_count[*node][optimum],node_to_basin_to_count[*node][TOTAL_COUNT_INDEX]);
+                //                cliques::output(*node,optimum,node_to_basin_to_count[*node][optimum],node_to_basin_to_count[*node][TOTAL_COUNT_INDEX]);
             }
-        }
-        else {
+        } else {
             cliques::output("maxima is disconnected partition");
         }
 
@@ -588,11 +586,13 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
     std::map<int, std::map<int, double> > basin;
 
     // Convert into basin format
-    for (auto node = node_to_basin_to_count.begin(); node != node_to_basin_to_count.end(); ++node) {
+    for (auto node = node_to_basin_to_count.begin(); node
+            != node_to_basin_to_count.end(); ++node) {
         int node_id = node->first;
         int total_count = node->second[TOTAL_COUNT_INDEX];
 
-        for (auto basin_itr = node->second.begin(); basin_itr != node->second.end(); ++basin_itr) {
+        for (auto basin_itr = node->second.begin(); basin_itr
+                != node->second.end(); ++basin_itr) {
             int basin_id = basin_itr->first;
             if (basin_id != -1) {
                 int basin_count = basin_itr->second;
@@ -603,7 +603,6 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
 
     return basin;
 }
-
 
 bool does_set_contain_other(std::vector<int> larger_set,
         std::vector<int> smaller_set, std::vector<int> &buffer) {
@@ -621,7 +620,6 @@ bool does_set_contain_other(std::vector<int> larger_set,
         return true;
     }
 }
-
 
 /**
  @brief  Convert a set of partitions into a graph
