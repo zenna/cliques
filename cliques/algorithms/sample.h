@@ -147,7 +147,6 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
             current_partition = proposed_partition;
             num_current_neighs = num_proposed_neighs;
             neigh_partitions.swap(proposed_neighs); //TODO: check if there is not a faste way of doing this, direct initialisation did not work however
-
         }
 
         // Record sample if at multiple of num_steps_per_sample

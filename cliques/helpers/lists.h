@@ -9,10 +9,12 @@ namespace cliques {
  @param[in]  container              container containing the values, e.g. a vector of doubles
  @param[out] total                  The sum (i.e. total)
  */
-template<typename N, typename cN>
-N sum(cN container) {
-    N total;
-    for (N& value : container) {
+template<typename C>
+typename C::value_type sum(C container ) {
+    typedef typename C::value_type value_type;
+    // Value_type of container
+    value_type total;
+    for (value_type value : container) {
         total += value;
     }
     return total;

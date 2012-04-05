@@ -7,7 +7,7 @@
 
 namespace cliques {
 /**
- @brief  Strongly typed enum for direction of stochastic ascent
+ @brief  Strongly typed enum for direction of optimisation (min/max)
  */
 enum class Direction {
     ASCENT, DESCENT
@@ -16,17 +16,18 @@ enum class Direction {
 /**
  @brief  Given a configuration, climb stochastically and monotonically until local optimum is reached
  @tparam C                          Configuration type (e.g. partition, program)
+ @tparam cC                         Container for functors
  @tparam QF                         Quality functor type
  @param[in]  initial_configuration  Configuration - i.e. solution  (e.g. partition, program)
  @param[in]  find_neighbours        function giving local neighbourhood of configuration
  @param[in]  direction              Ascent (maximisation) or Descent (minimisation)
  @param[in]  compute_quality        Computes the quality (or cost) of a given configuration
- @param[out] local_optimum           Vector containing the sampled partitions
+ @param[out] local_optimum          Local optimum found through schocastic hill climbing
  */
-template<typename C>
+template<typename C, typename cC>
 C stochastic_monotonic_climb(
         C initial_configuration,
-        std::function<std::vector<C> (C)> find_neighbours,
+        std::function<cC (C)> find_neighbours,
         cliques::Direction direction,
         std::function<double (C)> compute_quality) {
 
@@ -40,7 +41,7 @@ C stochastic_monotonic_climb(
         // First find differences in quality between current config and all neighbours
         double current_config_quality = compute_quality(initial_configuration);
         std::vector<double> quality_diffs;
-        std::vector<C> neighbours = find_neighbours(current_configuration);
+        cC neighbours = find_neighbours(current_configuration);
         for (C &neighbour : neighbours) {
             double quality_diff;
             if (direction == cliques::Direction::ASCENT) {

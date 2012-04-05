@@ -1,4 +1,4 @@
-/* Copyright (c) Zenna Tavares-zennatavares@gmail.com, Michael Schuab 2010-2011 */
+/* @authors Zenna Tavares-zennatavares@gmail.com, Michael Schuab 2010-2011 */
 #pragma once
 
 namespace cliques {

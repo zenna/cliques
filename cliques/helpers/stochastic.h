@@ -17,7 +17,7 @@ template<typename N, typename RNG>
 int weighted_sample(std::vector<N> weighted_list, RNG &prng_engine) {
     std::uniform_real_distribution<> real_distribution(0, 1);
 
-    double total_weight = sum<N>(weighted_list);
+    double total_weight = sum(weighted_list);
     std::vector<N> indexed_array;
     N total = 0;
     for (N &weight : weighted_list) {
