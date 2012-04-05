@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 
 //TODO: move node_weight to communities out of internals..
 

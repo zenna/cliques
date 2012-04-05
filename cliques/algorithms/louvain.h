@@ -8,8 +8,8 @@
 
 #include <lemon/concepts/graph.h>
 
-#include <cliques/helpers.h>
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/helpers.h>
+#include <cliques/helpers/graphhelpers.h>
 #include <cliques/algorithms/internals/internals.h>
 #include <cliques/algorithms/internals/generators.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 
 namespace cliques {
 // Define internal structure to carry statistics for correlation based normalised stability
