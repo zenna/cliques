@@ -2,10 +2,10 @@
 //#include <cliques/algorithms/all_partitions.h>
 
 
-#include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/stability_corr.h>
+#include <cliques/quality_functions/stability.h>
+#include <cliques/quality_functions/stability_corr.h>
 
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/make_graphs.h>
 //#include <cliques/drawing/colour_maps.h>
 //
 #include <cliques/algorithms/louvain.h>
@@ -20,8 +20,8 @@
 
 #include <vector>
 
-#include <cliques/graphhelpers.h>
-#include <cliques/helpers.h>
+#include <cliques/helpers/graphhelpers.h>
+#include <cliques/helpers/helpers.h>
 //#include <cliques/helpers/math.h>
 
 // Save partition to file

@@ -1,47 +1,49 @@
 #pragma once
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
+
+//TODO: move node_weight to communities out of internals..
 
 namespace cliques {
-// Define internal structure to carry statistics for combinatorial stability
 
-struct LinearisedInternalsInfo {
-
-	// typedef for convenience
+struct LinearisedInternals {
+	//    typedef lemon::RangeMap<double> range_map;
 	typedef std::vector<double> range_map;
+	unsigned int num_nodes;
+	double two_m;
+	range_map node_to_w;
+	range_map comm_w_tot;
+	range_map comm_w_in;
+	//std::map<int, double> node_weight_to_communities;
+	std::vector<double> node_weight_to_communities;
+	std::vector<unsigned int> neighbouring_communities_list;
 
-	unsigned int num_nodes; // number of nodes in graph
-	range_map comm_w_in; // weight inside each community
-
-	std::vector<double> node_weight_to_communities; //mapping: node weight to each community
-	std::vector<unsigned int> neighbouring_communities_list; // associated list of neighbouring communities
-
-	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	// simple constructor, no partition given; graph should be the original graph in this case
-	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	template<typename G, typename M>
-	LinearisedInternalsInfo(G &graph, M &weights) :
-		num_nodes(lemon::countNodes(graph)), comm_w_in(num_nodes, 0),
-				node_weight_to_communities(num_nodes, 0),
+	LinearisedInternals(G &graph, M &weights) :
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
+				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0),
+				node_weight_to_communities(lemon::countNodes(graph), 0),
 				neighbouring_communities_list() {
+		two_m = 2 * find_total_weight(graph, weights);
 		for (unsigned int i = 0; i < num_nodes; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
+			comm_w_tot[i] = node_to_w[i] = find_weighted_degree(graph, weights,
+					temp_node);
 			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
 		}
 	}
-	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	// full constructor with reference to partition
-	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 	template<typename G, typename M, typename P>
-	LinearisedInternalsInfo(G &graph, M &weights, P &partition) :
-		num_nodes(lemon::countNodes(graph)), comm_w_in(num_nodes, 0),
+	LinearisedInternals(G &graph, M &weights, P &partition) :
+		num_nodes(lemon::countNodes(graph)), node_to_w(num_nodes, 0),
+				comm_w_tot(num_nodes, 0), comm_w_in(num_nodes, 0),
 				node_weight_to_communities(lemon::countNodes(graph), 0),
 				neighbouring_communities_list() {
+		two_m = 2 * find_total_weight(graph, weights);
 
 		typedef typename G::EdgeIt EdgeIt;
 		// find internal statistics based on graph, weights and partitions
 		// consider all edges
-
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
 			int node_u_id = graph.id(graph.u(edge));
 			int node_v_id = graph.id(graph.v(edge));
@@ -58,12 +60,18 @@ struct LinearisedInternalsInfo {
 				weight = weight / 2;
 			}
 
-			// in case the weight stems from within the community add to internal weights
+			// add weight to node weight
+			node_to_w[node_u_id] += weight;
+			node_to_w[node_v_id] += weight;
+			// add weight to total weight of community
+			comm_w_tot[comm_of_node_u] += weight;
+			comm_w_tot[comm_of_node_v] += weight;
+
 			if (comm_of_node_u == comm_of_node_v) {
+				// in case the weight stems from within the community add to internal weights
 				comm_w_in[comm_of_node_u] += 2 * weight;
 			}
 		}
-
 	}
 };
 
@@ -71,8 +79,8 @@ struct LinearisedInternalsInfo {
  @brief  isolate a node into its singleton set & update internals
  */
 template<typename G, typename M, typename P>
-void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
-		LinearisedInternalsInfo &internals, P &partition) {
+void isolate_and_update_internals(G &graph, M &weights,
+		typename G::Node node, LinearisedInternals &internals, P &partition) {
 	int node_id = graph.id(node);
 	int comm_id = partition.find_set(node_id);
 
@@ -83,21 +91,24 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 				internals.neighbouring_communities_list.back();
 		internals.neighbouring_communities_list.pop_back();
 		internals.node_weight_to_communities[old_neighbour] = 0;
-	}
 
+	}
+	//cliques::output(internals.neighbouring_communities_list.size());
 	// get weights from node to each community
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		if (graph.u(e) != graph.v(e)) {
 			double edge_weight = weights[e];
 			typename G::Node opposite_node = graph.oppositeNode(node, e);
 			int comm_node = partition.find_set(graph.id(opposite_node));
-			if (internals.node_weight_to_communities[comm_node] == 0) {
+			if(internals.node_weight_to_communities[comm_node]==0){
 				internals.neighbouring_communities_list.push_back(comm_node);
 			}
 			internals.node_weight_to_communities[comm_node] += edge_weight;
 		}
 	}
-
+	//cliques::print_collection(internals.node_weight_to_communities);
+	internals.comm_w_tot[comm_id] -= internals.node_to_w[node_id];
+	//cliques::output("in", internals.comm_w_in[comm_id]);
 	internals.comm_w_in[comm_id] -= 2
 			* internals.node_weight_to_communities[comm_id]
 			+ find_weight_selfloops(graph, weights, node);
@@ -111,16 +122,20 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
  */
 template<typename G, typename M, typename P>
 void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
-		LinearisedInternalsInfo &internals, P &partition, int best_comm) {
+		LinearisedInternals &internals, P &partition, int best_comm) {
 	int node_id = graph.id(node);
 	// insert node to partition/bookkeeping
-
+	//              std::cout << "node "<<node_id << " comm: to "<< best_comm << std::endl;
+	internals.comm_w_tot[best_comm] += internals.node_to_w[node_id];
+	//              std::cout << "new_weight tot " <<internals.comm_w_tot[best_comm] << std::endl;
 	internals.comm_w_in[best_comm] += 2
 			* internals.node_weight_to_communities[best_comm]
 			+ find_weight_selfloops(graph, weights, node);
+	//              std::cout << "new_weight int " <<internals.comm_w_in[best_comm] << std::endl;
+
 	partition.add_node_to_set(node_id, best_comm);
-//	    cliques::output("in", internals.comm_w_in[best_comm]);
-//	    cliques::print_partition_line(partition);
+	//    cliques::output("in", internals.comm_w_in[best_comm], "tot",internals.comm_w_tot[best_comm], "nodew", internals.node_to_w[best_comm], "2m", internals.two_m);
+	//    cliques::print_partition_line(partition);
 }
 
 }

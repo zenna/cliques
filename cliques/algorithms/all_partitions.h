@@ -9,7 +9,7 @@
 #include <lemon/concepts/graph.h>
 
 #include <cliques/structures/common.h>
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/helpers/logger.h>
 
 #define SET_MAX_SIZE 63

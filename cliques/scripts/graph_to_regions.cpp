@@ -9,7 +9,7 @@
 #include <cliques/algorithms/complexity.h>
 #include <cliques/algorithms/partitions.h>
 #include <cliques/helpers.h>
-#include <cliques/algorithms/stability.h>
+#include <cliques/quality_functions/stability.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/structures/disjointset.h>
 

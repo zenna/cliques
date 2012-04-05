@@ -8,11 +8,10 @@
 
 #include <lemon/concepts/graph.h>
 
-#include <cliques/helpers.h>
-#include <cliques/graphhelpers.h>
-#include <cliques/algorithms/internals/internals.h>
-#include <cliques/algorithms/internals/generators.h>
-
+#include <cliques/helpers/helpers.h>
+#include <cliques/helpers/graphhelpers.h>
+#include <cliques/quality_functions/internals/internals.h>
+#include <cliques/quality_functions/internals/generators.h>
 
 // TODO: Separate out louvain into smaller functions
 // TODO: update random shuffling to not depend on time random seed
@@ -39,8 +38,8 @@ namespace cliques {
  */
 template<typename P, typename T, typename W, typename QF, typename QFDIFF,
 		typename Logger>
-double find_optimal_partition_louvain(T &graph, W &weights, std::vector<
-		double> null_model_vec, QF compute_quality,
+double find_optimal_partition_louvain(T &graph, W &weights,
+		std::vector<double> null_model_vec, QF compute_quality,
 		QFDIFF compute_quality_diff, P initial_partition,
 		std::vector<P> &optimal_partitions, double minimum_improve, Logger log,
 		bool log_switch = false) {
@@ -200,7 +199,7 @@ double find_optimal_partition_louvain(T &graph, W &weights, std::vector<
 		create_reduced_graph_from_partition(reduced_graph, reduced_weight_map,
 				graph, weights, partition, new_comm_id_to_old_comm_id,
 				internals);
-		if(log_switch){
+		if (log_switch) {
 			std::string filename("intermediate_graphs_");
 			std::stringstream hierarchy_level_sstream;
 			hierarchy_level_sstream << hierarchy + 1;

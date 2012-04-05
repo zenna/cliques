@@ -10,12 +10,12 @@
 #include <lemon/concepts/graph.h>
 #include <lemon/maps.h>
 
-#include <cliques/helpers.h>
-#include<cliques/helpers/math.h>
+#include <cliques/helpers/helpers.h>
+#include <cliques/helpers/math.h>
 
-#include <cliques/algorithms/internals/linearised_internals.h>
-#include <cliques/algorithms/internals/linearised_internals_comb.h>
-#include <cliques/graphhelpers.h>
+#include <cliques/quality_functions/internals/linearised_internals.h>
+#include <cliques/quality_functions/internals/linearised_internals_comb.h>
+#include <cliques/helpers/graphhelpers.h>
 #include <cliques/structures/disjointset.h>
 
 namespace cliques {

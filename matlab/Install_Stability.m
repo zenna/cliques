@@ -1,18 +1,13 @@
-function [] = Install_Stability(clique_path)
-
-% path to be provided is the cxx folder..
-if ~isdir(clique_path)
-    error('The path provided is not a folder. Please provide the path of the source code directory of Clique.');
-end
-
+function [] = Install_Stability()
+% Run this function from within the matlab folder to install stability
 curr_folder = pwd;
 
-cd(clique_path);
+cd ..;
 
 disp('Compiling files...');
 
 % Compile with :
-!g++-4.6 -c -I./ -I/usr/local/MATLAB/R2010b/extern/include -I/usr/local/MATLAB/R2010b/simulink/include -DMATLAB_MEX_FILE -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -std=gnu++0x  -DUSE_BOOST -DMX_COMPAT_32 -O3 -DNDEBUG  ./cliques/louvain_matlab_interface.cpp -lemon -L/usr/local/include/lemon 
+!g++-4.6 -c matlab/louvain_matlab_interface.cpp -I./ -I/usr/local/MATLAB/R2010b/extern/include -I/usr/local/MATLAB/R2010b/simulink/include -DMATLAB_MEX_FILE -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -std=gnu++0x  -DUSE_BOOST -DMX_COMPAT_32 -O3 -DNDEBUG -lemon -L/usr/local/include/lemon 
 %-Wall g++ is sufficient if version >=4.4
 
 !gfortran -c -I./ -I/usr/local/MATLAB/R2010b/extern/include -I/usr/local/MATLAB/R2010b/simulink/include -fexceptions -fPIC -fno-omit-frame-pointer  -DUSE_BOOST -DMX_COMPAT_32 -O3  /home/mts09/repositories/group_repository/graph-codes/cliques/cxx/cliques/expokit.f 
@@ -33,6 +28,8 @@ disp('Compiling files...');
 disp('Moving build files to bin directory...');
 
 movefile('stability_louvain.mex*',curr_folder);
+delete expokit.o
+delete louvain_matlab_interface.o
 
 % cd(curr_folder);
 % 

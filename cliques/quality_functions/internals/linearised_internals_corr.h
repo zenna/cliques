@@ -1,22 +1,22 @@
 #pragma once
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 
 namespace cliques {
-// Define internal structure to carry statistics for combinatorial stability
+// Define internal structure to carry statistics for correlation based normalised stability
 
-struct LinearisedInternalsComb {
+struct LinearisedInternalsCorr {
 
 	// typedef for convenience
 	typedef std::vector<double> range_map;
 
 	unsigned int num_nodes; // number of nodes in graph
-	unsigned int num_nodes_init; // number of nodes in initial graph
-	double two_m; // 2 times total weight
-	range_map node_to_nr_nodes_init; // mapping: node_id to number of nodes it
-	// represented in the original graph
-	range_map comm_tot_nodes; // total number of nodes (wrt original graph) per community
-	range_map comm_w_in; // weight inside each community
+	unsigned int num_nodes_init; // number of nodes in original graph
+	double two_m;
+	range_map null_model;
+	range_map node_to_w; // weighted loss of each node
+	range_map comm_loss; // loss for each community (second matrix / null model term)
+	range_map comm_w_in; // gain for each community (first matrix / gain term)
 
 	std::vector<double> node_weight_to_communities; //mapping: node weight to each community
 	std::vector<unsigned int> neighbouring_communities_list; // associated list of neighbouring communities
@@ -25,46 +25,51 @@ struct LinearisedInternalsComb {
 	// simple constructor, no partition given; graph should be the original graph in this case
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	template<typename G, typename M>
-	LinearisedInternalsComb(G &graph, M &weights) :
-		num_nodes(lemon::countNodes(graph)), num_nodes_init(num_nodes),
-				node_to_nr_nodes_init(num_nodes, 1), comm_tot_nodes(num_nodes,
-						1), comm_w_in(num_nodes, 0),
+	LinearisedInternalsCorr(G &graph, M &weights,
+			std::vector<double> null_model_vec) :
+		num_nodes(lemon::countNodes(graph)), null_model(num_nodes, 0),
+				node_to_w(num_nodes, 0), comm_loss(num_nodes, 0), comm_w_in(
+						num_nodes, 0),
 				node_weight_to_communities(num_nodes, 0),
 				neighbouring_communities_list() {
-		two_m = 2 * find_total_weight(graph, weights);
-		for (unsigned int i = 0; i < num_nodes; ++i) {
+
+		num_nodes_init = num_nodes; // get original number of nodes
+
+		for (unsigned int i = 0; i < num_nodes_init; ++i) {
 			typename G::Node temp_node = graph.nodeFromId(i);
+			node_to_w[i] = null_model_vec[i] / sqrt(null_model_vec[i] * (1
+					- null_model_vec[i]));
 			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
+			comm_loss[i] = node_to_w[i] / sqrt(null_model_vec[i] * (1
+					- null_model_vec[i]));
 		}
 	}
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	// full constructor with reference to original partition
+	// full constructor with reference to partition
 	//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	template<typename G, typename M, typename P>
-	LinearisedInternalsComb(G &graph, M &weights, P &partition,
-			P &partition_init) :
-		num_nodes(lemon::countNodes(graph)),
-				node_to_nr_nodes_init(num_nodes, 0), comm_tot_nodes(num_nodes,
-						0), comm_w_in(num_nodes, 0),
-				node_weight_to_communities(lemon::countNodes(graph), 0),
+	LinearisedInternalsCorr(G &graph, M &weights, P &partition,
+			P &partition_init, std::vector<double> null_model_vec) :
+		num_nodes(lemon::countNodes(graph)), null_model(null_model_vec),
+				node_to_w(num_nodes, 0), comm_loss(num_nodes, 0), comm_w_in(
+						num_nodes, 0),
+				node_weight_to_communities(num_nodes, 0),
 				neighbouring_communities_list() {
-		two_m = 2 * find_total_weight(graph, weights);
-		num_nodes_init = partition_init.element_count(); // get original number of nodes
-
-		// Get number of nodes incorporated into each supernode;
-		// assumes partition is ordered/relabeled accordingly
-		// if graph == initial graph node weight will not change here..
-		for (unsigned int i = 0; i < num_nodes_init; ++i) {
-			int old_comm_id = partition_init.find_set(i); 	// get community of original node
-			node_to_nr_nodes_init[old_comm_id]++;			// old_comm_id is equal to node id in new graph
-			int new_comm_id = partition.find_set(old_comm_id);
-			comm_tot_nodes[new_comm_id]++;
-		}
-//		cliques::print_collection(comm_tot_nodes);
-
-
 
 		typedef typename G::EdgeIt EdgeIt;
+		num_nodes_init = partition_init.element_count(); // get original number of nodes
+
+		for (unsigned int i = 0; i < num_nodes_init; ++i) {
+			int old_comm_id = partition_init.find_set(i); // get community of original node
+			// old_comm_id is equal to node id in new graph
+			node_to_w[old_comm_id] += null_model[i] / sqrt(
+					null_model_vec[i] * (1 - null_model_vec[i]));
+			int new_comm_id = partition.find_set(old_comm_id);
+			// compute loss based on original graph
+			comm_loss[new_comm_id] += null_model[i] / sqrt(
+					null_model_vec[i] * (1 - null_model_vec[i]));
+		}
+
 		// find internal statistics based on graph, weights and partitions
 		// consider all edges
 		for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
@@ -75,7 +80,6 @@ struct LinearisedInternalsComb {
 			int comm_of_node_u = partition.find_set(node_u_id);
 			int comm_of_node_v = partition.find_set(node_v_id);
 
-
 			// weight of edge
 			double weight = weights[edge];
 
@@ -84,8 +88,8 @@ struct LinearisedInternalsComb {
 				weight = weight / 2;
 			}
 
-			// in case the weight stems from within the community add to internal weights
 			if (comm_of_node_u == comm_of_node_v) {
+				// in case the weight stems from within the community add to internal weights
 				comm_w_in[comm_of_node_u] += 2 * weight;
 			}
 		}
@@ -98,7 +102,7 @@ struct LinearisedInternalsComb {
  */
 template<typename G, typename M, typename P>
 void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
-		LinearisedInternalsComb &internals, P &partition) {
+		LinearisedInternalsCorr &internals, P &partition) {
 	int node_id = graph.id(node);
 	int comm_id = partition.find_set(node_id);
 
@@ -113,23 +117,32 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 
 	// get weights from node to each community
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
+		// check that you do not get a self-loop
 		if (graph.u(e) != graph.v(e)) {
+			// get the edge weight
 			double edge_weight = weights[e];
+			// get the other node
 			typename G::Node opposite_node = graph.oppositeNode(node, e);
+			// get community id of the other node
 			int comm_node = partition.find_set(graph.id(opposite_node));
+			// check if we have seen this community already
 			if (internals.node_weight_to_communities[comm_node] == 0) {
 				internals.neighbouring_communities_list.push_back(comm_node);
 			}
+			// add weights to vector
 			internals.node_weight_to_communities[comm_node] += edge_weight;
 		}
 	}
-	//cliques::print_collection(internals.node_weight_to_communities);
-	internals.comm_tot_nodes[comm_id] -= internals.node_to_nr_nodes_init[node_id];
-	//cliques::output("in", internals.comm_w_in[comm_id]);
+//	cliques::print_collection(internals.node_weight_to_communities);
+//	cliques::print_partition_line(partition);
+//	cliques::output("loss", internals.comm_loss[comm_id]);
+	internals.comm_loss[comm_id] -= internals.node_to_w[node_id];
+//	cliques::output("loss", internals.comm_loss[comm_id]);
+//	cliques::output("in", internals.comm_w_in[comm_id]);
 	internals.comm_w_in[comm_id] -= 2
 			* internals.node_weight_to_communities[comm_id]
 			+ find_weight_selfloops(graph, weights, node);
-	//cliques::output("in", internals.comm_w_in[comm_id]);
+//	cliques::output("in", internals.comm_w_in[comm_id]);
 
 	partition.isolate_node(node_id);
 }
@@ -139,16 +152,16 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
  */
 template<typename G, typename M, typename P>
 void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
-		LinearisedInternalsComb &internals, P &partition, int best_comm) {
+		LinearisedInternalsCorr &internals, P &partition, int best_comm) {
+	// node id and std dev
 	int node_id = graph.id(node);
-	// insert node to partition/bookkeeping
-	//              std::cout << "node "<<node_id << " comm: to "<< best_comm << std::endl;
-	internals.comm_tot_nodes[best_comm] += internals.node_to_nr_nodes_init[node_id];
-	//              std::cout << "new_weight tot " <<internals.comm_w_tot[best_comm] << std::endl;
+
+	// update loss
+	internals.comm_loss[best_comm] += internals.node_to_w[node_id];
+	// update gain
 	internals.comm_w_in[best_comm] += 2
 			* internals.node_weight_to_communities[best_comm]
 			+ find_weight_selfloops(graph, weights, node);
-	//              std::cout << "new_weight int " <<internals.comm_w_in[best_comm] << std::endl;
 
 	partition.add_node_to_set(node_id, best_comm);
 	//    cliques::output("in", internals.comm_w_in[best_comm], "tot",internals.comm_w_tot[best_comm], "nodew", internals.node_to_w[best_comm], "2m", internals.two_m);

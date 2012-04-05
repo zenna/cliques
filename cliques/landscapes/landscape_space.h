@@ -13,7 +13,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/bimap/multiset_of.hpp>
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/structures/common.h>
 

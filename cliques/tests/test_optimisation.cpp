@@ -7,12 +7,12 @@
 #include <lemon/smart_graph.h>
 #include <boost/program_options.hpp>
 
-#include <cliques/helpers.h>
-#include <cliques/graphhelpers.h>
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/helpers.h>
+#include <cliques/helpers/graphhelpers.h>
+#include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
-#include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/space.h>
+#include <cliques/quality_functions/stability.h>
+#include <cliques/landscapes/landscape_space.h>
 #include <cliques/algorithms/hill_climbing.h>
 
 namespace po = boost::program_options;
