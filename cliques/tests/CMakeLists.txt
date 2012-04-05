@@ -16,6 +16,9 @@ target_link_libraries(test_louvain ${cliques_LIBRARIES})
 add_executable(test_kernighanlin kernighanlin.cpp)
 target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
 
+add_executable(test_optimisation test_optimisation.cpp)
+target_link_libraries(test_optimisation ${cliques_LIBRARIES})
+
 #add_executable(test_edit_distance edit_distance.cpp)
 
 #add_executable(test_varofinf varofinf.cpp)

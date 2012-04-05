@@ -77,8 +77,7 @@ void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, boost
         auto best_neighbour = *set_itr;
         while (true) {
             bool has_improved = false;
-            partition_set neighs;
-            cliques::find_neighbours(graph, best_neighbour, neighs);
+            partition_set neighs = cliques::find_neighbours(graph, best_neighbour);
             double best_quality = compute_quality(best_neighbour, time);
 
             for (auto neigh_itr = neighs.begin(); neigh_itr != neighs.end(); ++neigh_itr) {
