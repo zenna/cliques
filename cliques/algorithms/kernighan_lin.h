@@ -10,8 +10,8 @@
 #include <lemon/concepts/graph.h>
 
 #include <cliques/helpers/graphhelpers.h>
-#include <cliques/algorithms/internals/internals.h>
-#include <cliques/algorithms/internals/generators.h>
+#include <cliques/quality_functions/internals/internals.h>
+#include <cliques/quality_functions/internals/generators.h>
 
 
 namespace cliques {

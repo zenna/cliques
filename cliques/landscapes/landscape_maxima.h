@@ -7,7 +7,7 @@
 
 #include <lemon/concepts/graph.h>
 
-#include <cliques/algorithms/internals/internals.h>
+#include <cliques/quality_functions/internals/internals.h>
 
 namespace cliques {
 /**

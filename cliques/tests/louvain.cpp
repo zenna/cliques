@@ -2,8 +2,8 @@
 //#include <cliques/algorithms/all_partitions.h>
 
 
-#include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/stability_corr.h>
+#include <cliques/quality_functions/stability.h>
+#include <cliques/quality_functions/stability_corr.h>
 
 #include <cliques/helpers/make_graphs.h>
 //#include <cliques/drawing/colour_maps.h>

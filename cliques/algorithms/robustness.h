@@ -2,7 +2,7 @@
 #pragma once
 #include "cliques/algorithms/louvain.h"
 #include "cliques/algorithms/varofinf.h"
-#include "cliques/algorithms/stability.h"
+#include "cliques/quality_functions/stability.h"
 #include "cliques/structures/vector_partition.h"
 
 namespace cliques {

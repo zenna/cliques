@@ -10,8 +10,8 @@
 
 #include <cliques/helpers/helpers.h>
 #include <cliques/helpers/graphhelpers.h>
-#include <cliques/algorithms/internals/internals.h>
-#include <cliques/algorithms/internals/generators.h>
+#include <cliques/quality_functions/internals/internals.h>
+#include <cliques/quality_functions/internals/generators.h>
 
 // TODO: Separate out louvain into smaller functions
 // TODO: update random shuffling to not depend on time random seed

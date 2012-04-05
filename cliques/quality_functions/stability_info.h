@@ -11,7 +11,7 @@
 
 #include <cliques/helpers/helpers.h>
 #include <cliques/helpers/graphhelpers.h>
-#include <cliques/algorithms/internals/linearised_internals_info.h>
+#include <cliques/quality_functions/internals/linearised_internals_info.h>
 
 namespace cliques {
 /**

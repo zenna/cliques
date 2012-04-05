@@ -12,12 +12,12 @@
 #include <cliques/helpers/math.h>
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/all_communities.h>
-#include <cliques/algorithms/stability.h>
+#include <cliques/quality_functions/stability.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/landscapes/landscape_space.h>
 #include <cliques/landscapes/landscape_maxima.h>
 #include <cliques/algorithms/kernighan_lin.h>
-#include <cliques/algorithms/internals/internals.h>
+#include <cliques/quality_functions/internals/internals.h>
 #include <cliques/landscapes/non_linear_dim_reduction.h>
 #include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>

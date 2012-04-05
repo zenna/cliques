@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cliques/algorithms/internals/internals.h>
-#include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/stability_corr.h>
-#include <cliques/algorithms/stability_info.h>
+#include <cliques/quality_functions/internals/internals.h>
+#include <cliques/quality_functions/stability.h>
+#include <cliques/quality_functions/stability_corr.h>
+#include <cliques/quality_functions/stability_info.h>
 
 namespace cliques {
 /////////////////////////////////////////////
