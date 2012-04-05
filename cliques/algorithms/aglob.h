@@ -1,4 +1,4 @@
-/* Copyright (c) Zenna Tavares-zennatavares@gmail.com, Michael Schaub 2010-2011 */
+/* Copyright (c) Zenna Tavares-zennatavares@gmail.com, Michael Schaub 2010-2012 */
 #pragma once
 
 #include <vector>

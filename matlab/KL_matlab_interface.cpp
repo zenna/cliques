@@ -13,7 +13,7 @@
 #include <lemon/smart_graph.h>
 #include <map>
 #include "cliques/algorithms/kernighan_lin.h"
-#include "cliques/algorithms/stability.h"
+#include "cliques/quality_functions/stability.h"
 #include "cliques/structures/vector_partition.h"
 #include <vector>
 #include <string>

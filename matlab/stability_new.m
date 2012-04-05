@@ -100,7 +100,7 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 
 Graph = [];                                     % List of edges of the graph to be partitioned
 Time = 1;                                       % Markov times at which the graph should be partitioned
-StabilityFunction = @louvain_LNL;    	        % Linearised stability with normalised laplacian is used by default
+StabilityFunction = @louvain_FNL;    	        % Linearised stability with normalised laplacian is used by default
 ComputeVI = true;                               % True if the variation of information should be computed
 ComputeES = false;                              % True if edge statistics should be computed
 OutputFile = false;                             % No output file by default.
@@ -350,7 +350,7 @@ prefix = '';
 ComputeParallel = false;
 TextOutput = false;
 K=NaN;
-attributes={'novi', 'l', 'm', 'out', 'full', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k'};
+attributes={'novi', 'l', 'm', 'out', 'linearised', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k'};
 
 if options > 0
     
