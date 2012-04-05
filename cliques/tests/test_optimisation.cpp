@@ -12,7 +12,7 @@
 #include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/algorithms/stability.h>
-#include <cliques/algorithms/space.h>
+#include <cliques/landscapes/landscape_space.h>
 #include <cliques/algorithms/hill_climbing.h>
 
 namespace po = boost::program_options;

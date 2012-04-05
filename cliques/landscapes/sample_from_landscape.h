@@ -3,7 +3,7 @@
 #include <random>
 #include <math.h>
 
-#include <cliques/algorithms/space.h>
+#include <cliques/landscapes/landscape_space.h>
 #include <lemon/concepts/graph.h>
 
 namespace cliques {

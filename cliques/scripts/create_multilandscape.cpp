@@ -14,11 +14,11 @@
 #include <cliques/algorithms/all_communities.h>
 #include <cliques/algorithms/stability.h>
 #include <cliques/algorithms/louvain.h>
-#include <cliques/algorithms/space.h>
-#include <cliques/algorithms/maxima.h>
+#include <cliques/landscapes/landscape_space.h>
+#include <cliques/landscapes/landscape_maxima.h>
 #include <cliques/algorithms/kernighan_lin.h>
 #include <cliques/algorithms/internals/internals.h>
-#include <cliques/nldr/nldr.h>
+#include <cliques/landscapes/non_linear_dim_reduction.h>
 #include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/algorithms/aglob.h>
