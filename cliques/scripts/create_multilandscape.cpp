@@ -8,7 +8,7 @@
 #include <lemon/smart_graph.h>
 #include <boost/program_options.hpp>
 
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/helpers/math.h>
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/all_communities.h>
@@ -19,7 +19,7 @@
 #include <cliques/algorithms/kernighan_lin.h>
 #include <cliques/algorithms/internals/internals.h>
 #include <cliques/nldr/nldr.h>
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/algorithms/aglob.h>
 

@@ -4,12 +4,12 @@
 
 #include <lemon/smart_graph.h>
 
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/algorithms/stability.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/algorithms/kernighan_lin.h>
 #include <cliques/structures/vector_partition.h>
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 #include <cliques/helpers/logger.h>
 
 int main() {

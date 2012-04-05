@@ -11,9 +11,9 @@
 #include <lemon/dijkstra.h>
 #include <lemon/concepts/graph.h>
 
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/helpers/edit_distance.h>
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/make_graphs.h>
 
 //Issues
 // Sampling depends on order of nodes considered

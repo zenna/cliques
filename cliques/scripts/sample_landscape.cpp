@@ -7,7 +7,7 @@
 #include <lemon/smart_graph.h>
 #include <boost/program_options.hpp>
 
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/logger.h>
 #include <cliques/algorithms/sample.h>

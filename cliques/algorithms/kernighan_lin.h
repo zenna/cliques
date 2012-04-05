@@ -9,7 +9,7 @@
 #include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 #include <cliques/algorithms/internals/internals.h>
 #include <cliques/algorithms/internals/generators.h>
 
