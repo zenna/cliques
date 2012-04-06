@@ -13,6 +13,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/bimap/multiset_of.hpp>
 
+#include <cliques/helpers/lists.h>
 #include <cliques/helpers/graphhelpers.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/structures/common.h>
@@ -602,23 +603,6 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
     }
 
     return basin;
-}
-
-bool does_set_contain_other(std::vector<int> larger_set,
-        std::vector<int> smaller_set, std::vector<int> &buffer) {
-    std::sort(larger_set.begin(), larger_set.end());
-    std::sort(smaller_set.begin(), smaller_set.end());
-
-    auto end = std::set_difference(smaller_set.begin(), smaller_set.end(),
-            larger_set.begin(), larger_set.end(), buffer.begin());
-
-    int difference_size = int(end - buffer.begin());
-
-    if (difference_size > 0) {
-        return false;
-    } else {
-        return true;
-    }
 }
 
 /**

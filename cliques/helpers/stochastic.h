@@ -17,6 +17,8 @@ template<typename N, typename RNG>
 int weighted_sample(std::vector<N> weighted_list, RNG &prng_engine) {
     std::uniform_real_distribution<> real_distribution(0, 1);
 
+    // indexed_array has each element as sum of previous elements in weighted_list
+    // i.e. on line from 0 to total weight, assign each individual weight adequate fraction
     double total_weight = sum(weighted_list);
     std::vector<N> indexed_array;
     N total = 0;
@@ -25,6 +27,7 @@ int weighted_sample(std::vector<N> weighted_list, RNG &prng_engine) {
         indexed_array.push_back(total);
     }
 
+    // Then sample random point on this line, and see corresponding weight
     double rand_real = real_distribution(prng_engine) * total_weight;
     int rand_index = 0;
     for (int list_element : indexed_array) {

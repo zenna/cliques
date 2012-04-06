@@ -1,4 +1,4 @@
-/* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2012
+    /* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2012
  Stochastic hill climbing optimisation functions */
 #pragma once
 #include <functional>
@@ -42,7 +42,7 @@ C stochastic_monotonic_climb(
         double current_config_quality = compute_quality(initial_configuration);
         std::vector<double> quality_diffs;
         cC neighbours = find_neighbours(current_configuration);
-        for (C &neighbour : neighbours) {
+        for (C const &neighbour : neighbours) {
             double quality_diff;
             if (direction == cliques::Direction::ASCENT) {
                 quality_diff =  compute_quality(current_configuration) - current_config_quality;
@@ -61,7 +61,7 @@ C stochastic_monotonic_climb(
         // Return if we've found a local optimum
         if (quality_diffs.size() > 0) {
             int chosen_index = weighted_sample(quality_diffs, m_engine);
-            auto current_configuration = neighbours[chosen_index];
+//            auto current_configuration = neighbours[chosen_index];
         } else {
             return current_configuration;
         }
