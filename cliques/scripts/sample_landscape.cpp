@@ -73,36 +73,33 @@ int main(int ac, char* av[]) {
 	typedef std::unordered_set<VecPartition, cliques::partition_hash,
 			cliques::partition_equal> VecPartitionSet;
 
-	int num_samples = 5000;
+	int num_samples = 50000;
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 
 	cliques::output("Sampling Partitions Uniformly");
-	cliques::NoLogging log_uniform;
-//	cliques::Logging<VecPartition> log_uniform;
-//	VecPartitionSet sampled_partitions;
-
-	std::unordered_map<cliques::VectorPartition, int, cliques::partition_hash> sample_to_count;
 
 	double markov_time = 1.0;
 	double precision = 1e-9;
-	int num_steps_per_sample = 10;
+	int num_steps_per_sample = 3;
 
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);
 	std::vector<VecPartition> test = cliques::uniform_sample<VecPartition>(orange_graph,num_samples, num_steps_per_sample);
 
+	cliques::partitions_to_file("sampling_test.txt",test);
+
 //	cliques::sample_metropolis(orange_graph, func, markov_time,
 //			num_samples, num_steps_per_sample, sample_to_count, log_uniform);
-	cliques::output("size:", sample_to_count.size());
+//	cliques::output("size:", sample_to_count.size());
 
-	for (std::unordered_map<cliques::VectorPartition, int, cliques::partition_hash>::iterator itr = sample_to_count.begin(); itr != sample_to_count.end(); ++itr) {
+//	for (std::unordered_map<cliques::VectorPartition, int, cliques::partition_hash>::iterator itr = sample_to_count.begin(); itr != sample_to_count.end(); ++itr) {
 //		cliques::print_partition_line(itr->first);
-		double prop_energy = func(itr->first,
-					markov_time);
-		cliques::output(prop_energy,",", double(itr->second - 1) / num_samples);
-	}
+//		double prop_energy = func(itr->first,
+//					markov_time);
+//		cliques::output(prop_energy,",", double(itr->second - 1) / num_samples);
+//	}
 
 	//    // Finding Maxima
 	//    cliques::output("Sampling Partitions Maxima");
