@@ -39,6 +39,9 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       either be 'combinatorial', or 
 %                       'normalised'.
 %
+%	 directed	activate stability for directed 	none
+%			graphs
+%
 %        noVI           Disables the calculation of the         none
 %                       robustness of the partitions.
 %                       Disabling this can significantly 
@@ -89,34 +92,15 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %
 %
 %
-%   Date: 21/01/2012
+%   Date: 10/04/2012
 
-
-%$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
-%$                                          $%
-%$          Default parameters              $%
-%$                                          $%
-%$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
-
+% Unparsed default parameters
 Graph = [];                                     % List of edges of the graph to be partitioned
 Time = 1;                                       % Markov times at which the graph should be partitioned
-StabilityFunction = @louvain_FNL;    	        % Linearised stability with normalised laplacian is used by default
-ComputeVI = true;                               % True if the variation of information should be computed
-ComputeES = false;                              % True if edge statistics should be computed
-OutputFile = false;                             % No output file by default.
-NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
-NbNodes = 0;                                    % Total number of nodes;
-Full = true;                                    % If true, performs the full stability
-Sanity = true;                                  % If true, performs the graph sanity checks
-Precision = 10e-9;                              % Threshold for stability and edges weigths
-plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
-verbose = false;                                % Toggle verbose mode
-prefix = '';                                    % Output prefix
-M = 100;                                        % Top M partitions among the L found by louvain are used to compute the variation of information
-ComputeParallel = false;                        % Toggles the computation in parallel
-TextOutput = false;                             % Toggles the computation in parallel
-flag_matlabpool = false;
-K = NaN;                                        % K stabilities value, only relevant for Ruelle random walk and k stabilities. K =-1 corresponds to the normalised Laplacian
+flag_matlabpool = false;			% for opening/closing workpool for parallel computation
+PARAMS = struct;				% create empty structure for storing parameters
+
+
 
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
 %$                                          $%
@@ -124,13 +108,13 @@ K = NaN;                                        % K stabilities value, only rele
 %$                                          $%
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
 
-% Options
 
-if nargin > 2
-    [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose, ComputeParallel, TextOutput, K] = parseinput(length(varargin),varargin);
-end
 
-% Argument 1: G
+[StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, verbose, TextOutput, PARAMS] = parseinput(length(varargin),varargin);
+
+
+
+% Argument 1: Graph
 
 if nargin > 0
     if size(G,1) == size(G,2) && ~issparse(G)
@@ -154,7 +138,7 @@ if nargin > 0
         else
             Graph = sparse(G);
         end
-        NbNodes = size(Graph,2);
+        PARAMS.NbNodes = size(Graph,2);
     % if the linearised stability is to be computed, Graph should be the
     % list of edges.
     else
@@ -171,7 +155,7 @@ if nargin > 0
         else
             error('Wrong size for G: G should be a graph saved either as a list of edges (size(G)=[N,3] if weighted, size(G)=[N,2] if unweighted) or as an adjacency matrix (size(G)=[N,N])');
         end
-        NbNodes = max(Graph(:,1))+1;
+        PARAMS.NbNodes = max(Graph(:,1))+1;
     end
 else
     error('Please provide at least the graph to be partitioned. Type "help stability" for more information.');
@@ -180,16 +164,16 @@ end
 % Argument 2: T
 
 if nargin > 1
-    if isvector(T)
+    if (isvector(T) && isnumeric(T))
         Time=T;
     else
-        error('The second argument should be a vector. Type "help stability" for more information.');
+        error('The second argument should be a numerical vector. Type "help stability" for more information.');
     end
 end
 
 % Parallel computation: Initialize the number of cores if matlabpool is not
 % yet running.
-if ComputeParallel && matlabpool('size') == 0
+if PARAMS.ComputeParallel && matlabpool('size') == 0
     flag_matlabpool = true;
     matlabpool
 end
@@ -206,14 +190,14 @@ if verbose
     disp(' ');
     disp(['   Partitioning of the graph started at ' datestr([2011 1 1 c(4) c(5) c(6)], 'HH:MM:SS') ' with the following parameters:']);
     disp(['      Stability function: ' func2str(StabilityFunction)]);
-    disp(['      Compute the variation of information: ' int2str(ComputeVI)]);
+    disp(['      Compute the variation of information: ' int2str(PARAMS.ComputeVI)]);
     disp(['      Save the results in files: ' int2str(OutputFile)]);
     if OutputFile; disp(['      Prefix of the output files: ' prefix]); end
-    disp(['      Number of Louvain iterations: ' int2str(NbLouvain)]);
-    disp(['      Number of Louvain iterations used for the computation of VI: ' int2str(M)]);
+    disp(['      Number of Louvain iterations: ' int2str(PARAMS.NbLouvain)]);
+    disp(['      Number of Louvain iterations used for the computation of VI: ' int2str(PARAMS.M)]);
     disp(['      Full stability: ' int2str(Full)]);
     disp(['      Check the input graph: ' int2str(Sanity)]);
-    disp(['      Precision used: ' num2str(Precision)]);
+    disp(['      Precision used: ' num2str(PARAMS.Precision)]);
     disp(['      Plot the results: ' int2str(plotStability)]);
     disp(['      Verbose mode: ' int2str(verbose)]);    
     disp(' ');
@@ -231,12 +215,12 @@ end
 S = zeros(1, length(Time));
 N = zeros(1, length(Time));
 VI = zeros(1, length(Time));
-C = zeros(NbNodes, length(Time));
+C = zeros(PARAMS.NbNodes, length(Time));
 
 if TextOutput
     mkdir(['Partitions_' prefix]);
 end
-if ComputeES
+if PARAMS.ComputeES
     ES = zeros(nr_edges, length(Time));
 end
 if OutputFile
@@ -251,16 +235,6 @@ if verbose
     step_prec=0;
 end
 
-% make parameter struct for passing arguments.
-PARAMS.ComputeES = ComputeES;
-PARAMS.ComputeVI = ComputeVI;
-PARAMS.Precision = Precision;
-PARAMS.NbLouvain = NbLouvain;
-PARAMS.M =M;
-PARAMS.NbNodes =NbNodes;
-PARAMS.K = K;
-PARAMS.ComputeParallel = ComputeParallel;
-
 
 % Loop over all Markov times
 for t=1:length(Time)
@@ -269,7 +243,7 @@ for t=1:length(Time)
         disp(['   Partitioning for Markov time = ' num2str(Time(t),'%10.6f') '...']);
     end
     
-    if(ComputeES)
+    if(PARAMS.ComputeES)
         [S(t), N(t), C(:,t), VI(t) ES(:,t)] = StabilityFunction(Graph, Time(t), PARAMS);
     else      
         [S(t), N(t), C(:,t), VI(t)] = StabilityFunction(Graph, Time(t), PARAMS);
@@ -281,7 +255,7 @@ for t=1:length(Time)
     
     if TextOutput
         cd(['Partitions_' prefix]);
-        dlmwrite(['Partition_' prefix '_' num2str(Time(t),'%10.6f') '.dat'],[[1:NbNodes]',C(:,t)],'delimiter','\t');
+        dlmwrite(['Partition_' prefix '_' num2str(Time(t),'%10.6f') '.dat'],[[1:PARAMS.NbNodes]',C(:,t)],'delimiter','\t');
         cd ..;        
         dlmwrite(['Stability_' prefix '.stdout'],[Time(t), S(t), N(t), VI(t)],'-append', 'delimiter','\t')
     end   
@@ -330,26 +304,40 @@ end
 end
 
 %------------------------------------------------------------------------------
-function [StabilityFunction, ComputeVI, OutputFile, prefix, NbLouvain, M, Full, Sanity, Precision, plotStability, verbose, ComputeParallel, TextOutput,K] = parseinput(options,varargin)
-% Parse the options
+function [StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, verbose, TextOutput,PARAMS] = parseinput(options,varargin)
+% Parse the options from the command line
 
-% Initialise parameters
+%$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
+%$                                          $%
+%$          Default parameters              $%
+%$                                          $%
+%$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
 
-StabilityFunction = @louvain_LNL;     		% Linearised stability with normalised laplacian is used by default
-ComputeVI = true;                               % True if the variation of information should be computed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% "Global" options relevant for output and control flow
+StabilityFunction = @louvain_FNL;    	        % Full stability with normalised laplacian is used by default
 OutputFile = false;                             % No output file by default.
-NbLouvain = 100;                                % Number of louvain optimisations at each Markov time
-Full = true;
-Laplacian = 'normalised';
-Sanity = true;
-Precision = 10e-9; 
-plotStability = false; 
-verbose = false;
-M = 100;
-prefix = '';
-ComputeParallel = false;
-TextOutput = false;
-K=NaN;
+Laplacian = 'Normalised';			% Default Laplacian
+Full = true;                                    % If true, performs the full stability
+Sanity = true;                                  % If true, performs the graph sanity checks
+plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
+verbose = false;                                % Toggle verbose mode
+prefix = '';                                    % Output prefix
+TextOutput = false;                             % Toggles the text output
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Options stored in struct relevant for optimization etc.
+PARAMS = struct;				% create empty structure for storing parameters
+PARAMS.ComputeVI = true;                        % True if the variation of information should be computed
+PARAMS.ComputeES = false;                       % True if edge statistics should be computed
+PARAMS.ComputeParallel = false;                 % Toggles the computation in parallel
+PARAMS.NbLouvain = 100;                         % Number of louvain optimisations at each Markov time
+PARAMS.NbNodes = 0;                             % Total number of nodes;
+PARAMS.Precision = 1e-9;                        % Threshold for stability and edges weigths
+PARAMS.M = 100;                                 % Top M partitions among the L found by louvain are used to compute the variation of information
+PARAMS.K = NaN;                                 % K stabilities value, only relevant for Ruelle random walk and k stabilities. K =-1 corresponds to the normalised Laplacian
+
+% actual parsing begins here
 attributes={'novi', 'l', 'm', 'out', 'linearised', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k'};
 
 if options > 0
