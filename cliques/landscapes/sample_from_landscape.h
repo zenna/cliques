@@ -171,12 +171,12 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
 // @param[out] output_partitions      Vector containing the sampled partitions
 // */
 //template<typename P, typename G>
-//std::vector<P> uniform_sample(G &graph, std::vector<P> sampled_partitions,
+//std::vector<P> sample_basins(G &graph, std::vector<P> sampled_partitions,
 //    int num_samples, int num_steps_per_sample = 10) {
 //    for (current_partition& :sampled_partitions) {
 //        auto optimal_partition = stochastic_climb(current_partition, find_neighours, ascent, compute_quality);
 //
 //    }
 //}
-//
+
 }

@@ -31,12 +31,13 @@ C stochastic_monotonic_climb(
         cliques::Direction direction,
         std::function<double (C)> compute_quality) {
 
+    bool am_at_local_optimum = false; // stop when this is true
     int max_num_steps = 10000;
     C current_configuration = initial_configuration;
     std::mt19937 m_engine;
 
     // Make stochastic local move until local optima or max_num_steps reached
-    for (int i = 0; i < max_num_steps; ++i) {
+    for (int i = 0; i < max_num_steps && am_at_local_optimum == false; ++i) {
 
         // First find differences in quality between current config and all neighbours
         double current_config_quality = compute_quality(initial_configuration);
@@ -45,10 +46,10 @@ C stochastic_monotonic_climb(
         for (C const &neighbour : neighbours) {
             double quality_diff;
             if (direction == cliques::Direction::ASCENT) {
-                quality_diff =  compute_quality(current_configuration) - current_config_quality;
+                quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
             else if (direction == cliques::Direction::DESCENT) {
-                quality_diff = current_config_quality - compute_quality(current_configuration);
+                quality_diff = current_config_quality - compute_quality(neighbour);
             }
 
             // By setting weight of negative quality diffs to 0, we enforce monotonic moves
@@ -61,11 +62,15 @@ C stochastic_monotonic_climb(
         // Return if we've found a local optimum
         if (quality_diffs.size() > 0) {
             int chosen_index = weighted_sample(quality_diffs, m_engine);
-//            auto current_configuration = neighbours[chosen_index];
+            typename cC::iterator it = neighbours.begin();
+            std::advance(it, chosen_index);
+            current_configuration = *it;
         } else {
-            return current_configuration;
+            am_at_local_optimum = true;
         }
     }
+
+    return current_configuration;
 }
 
 }
