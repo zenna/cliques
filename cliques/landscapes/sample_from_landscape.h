@@ -16,7 +16,7 @@ template<typename G, typename Q, typename M, typename Logger>
 void sample_metropolis(G &graph, Q &quality_function, double markov_time,
         int num_samples, int num_steps_per_sample, M &sample_to_count,
         Logger &logger) {
-    typedef typename boost::unordered_set<cliques::VectorPartition,
+    typedef typename std::unordered_set<cliques::VectorPartition,
             cliques::partition_hash, cliques::partition_equal> partition_set;
 
     int num_sampled = 0;
@@ -100,7 +100,7 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
         int num_steps_per_sample = 10) {
 
     // define partition_set as unordered_set of partitions
-    typedef typename boost::unordered_set<P, cliques::partition_hash,
+    typedef typename std::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
 
     std::vector<P> sampled_partitions;

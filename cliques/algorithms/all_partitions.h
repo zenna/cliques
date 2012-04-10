@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <unordered_set>
 
 #include <lemon/concepts/graph.h>
 
@@ -133,12 +134,12 @@ void partition_long_to_map(unsigned long s, int n, int set_num, std::map<int,
     }
 }
 
-template<typename P, typename Logger>
+template<typename sP, typename Logger>
 void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
-        boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &all_partitions, Logger &log) {
+        sP &all_partitions, Logger &log) {
 
-    P new_partition(num_nodes);
+    // Value type is the type of the partition type
+    typename sP::value_type new_partition(num_nodes);
 
     for (int j = 0; j < p->current; j++) {
         int s = p->sets[j];
@@ -173,13 +174,12 @@ void add_partition_to_set(c_partition *p, int num_nodes, int &num_partitions,
     }
 }
 
-template<typename P, typename Logger>
+template<typename sP, typename Logger>
 void gen_partitions_prune_aux(unsigned long comp_tmp, unsigned long neighbours,
         unsigned long forbidden, c_graph* &g, c_partition*& part,
         unsigned long & nodes_to_place, unsigned long & part_union,
         int & num_partitions,
-        boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &all_partitions, Logger &log) {
+        sP &all_partitions, Logger &log) {
     int v, vn, i;
     unsigned long new_neighbours, new_forbidden, new_comp_tmp;
 
@@ -296,9 +296,8 @@ c_graph *convert_lemon_to_c_graph(G &graph) {
  TODO save partitions into partition map
  TODO breaks if directed (i.e. double edge)
  */
-template<typename G, typename P, typename Logger>
-int find_connected_partitions(G &graph, boost::unordered_set<P,
-        cliques::partition_hash, cliques::partition_equal> &all_partitions, Logger &log) {
+template<typename G, typename sP, typename Logger>
+int find_connected_partitions(G &graph, sP &all_partitions, Logger &log) {
 
     c_graph *g = convert_lemon_to_c_graph(graph);
     c_partition *part;

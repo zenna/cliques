@@ -68,7 +68,7 @@ int main(int ac, char* av[]) {
     // Use a lambda to close over orange_graph so that the function passed to stochastic_climb only takes one param
     // - the partition, but has necessary access to orange_graph
     vecPart optimal_partition = cliques::stochastic_monotonic_climb
-            <vecPart, boost::unordered_set<vecPart, cliques::partition_hash, cliques::partition_equal> >
+            <vecPart, std::unordered_set<vecPart, cliques::partition_hash, cliques::partition_equal> >
             (
             initial_partition,
             [&orange_graph] (vecPart partition) -> std::vector<vecPart> {

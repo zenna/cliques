@@ -152,7 +152,7 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 
 int main(int ac, char* av[]) {
 	typedef cliques::VectorPartition VecPartition;
-	typedef boost::unordered_set<VecPartition, cliques::partition_hash,
+	typedef std::unordered_set<VecPartition, cliques::partition_hash,
 			cliques::partition_equal> VecPartitionSet;
 
 	lemon::SmartGraph orange_graph;

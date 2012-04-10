@@ -60,16 +60,14 @@ std::set<int> find_maxima(G &graph, double *stabilities) {
 
  This is an sampled search to find maximal points on a landscape
  */
-template<typename T, typename W, typename QF, typename P, typename Logger>
-void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, boost::unordered_set<P,
-                cliques::partition_hash, cliques::partition_equal> &maxima,
-        boost::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &sampled_partitions, Logger log) {
+template<typename T, typename W, typename QF, typename sP, typename Logger>
+void sample_maxima(T &graph, W &weights, QF &compute_quality, double time, sP &maxima,
+        sP &sampled_partitions, Logger log) {
 
-    typedef typename boost::unordered_set<P, cliques::partition_hash,
-            cliques::partition_equal> partition_set;
+    typedef typename sP::value_type Partition_Type;
+    typedef sP partition_set;
 
-    P partition(lemon::countNodes(graph));
+    Partition_Type partition(lemon::countNodes(graph));
     partition.initialise_as_singletons();
 
     for (auto set_itr = sampled_partitions.begin(); set_itr
