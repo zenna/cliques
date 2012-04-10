@@ -478,6 +478,7 @@ end
 %------------------------------------------------------------------------------
 function [S, N, C, VI, edge_statistics] = louvain_FNL(Graph, time, PARAMS)
 % Computes the full normalised stabilty
+%TODO: check if all this works out fine..
 
 % directed case: M_ij >> from i to j
 if PARAMS.directed == true
@@ -490,22 +491,29 @@ if PARAMS.directed == true
     % teleportation according to arXiv:0812.1770
     M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
 	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
-    clear Dout, dangline
-
-    % now compute exponential transition matrix
     
+    clear Dout, dangling
+    [v lambda] = eigs(M',1); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    clear lambda;
+    % now compute exponential transition matrix
+    solution = diag(v/sum(v))*expm(time* (M-eye(size(M)) );
+    clear M, v;
+    % symmetrize solution    
+    solution = (solution+solution')/2;
+
+  
 % undirected case
 else
-% Generate the matrix exponential
-PI=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
-trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
-Lap=sparse(trans-eye(PARAMS.NbNodes));
-clear trans;
-exponential=sparse(expm(time.*Lap));
-clear Lap;
-solution=sparse(PI*exponential);
-clear exponential;
-clear PI;
+    % Generate the matrix exponential
+    PI=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
+    trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
+    Lap=sparse(trans-eye(PARAMS.NbNodes));
+    clear trans;
+    exponential=sparse(expm(time.*Lap));
+    clear Lap;
+    solution=sparse(PI*exponential);
+    clear exponential;
+    clear PI;
 end
 
 % prune out weights that are too small as defined by precision
@@ -790,6 +798,7 @@ else
     [v lambda] = eigs(Graph,1); % largest eigenvalue of graph adjacency and EV
     LAMDA_v =diag(abs(v));           
      clear v;
+    %TODO Check if this really yields a transition matrix
     M_R = 1/lambda * (LAMDA_v\Graph*LAMDA_v); % Ruelle transition matrix;
      clear lambda;
     
