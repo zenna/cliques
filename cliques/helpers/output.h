@@ -1,8 +1,9 @@
+/* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, michael.schaub09@imperial.ac.uk, 2010-2012 */
+
 #pragma once
 
 #include <iostream>
 #include <fstream>
-
 #include <vector>
 #include <map>
 
@@ -121,18 +122,33 @@ void basins_to_file(std::string filename,
     basins_file.close();
 }
 
+/**
+ @brief  Write partitions from a container into a file. (Template)
+
+ This functions iterates over a given container and writes the partitions into 
+ a file. Each line stands for one partition, each column stands for one node 
+ with its corresponding community Id.
+
+ @param[in]  filename          file to be written
+ @param[in]  all_partitions    container with partitions
+
+ */
 template <typename P>
 void partitions_to_file(std::string filename,
         P & all_partitions) {
+    // init streams
     std::ofstream partitions_file;
     partitions_file.open(filename);
-
+    
+    // iterate over container and write partitions in file
     for (auto itr = all_partitions.begin();
         itr != all_partitions.end();++itr) {
+
 		int length = itr->element_count();
 		for (int i = 0; i < length; i++) {
 			partitions_file << itr->find_set(i) << " ";
 		}
+
 		partitions_file << std::endl;
 	}
 	partitions_file.close();
