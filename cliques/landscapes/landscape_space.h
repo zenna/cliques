@@ -6,6 +6,7 @@
 #include <functional>
 #include <list>
 
+#include <unordered_set>
 #include <boost/unordered_map.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/bimap.hpp>
