@@ -40,7 +40,10 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       'normalised'.
 %
 %	 directed	activate stability for directed 	none
-%			graphs
+%			graphs. Note that transition matrices
+%			are defined for left multiplications 
+%			here, i.e. A_ij is the link from i to j.
+%
 %
 %        noVI           Disables the calculation of the         none
 %                       robustness of the partitions.
@@ -122,7 +125,7 @@ if nargin > 0
     end
     % Check if the graph is correctly encoded
     if Sanity
-        G=check(G, verbose);
+        G=check(G, verbose, PARAMS);
     end
     % If the full stability is to be computed, Graph should be the
     % adjacency matrix.
@@ -328,6 +331,7 @@ TextOutput = false;                             % Toggles the text output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Options stored in struct relevant for optimization etc.
 PARAMS = struct;				% create empty structure for storing parameters
+PARAMS.directed = false;			% enables dealing with directed graphs
 PARAMS.ComputeVI = true;                        % True if the variation of information should be computed
 PARAMS.ComputeES = false;                       % True if edge statistics should be computed
 PARAMS.ComputeParallel = false;                 % Toggles the computation in parallel
@@ -355,8 +359,11 @@ if options > 0
             if strcmpi(varargin{i},'linearised')
                 Full = false;
                 i = i+1;
+	    elseif strcmpi(varargin{i},'directed')
+                PARAMS.directed = true;
+                i = i+1;
             elseif strcmpi(varargin{i},'novi')
-                ComputeVI = false;
+                PARAMS.ComputeVI = false;
                 i = i+1;
             elseif strcmpi(varargin{i},'nocheck')
                 Sanity = false;
@@ -369,9 +376,9 @@ if options > 0
                 i = i+1;
             elseif strcmpi(varargin{i},'p')
                 if exist('matlabpool','file')
-                    ComputeParallel = true;
+                    PARAMS.ComputeParallel = true;
                 else
-                    ComputeParallel = false;
+                    PARAMS.ComputeParallel = false;
                     warning('The Parallel Computing Toolbox of Matlab does not appear to be installed. Defaulting to single node computation...');
                 end
                 i = i+1;
@@ -393,20 +400,20 @@ if options > 0
                     end
                 elseif strcmpi(varargin{i},'l')
                     if isnumeric(varargin{i+1})
-                        NbLouvain = round(varargin{i+1});
-                        M = round(varargin{i+1});
+                        PARAMS.NbLouvain = round(varargin{i+1});
+                        PARAMS.M = round(varargin{i+1});
                     end
                 elseif strcmpi(varargin{i},'prec')
                     if isnumeric(varargin{i+1})
-                        Precision = varargin{i+1};
+                        PARAMS.Precision = varargin{i+1};
                     end
                 elseif strcmpi(varargin{i},'m')
                     if isnumeric(varargin{i+1})
-                        M = varargin{i+1};
+                        PARAMS.M = varargin{i+1};
                     end
                 elseif strcmpi(varargin{i},'k')
                     if isnumeric(varargin{i+1})
-                        K = varargin{i+1};
+                        PARAMS.K = varargin{i+1};
                     end
                 elseif strcmpi(varargin{i},'out')
                     if ischar(varargin{i+1})
@@ -434,7 +441,7 @@ if options > 0
     end
 end
 
-TextOutput = TextOutput & OutputFile;
+TextOutput = TextOutput && OutputFile;
 
 % Choose which type of stability is to be computed
 if Full
@@ -448,7 +455,9 @@ if Full
         StabilityFunction = @louvain_MINL;
     elseif strcmpi(Laplacian, 'k_stability')
         StabilityFunction = @louvain_k_stability;
-    else        
+    elseif strcmpi(Laplacian, 'Ruelle_k_stability')
+        StabilityFunction = @louvain_Ruelle_k_stability;
+    else
         error('Please provide a valid matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
     end
 else
@@ -470,35 +479,43 @@ end
 function [S, N, C, VI, edge_statistics] = louvain_FNL(Graph, time, PARAMS)
 % Computes the full normalised stabilty
 
-%TODO adjust below code properly to work with paremters struct, so far just
-% copy
-ComputeES = PARAMS.ComputeES;
-ComputeVI = PARAMS.ComputeVI  ;
-precision = PARAMS.Precision;
-NbLouvain = PARAMS.NbLouvain;
-M = PARAMS.M ;
-NbNodes = PARAMS.NbNodes;
-ComputeParallel = PARAMS.ComputeParallel;
+% directed case: M_ij >> from i to j
+if PARAMS.directed == true
+    dout = sparse(diag(sum(Graph,2)));
+    dangling = (dout==0);
+    dout(dangling) = 1;
+    Dout = sparse(diag(dout));
+    clear dout;
+    M = (1-PARAMS.teleport_tau)*Dout\Graph; % deterministic part of transition
+    % teleportation according to arXiv:0812.1770
+    M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
+	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
+    clear Dout, dangline
 
+    % now compute exponential transition matrix
+    
+% undirected case
+else
 % Generate the matrix exponential
-diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
+PI=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
 trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
-Lap=sparse(trans-eye(NbNodes));
+Lap=sparse(trans-eye(PARAMS.NbNodes));
 clear trans;
 exponential=sparse(expm(time.*Lap));
 clear Lap;
-solution=sparse(diagdeg*exponential);
+solution=sparse(PI*exponential);
 clear exponential;
-clear diagdeg;
-solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
-clear exponential;
-clear diagdeg;
+clear PI;
+end
+
+% prune out weights that are too small as defined by precision
+solution=max(max(solution))*PARAMS.Precision*round(solution/(max(max(solution))*PARAMS.Precision));
 [row,col,val] = find(solution);
 clear solution
 graph=[col-1,row-1,val];
 
-% Optimize louvain NbLouvain times
-[stability, nb_comm, communities] = stability_louvain(graph, 1, NbLouvain, precision,'normalised');
+% Optimize with Louvain NbLouvain times
+[stability, nb_comm, communities] = stability_louvain(graph, 1, PARAMS.NbLouvain, PARAMS.Precision,'normalised');
 lnk = communities;
 lnkS = stability;
 % Comment: maybe one should pick one of the best solutions at random,
@@ -512,9 +529,8 @@ N = nb_comm(index);
 clear communities;
 clear graph;
 
-if ComputeVI% && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    %[VI, nr_cores, cores, edge_statistics] = findCoreAndPeriphery(Graph,lnk);
-    VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
+if PARAMS.ComputeVI && nnz(max(lnk)==PARAMS.NbNodes-1)~=PARAMS.NbLouvain && nnz(max(lnk)==0)~=PARAMS.NbLouvain
+    VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
 else
     VI=0; 
 end
@@ -721,12 +737,12 @@ else
     D=sparse(diag(sum(Graph)));  %diag matrix with stat distr
     M=sparse(diag(  (sum(Graph)).^(-1) ) * Graph);  %(stochastic) transition matrix
     d_mk_av = mean( diag(D).^(-k) ); % vector with mean of degree to the minus k-th power 
-    Lap=D^(-k)\sparse(M-eye(PARAMS.NbNodes)); % k-Laplacian, actually minus L_k
+    Lap=diag(diag(D).^(-k))  \ sparse(M-eye(PARAMS.NbNodes)); % k-Laplacian, actually minus L_k
     clear M;
     exponential=sparse(expm(time*Lap/d_mk_av));
     clear Lap;
     clear d_mk_av;
-    solution=sparse(D^(k+1)*exponential);
+    solution=sparse(diag(diag(D).^(k+1))*exponential);
     clear exponential;
     clear D;
     clear k;
@@ -771,25 +787,34 @@ else
     k = PARAMS.K;
     precision = PARAMS.Precision;
     
+    [v lambda] = eigs(Graph,1); % largest eigenvalue of graph adjacency and EV
+    LAMDA_v =diag(abs(v));           
+     clear v;
+    M_R = 1/lambda * (LAMDA_v\Graph*LAMDA_v); % Ruelle transition matrix;
+     clear lambda;
+    
     % Generate the matrix exponential
-    D=sparse(diag(sum(Graph)));  %diag matrix with stat distr
-    M=sparse(diag(  (sum(Graph)).^(-1) ) * Graph);  %(stochastic) transition matrix
-    d_mk_av = mean( diag(D).^(-k) ); % vector with mean of degree to the minus k-th power 
-    Lap=D^(-k)\sparse(M-eye(PARAMS.NbNodes)); % k-Laplacian, actually minus L_k
-    clear M;
-    exponential=sparse(expm(time*Lap/d_mk_av));
+    v_mk_av = mean( diag(LAMDA_v).^(-k) ); % mean of v to the minus k-th power 
+    Lap=diag(diag(LAMDA_v).^(-k)) \ sparse(M_R-eye(PARAMS.NbNodes)); % Ruelle-k-Laplacian, actually negative of it
+    clear M_R;
+    exponential=sparse(expm(time*Lap/v_mk_av));
     clear Lap;
-    clear d_mk_av;
-    solution=sparse(D^(k+1)*exponential);
+    clear v_mk_av;
+    solution=sparse(diag(diag(LAMDA_v).^(k+2))*exponential);
     clear exponential;
-    clear D;
+    clear LAMDA_v;
     clear k;
     solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
     clear exponential;
     [row,col,val] = find(solution);
     clear solution
-    graph=[col-1,row-1,val];
     
+%     % adjust range of values, important as otherwise val tend to become too small..
+%     mval = mean(val);
+%     val = val/mval; clear mval
+    
+    graph=[col-1,row-1,val];
+        
     % Optimize louvain NbLouvain times
     [stability, nb_comm, communities] = stability_louvain(graph, 1, PARAMS.NbLouvain, precision,'normalised');
     lnk = communities;
@@ -930,7 +955,7 @@ clear lnk;
 
 end
 %------------------------------------------------------------------------------
-function Graph = check(Graph, verbose)
+function Graph = check(Graph, verbose, PARAMS)
 % Check that the graph is properly encoded.
     if verbose
         disp(' ');
@@ -970,24 +995,26 @@ function Graph = check(Graph, verbose)
         end
     end
 
-    % Check for NaN's
-    if any(any(isnan(Graph)))
-	error('The graph provided contains elements which are not numbers (NaN). Please check your graph, and try again.');
+    % Check that graph contains just numbers
+    if any(any(~isnumeric(Graph)))
+	error('The graph provided contains elements which are not numbers (isnumeric == false). Please check your graph, and try again.');
     end
         
-    % Check symmetry of the adjacency matrix
-    if size(Graph,1) ~= size(Graph,2)
-        error('The graph provided is a directed graph. This program only deals with undirected graphs.');
+    % Check symmetry of the adjacency matrix if graph is not directed
+    if PARAMS.directed == false
+    	if size(Graph,1) ~= size(Graph,2)
+        	error('The graph provided is a directed graph. Specify the correct options or correct your graph');
+    	end
+	if any(any(Graph~=Graph'))
+		if nnz(triu(Graph,1))>0 && nnz(tril(Graph,-1))>0
+		    error('The graph provided is a directed graph.');
+		else
+		    warning('Adjacency matrix A of provided graph is triangular -- symmetrizing A = A + A^T');
+		    Graph=Graph+Graph';
+		end
+	end
     end
-    if any(any(Graph~=Graph'))
-        if nnz(triu(Graph,1))>0 && nnz(tril(Graph,-1))>0
-            error('The graph provided is a directed graph. This program only deals with undirected graphs.');
-        else
-            warning('Adjacency matrix A of provided graph is triangular -- symmetrizing A = A + A^T');
-            Graph=Graph+Graph';
-        end
-    end
-    
+
     % Check for isolated nodes
     if nnz(sum(Graph))~=size(Graph,2)
         warning('There are isolated nodes in the graph');
@@ -997,7 +1024,7 @@ function Graph = check(Graph, verbose)
     if exist('graphconncomp','file') == 2
         nbcomp=graphconncomp(sparse(Graph));
         if nbcomp>1
-            warning(['There are ' num2str(nbcomp) ' disconnected components in the graph.']);
+            warning(['There are ' num2str(nbcomp) ' not strongly connected components in the graph. If your graph is directed please be aware of the teleportation settings.']);
         end
     end
     
