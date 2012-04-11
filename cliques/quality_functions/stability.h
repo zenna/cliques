@@ -16,7 +16,6 @@
 #include <cliques/quality_functions/internals/linearised_internals.h>
 #include <cliques/quality_functions/internals/linearised_internals_comb.h>
 #include <cliques/helpers/graphhelpers.h>
-#include <cliques/structures/disjointset.h>
 
 namespace cliques {
 /**

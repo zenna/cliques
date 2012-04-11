@@ -50,6 +50,8 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples)
 }
 
 int main(int ac, char* av[]) {
+    typedef typename cliques::VectorPartition vecPart;
+    typedef typename std::unordered_set<vecPart, cliques::partition_hash, cliques::partition_equal> partition_set;
     lemon::SmartGraph orange_graph;
     lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
     int num_samples;
@@ -57,25 +59,24 @@ int main(int ac, char* av[]) {
 
     double markov_time = 1.0;
     double precision = 1e-9;
-    int num_steps_per_sample = 10;
-
     cliques::find_full_normalised_stability func(orange_graph, weights,
             precision);
-    cliques::VectorPartition initial_partition(lemon::countNodes(orange_graph));
+    vecPart initial_partition(lemon::countNodes(orange_graph));
     initial_partition.initialise_as_singletons();
+    cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);
 
     // Use a lambda to close over orange_graph so that the function passed to stochastic_climb only takes one param
     // - the partition, but has necessary access to orange_graph
-    cliques::VectorPartition optimal_partition = cliques::stochastic_monotonic_climb<cliques::VectorPartition>(
-            initial_partition,
-            [&orange_graph] (cliques::VectorPartition partition) -> std::vector<cliques::VectorPartition> {
-                std::vector<cliques::VectorPartition> alpha;
-                return alpha;
-//                return cliques::find_neighbours(orange_graph, partition);
+    vecPart optimal_partition = cliques::stochastic_monotonic_climb
+            <vecPart, partition_set>
+            (initial_partition,
+            [&orange_graph] (vecPart partition) -> partition_set {
+                partition_set alpha;
+                return cliques::find_neighbours(orange_graph, partition);
             },
             cliques::Direction::ASCENT,
-            [] (cliques::VectorPartition partition) -> double {
-                return 1.0;
+            [&quality_func, &markov_time] (vecPart partition) -> double {
+                return quality_func(partition, markov_time);
             });
 
     return 0;

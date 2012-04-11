@@ -3,15 +3,13 @@
  * Copyright Stuart Golodetz, 2009. All rights reserved.
  * Modifed by Zenna Tavares 2011
  ***/
-
-#ifndef CLIQUES_DISJOINTSETFOREST_H
-#define CLIQUES_DISJOINTSETFOREST_H
+#pragma once
 
 #include <map>
 #include <set>
 #include <iostream>
 
-#include <boost/unordered_map.hpp>
+#include <unordered_map.hpp>
 
 namespace cliques {
 
@@ -46,7 +44,7 @@ public:
 	//#################### PRIVATE VARIABLES ####################
 private:
 	//mutable std::map<int,Element> m_elements;
-	mutable boost::unordered_map<int, Element> m_elements;
+	mutable std::unordered_map<int, Element> m_elements;
 	unsigned int m_setCount;
 	Element *last_unioned_node_;
 	int last_unioned_parent_;
@@ -67,7 +65,7 @@ public:
 	 @param[in]  initialElements     A map from the initial elements to their associated values
 	 */
 	explicit DisjointSetForest(
-			const boost::unordered_map<int, T>& initialElements) :
+			const std::unordered_map<int, T>& initialElements) :
 		m_setCount(0) {
 		add_elements(initialElements);
 	}
@@ -78,7 +76,7 @@ public:
 	class PartIterator {
 	public:
 		PartIterator(
-				typename boost::unordered_map<int, Element>::iterator part_itr,
+				typename std::unordered_map<int, Element>::iterator part_itr,
 				DisjointSetForest &parent_disjoint_set) :
 			part_itr_(part_itr), parent_disjoint_set_(parent_disjoint_set) {
 		}
@@ -123,19 +121,19 @@ public:
 		}
 
 		NodeIterator begin() {
-			typename boost::unordered_map<int, Element>::iterator
+			typename std::unordered_map<int, Element>::iterator
 					tmp_node_itr_ = part_itr_;
 			return NodeIterator(tmp_node_itr_, this->parent_disjoint_set_);
 		}
 
 		NodeIterator end() {
-			typename boost::unordered_map<int, Element>::iterator
+			typename std::unordered_map<int, Element>::iterator
 					tmp_node_itr_ = parent_disjoint_set_.m_elements.end();
 			return NodeIterator(tmp_node_itr_, this->parent_disjoint_set_);
 		}
 
 	private:
-		typename boost::unordered_map<int, Element>::iterator part_itr_;
+		typename std::unordered_map<int, Element>::iterator part_itr_;
 		//typename std::map<int,T>::iterator part_itr_;
 		std::set<int> visited_parents_;
 		DisjointSetForest &parent_disjoint_set_;
@@ -145,13 +143,13 @@ public:
 	PartIterator begin() {
 		//typename std::map<int,T>::iterator tmp_part_itr_;
 		//tmp_part_itr_ = m_elements.begin();
-		typename boost::unordered_map<int, Element>::iterator tmp_part_itr_ =
+		typename std::unordered_map<int, Element>::iterator tmp_part_itr_ =
 				m_elements.begin();
 		return PartIterator(tmp_part_itr_, *this);
 	}
 
 	PartIterator end() {
-		typename boost::unordered_map<int, Element>::iterator tmp_part_itr_ =
+		typename std::unordered_map<int, Element>::iterator tmp_part_itr_ =
 				m_elements.end();
 		return PartIterator(tmp_part_itr_, *this);
 	}
@@ -159,7 +157,7 @@ public:
 	class NodeIterator {
 	public:
 		NodeIterator(
-				typename boost::unordered_map<int, Element>::iterator node_itr,
+				typename std::unordered_map<int, Element>::iterator node_itr,
 				DisjointSetForest &parent_disjoint_set) :
 			node_itr_(node_itr), parent_disjoint_set_(parent_disjoint_set) {
 			if (node_itr_ != parent_disjoint_set.m_elements.end()) {
@@ -200,7 +198,7 @@ public:
 
 	private:
 		//PartIterator &part_iterator_;
-		typename boost::unordered_map<int, Element>::iterator node_itr_;
+		typename std::unordered_map<int, Element>::iterator node_itr_;
 		int parent_set_;
 		int num_nodes_seen_;
 		int num_nodes_in_set_;
@@ -405,7 +403,7 @@ private:
 	}
 
 	Element& get_element(int x) const {
-		typename boost::unordered_map<int, Element>::iterator it =
+		typename std::unordered_map<int, Element>::iterator it =
 				m_elements.find(x);
 		//TODO add exception handling
 		if (it != m_elements.end())

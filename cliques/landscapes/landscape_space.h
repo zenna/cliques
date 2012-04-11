@@ -6,6 +6,7 @@
 #include <functional>
 #include <list>
 
+#include <unordered_set>
 #include <boost/unordered_map.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/bimap.hpp>
@@ -13,6 +14,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/bimap/multiset_of.hpp>
 
+#include <cliques/helpers/lists.h>
 #include <cliques/helpers/graphhelpers.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/structures/common.h>
@@ -123,13 +125,13 @@ bool will_move_break_partition(G &graph, const P &partition_const,
  * isolating a node would not break a partition
  */
 template<typename G, typename P>
-boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_neighbours(
+std::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_neighbours(
         G &graph,
         P const &partition) {
     typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
 
-    boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
+    std::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
             neighbour_partitions;
 
     for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
@@ -186,7 +188,7 @@ P find_random_connected_neighbour(G &graph, P const &partition, E &edge,
     int set_of_n1 = partition.find_set(n1_id);
     int set_of_n2 = partition.find_set(n2_id);
     bool are_in_same_set = (set_of_n1 == set_of_n2);
-    boost::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
+    std::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
             neighbour_partitions;
 
     // Add partition with n1 isolated and in n2's set
@@ -249,14 +251,14 @@ template<typename G, typename P>
 boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
         cliques::partition_equal>, boost::bimaps::set_of<typename G::Node> > create_space(
         G &graph,
-        boost::unordered_set<P, cliques::partition_hash,
+        std::unordered_set<P, cliques::partition_hash,
                 cliques::partition_equal> &all_partitions, G &space) {
 
     typedef typename G::Node Node;
     typedef typename G::Edge Edge;
-    typedef typename boost::unordered_set<P, cliques::partition_hash,
+    typedef typename std::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
-    typedef typename boost::unordered_set<P, cliques::partition_hash,
+    typedef typename std::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal>::iterator partition_set_itr;
     typedef boost::bimap<boost::bimaps::unordered_set_of<P,
             cliques::partition_hash, cliques::partition_equal>,
@@ -602,23 +604,6 @@ std::map<int, std::map<int, double> > compute_kernighan_lin_basins(G &graph,
     }
 
     return basin;
-}
-
-bool does_set_contain_other(std::vector<int> larger_set,
-        std::vector<int> smaller_set, std::vector<int> &buffer) {
-    std::sort(larger_set.begin(), larger_set.end());
-    std::sort(smaller_set.begin(), smaller_set.end());
-
-    auto end = std::set_difference(smaller_set.begin(), smaller_set.end(),
-            larger_set.begin(), larger_set.end(), buffer.begin());
-
-    int difference_size = int(end - buffer.begin());
-
-    if (difference_size > 0) {
-        return false;
-    } else {
-        return true;
-    }
 }
 
 /**
