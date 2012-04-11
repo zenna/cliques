@@ -39,10 +39,10 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       either be 'combinatorial', or 
 %                       'normalised'.
 %
-%	 directed	activate stability for directed 	none
-%			graphs. Note that transition matrices
-%			are defined for left multiplications 
-%			here, i.e. A_ij is the link from i to j.
+%        directed       activate stability for directed         none
+%                       graphs. Note that transition matrices
+%                       are defined for left multiplications 
+%                       here, i.e. A_ij is the link from i to j.
 %
 %
 %        noVI           Disables the calculation of the         none
@@ -253,7 +253,7 @@ for t=1:length(Time)
     end
     
     if plotStability && t>1
-        stability_plot(Time,t,S,N,VI,ComputeVI);
+        stability_plot(Time,t,S,N,VI,PARAMS.ComputeVI);
     end
     
     if TextOutput
@@ -340,9 +340,10 @@ PARAMS.NbNodes = 0;                             % Total number of nodes;
 PARAMS.Precision = 1e-9;                        % Threshold for stability and edges weigths
 PARAMS.M = 100;                                 % Top M partitions among the L found by louvain are used to compute the variation of information
 PARAMS.K = NaN;                                 % K stabilities value, only relevant for Ruelle random walk and k stabilities. K =-1 corresponds to the normalised Laplacian
+PARAMS.teleport_tau = 0;                        % teleportation probability (only relevant for directed graphs)
 
 % actual parsing begins here
-attributes={'novi', 'l', 'm', 'out', 'linearised', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k'};
+attributes={'novi', 'l', 'm', 'out', 'linearised', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k','directed','teleport'};
 
 if options > 0
     
@@ -359,7 +360,7 @@ if options > 0
             if strcmpi(varargin{i},'linearised')
                 Full = false;
                 i = i+1;
-	    elseif strcmpi(varargin{i},'directed')
+            elseif strcmpi(varargin{i},'directed')
                 PARAMS.directed = true;
                 i = i+1;
             elseif strcmpi(varargin{i},'novi')
@@ -414,6 +415,10 @@ if options > 0
                 elseif strcmpi(varargin{i},'k')
                     if isnumeric(varargin{i+1})
                         PARAMS.K = varargin{i+1};
+                    end
+                elseif strcmpi(varargin{i},'teleport')
+                    if isnumeric(varargin{i+1})
+                        PARAMS.teleport_tau = varargin{i+1};
                     end
                 elseif strcmpi(varargin{i},'out')
                     if ischar(varargin{i+1})
@@ -482,7 +487,7 @@ function [S, N, C, VI, edge_statistics] = louvain_FNL(Graph, time, PARAMS)
 
 % directed case: M_ij >> from i to j
 if PARAMS.directed == true
-    dout = sparse(diag(sum(Graph,2)));
+    dout = sum(Graph,2);
     dangling = (dout==0);
     dout(dangling) = 1;
     Dout = sparse(diag(dout));
@@ -492,12 +497,13 @@ if PARAMS.directed == true
     M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
 	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
     
-    clear Dout, dangling
+    clear Dout dangling
     [v lambda] = eigs(M',1); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    v = abs(v);              % make sure eigenvector is positive
     clear lambda;
     % now compute exponential transition matrix
-    solution = diag(v/sum(v))*expm(time* (M-eye(size(M)) );
-    clear M, v;
+    solution = diag(v/sum(v))*expm(time* (M-eye(size(M))) );
+    clear M v;
     % symmetrize solution    
     solution = (solution+solution')/2;
 
