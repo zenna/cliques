@@ -415,6 +415,24 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins(G &graph,
 }
 
 /**
+ @brief  Given a container of (generic) configurations
+ @param[out]  basins        Map from node_id to map of id -> probability of going there
+
+ The probability is weighted, as the difference between the qualities of the nodes
+ / the total weight (positive with respect to the starting node)
+
+ */
+template<typename G>
+std::map<int, std::map<int, double> > sample_probabalistic_basins(
+        all_configurations, optimisation_func) {
+
+    typedef typename lemon::SmartDigraph::NodeIt NodeIt;
+    typedef typename lemon::SmartDigraph::Node Node;
+    typedef typename lemon::SmartDigraph::OutArcIt OutArcIt;
+}
+
+
+/**
  @brief  From a graph and vector of qualities create a directed transition graph
  The new graph has the same number of nodes, but only directed edges from one node
  to a node of greater quality, with the edge weight the probability of going
