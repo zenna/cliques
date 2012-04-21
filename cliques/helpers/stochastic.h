@@ -29,8 +29,9 @@ int weighted_sample(std::vector<N> weighted_list, RNG &prng_engine) {
 
     // Then sample random point on this line, and see corresponding weight
     double rand_real = real_distribution(prng_engine) * total_weight;
+
     int rand_index = 0;
-    for (int list_element : indexed_array) {
+    for (N &list_element : indexed_array) {
         if (rand_real <= list_element) {
             return rand_index;
         }

@@ -59,25 +59,36 @@ int main(int ac, char* av[]) {
 
     double markov_time = 1.0;
     double precision = 1e-9;
-    cliques::find_full_normalised_stability func(orange_graph, weights,
-            precision);
+
+    // std::vector<int> alpha = [0,1,2,0,0,1];
+
     vecPart initial_partition(lemon::countNodes(orange_graph));
     initial_partition.initialise_as_singletons();
-    cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);
+
+    cliques::find_linearised_normalised_stability quality_func(markov_time);
+    // cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);
 
     // Use a lambda to close over orange_graph so that the function passed to stochastic_climb only takes one param
     // - the partition, but has necessary access to orange_graph
+    std::mt19937 prng_engine;
+
+    cliques::output("starting to roll");
+    for (int i=0;i<1000;++i) {
     vecPart optimal_partition = cliques::stochastic_monotonic_climb
-            <vecPart, partition_set>
+            <vecPart, std::vector<vecPart>>
             (initial_partition,
-            [&orange_graph] (vecPart partition) -> partition_set {
-                partition_set alpha;
-                return cliques::find_neighbours(orange_graph, partition);
+            [&orange_graph] (vecPart partition) -> std::vector<vecPart> {
+                return cliques::find_neighbours2(orange_graph, partition);
             },
             cliques::Direction::ASCENT,
-            [&quality_func, &markov_time] (vecPart partition) -> double {
-                return quality_func(partition, markov_time);
-            });
+            [&quality_func, &orange_graph, &weights] (vecPart partition) -> double {
+                return quality_func(orange_graph, partition, weights);
+            },
+            prng_engine);
+
+    cliques::print_partition_line(optimal_partition);
+
+    }
 
     return 0;
 }

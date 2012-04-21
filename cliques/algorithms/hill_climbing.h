@@ -24,49 +24,47 @@ enum class Direction {
  @param[in]  compute_quality        Computes the quality (or cost) of a given configuration
  @param[out] local_optimum          Local optimum found through schocastic hill climbing
  */
-template<typename C, typename cC>
+template<typename C, typename cC, typename RNG>
 C stochastic_monotonic_climb(
-        C initial_configuration,
-        std::function<cC (C)> find_neighbours,
-        cliques::Direction direction,
-        std::function<double (C)> compute_quality) {
+        C const initial_configuration,
+        std::function<cC (C)> const find_neighbours,
+        cliques::Direction const direction,
+        std::function<double (C)> const compute_quality,
+        RNG &prng_engine) {
 
     bool am_at_local_optimum = false; // stop when this is true
     int max_num_steps = 10000;
     C current_configuration = initial_configuration;
-    std::mt19937 m_engine;
 
     // Make stochastic local move until local optima or max_num_steps reached
     for (int i = 0; i < max_num_steps && am_at_local_optimum == false; ++i) {
 
         // First find differences in quality between current config and all neighbours
-        double current_config_quality = compute_quality(initial_configuration);
+        double current_config_quality = compute_quality(current_configuration);
         std::vector<double> quality_diffs;
-        cC neighbours = find_neighbours(current_configuration);
+
+        am_at_local_optimum = true;
         for (C const &neighbour : neighbours) {
             double quality_diff;
             if (direction == cliques::Direction::ASCENT) {
                 quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
             else if (direction == cliques::Direction::DESCENT) {
-                quality_diff = current_config_quality - compute_quality(neighbour);
+                quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
 
-            // By setting weight of negative quality diffs to 0, we enforce monotonic moves
-            // Since the weighted sampler will not chose these
+            am_at_local_optimum = am_at_local_optimum && (quality_diff < 0);
             quality_diff = quality_diff > 0 ? quality_diff : 0;
             quality_diffs.push_back(quality_diff);
         }
 
         // Then sample a neighbour from multinomial distribution of qualities
         // Return if we've found a local optimum
-        if (quality_diffs.size() > 0) {
-            int chosen_index = weighted_sample(quality_diffs, m_engine);
+        if (am_at_local_optimum == false) {
+            int chosen_index = weighted_sample(quality_diffs, prng_engine);
             typename cC::iterator it = neighbours.begin();
             std::advance(it, chosen_index);
             current_configuration = *it;
-        } else {
-            am_at_local_optimum = true;
         }
     }
 
