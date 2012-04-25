@@ -70,18 +70,21 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples)
 
 int main(int ac, char* av[]) {
 	typedef cliques::VectorPartition VecPartition;
+	typedef cliques::VectorPartition vecPart;
 	typedef std::unordered_set<VecPartition, cliques::partition_hash,
 			cliques::partition_equal> VecPartitionSet;
+
+    cliques::output("Sampling Partitions Uniformly");
+	int num_samples = 50000;
+	double markov_time = 1.0;
+	double precision = 1e-9;
+	int num_steps_per_sample = 3;
 
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 
-	cliques::output("Sampling Partitions Uniformly");
-	int num_samples = 50000;
-	double markov_time = 1.0;
-	double precision = 1e-9;
-	int num_steps_per_sample = 3;
+	
 
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);

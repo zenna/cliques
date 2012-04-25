@@ -100,8 +100,8 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 % Unparsed default parameters
 Graph = [];                                     % List of edges of the graph to be partitioned
 Time = 1;                                       % Markov times at which the graph should be partitioned
-flag_matlabpool = false;			% for opening/closing workpool for parallel computation
-PARAMS = struct;				% create empty structure for storing parameters
+flag_matlabpool = false;                        % for opening/closing workpool for parallel computation
+PARAMS = struct;                                % create empty structure for storing parameters
 
 
 
@@ -110,8 +110,6 @@ PARAMS = struct;				% create empty structure for storing parameters
 %$          Arguments parsing               $%
 %$                                          $%
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
-
-
 
 [StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, verbose, TextOutput, PARAMS] = parseinput(length(varargin),varargin);
 
@@ -320,7 +318,7 @@ function [StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, ve
 % "Global" options relevant for output and control flow
 StabilityFunction = @louvain_FNL;    	        % Full stability with normalised laplacian is used by default
 OutputFile = false;                             % No output file by default.
-Laplacian = 'Normalised';			% Default Laplacian
+Laplacian = 'Normalised';                       % Default Laplacian
 Full = true;                                    % If true, performs the full stability
 Sanity = true;                                  % If true, performs the graph sanity checks
 plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
@@ -330,8 +328,8 @@ TextOutput = false;                             % Toggles the text output
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Options stored in struct relevant for optimization etc.
-PARAMS = struct;				% create empty structure for storing parameters
-PARAMS.directed = false;			% enables dealing with directed graphs
+PARAMS = struct;                                % create empty structure for storing parameters
+PARAMS.directed = false;                        % enables dealing with directed graphs
 PARAMS.ComputeVI = true;                        % True if the variation of information should be computed
 PARAMS.ComputeES = false;                       % True if edge statistics should be computed
 PARAMS.ComputeParallel = false;                 % Toggles the computation in parallel
@@ -498,7 +496,9 @@ if PARAMS.directed == true
 	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
     
     clear Dout dangling
-    [v lambda] = eigs(M',1); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    [v lambda] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    lambda = max(diag(lambda_all));
+    v = v(:,diag(lambda_all) == lambda);
     v = abs(v);              % make sure eigenvector is positive
     clear lambda;
     % now compute exponential transition matrix
