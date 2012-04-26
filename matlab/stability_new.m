@@ -100,8 +100,8 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 % Unparsed default parameters
 Graph = [];                                     % List of edges of the graph to be partitioned
 Time = 1;                                       % Markov times at which the graph should be partitioned
-flag_matlabpool = false;			% for opening/closing workpool for parallel computation
-PARAMS = struct;				% create empty structure for storing parameters
+flag_matlabpool = false;                        % for opening/closing workpool for parallel computation
+PARAMS = struct;                                % create empty structure for storing parameters
 
 
 
@@ -110,8 +110,6 @@ PARAMS = struct;				% create empty structure for storing parameters
 %$          Arguments parsing               $%
 %$                                          $%
 %$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%$%
-
-
 
 [StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, verbose, TextOutput, PARAMS] = parseinput(length(varargin),varargin);
 
@@ -320,7 +318,7 @@ function [StabilityFunction, OutputFile, prefix, Full, Sanity, plotStability, ve
 % "Global" options relevant for output and control flow
 StabilityFunction = @louvain_FNL;    	        % Full stability with normalised laplacian is used by default
 OutputFile = false;                             % No output file by default.
-Laplacian = 'Normalised';			% Default Laplacian
+Laplacian = 'Normalised';                       % Default Laplacian
 Full = true;                                    % If true, performs the full stability
 Sanity = true;                                  % If true, performs the graph sanity checks
 plotStability = false;                          % If true, plots the results of the stability, number of communities and variation of information vs Markov time.           
@@ -330,8 +328,8 @@ TextOutput = false;                             % Toggles the text output
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Options stored in struct relevant for optimization etc.
-PARAMS = struct;				% create empty structure for storing parameters
-PARAMS.directed = false;			% enables dealing with directed graphs
+PARAMS = struct;                                % create empty structure for storing parameters
+PARAMS.directed = false;                        % enables dealing with directed graphs
 PARAMS.ComputeVI = true;                        % True if the variation of information should be computed
 PARAMS.ComputeES = false;                       % True if edge statistics should be computed
 PARAMS.ComputeParallel = false;                 % Toggles the computation in parallel
@@ -498,7 +496,9 @@ if PARAMS.directed == true
 	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
     
     clear Dout dangling
-    [v lambda] = eigs(M',1); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    [v lambda] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    lambda = max(diag(lambda_all));
+    v = v(:,diag(lambda_all) == lambda);
     v = abs(v);              % make sure eigenvector is positive
     clear lambda;
     % now compute exponential transition matrix
@@ -801,32 +801,35 @@ else
     k = PARAMS.K;
     precision = PARAMS.Precision;
     
-    [v lambda] = eigs(Graph,1); % largest eigenvalue of graph adjacency and EV
-    LAMDA_v =diag(abs(v));           
-     clear v;
-    %TODO Check if this really yields a transition matrix
-    M_R = 1/lambda * (LAMDA_v\Graph*LAMDA_v); % Ruelle transition matrix;
-     clear lambda;
+    % largest eigenvalue of graph adjacency and corresponding EV
+    [v lambda_all] = eigs(Graph);         % be careful with eigs as results are ordered according to magnitude!
+    lambda = max(diag(lambda_all));
+    v = v(:,diag(lambda_all) == lambda);
+    LAMBDA_v =diag(abs(v));           
+    clear v;
+    M_R = 1/lambda * (LAMBDA_v\Graph*LAMBDA_v); % Ruelle transition matrix;
+    clear lambda lambda_all;
     
     % Generate the matrix exponential
-    v_mk_av = mean( diag(LAMDA_v).^(-k) ); % mean of v to the minus k-th power 
-    Lap=diag(diag(LAMDA_v).^(-k)) \ sparse(M_R-eye(PARAMS.NbNodes)); % Ruelle-k-Laplacian, actually negative of it
+    v_mk_av = mean( diag(LAMBDA_v).^(-k) ); % mean of v to the minus k-th power 
+    Lap=diag(diag(LAMBDA_v).^(-k)) \ sparse(M_R-eye(PARAMS.NbNodes)); % Ruelle-k-Laplacian, actually negative of it
     clear M_R;
     exponential=sparse(expm(time*Lap/v_mk_av));
     clear Lap;
     clear v_mk_av;
-    solution=sparse(diag(diag(LAMDA_v).^(k+2))*exponential);
-    clear exponential;
-    clear LAMDA_v;
-    clear k;
+    pi = diag(LAMBDA_v).^(k+2)/sum(diag(LAMBDA_v).^(k+2));
+    PI= sparse(diag(pi));
+    clear pi LAMBDA_v;
+    solution=PI*exponential;    
+    clear PI exponential k;
     solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
     clear exponential;
     [row,col,val] = find(solution);
     clear solution
     
-%     % adjust range of values, important as otherwise val tend to become too small..
-%     mval = mean(val);
-%     val = val/mval; clear mval
+    % adjust range of values, important as otherwise val tend to become too small..
+%      mval = mean(val);
+%      val = val/mval; clear mval
     
     graph=[col-1,row-1,val];
         

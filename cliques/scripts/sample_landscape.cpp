@@ -81,6 +81,7 @@ int main(int ac, char* av[]) {
 	double markov_time = 1.0;
 	double precision = 1e-9;
 	int num_steps_per_sample = 3;
+	
 
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);
