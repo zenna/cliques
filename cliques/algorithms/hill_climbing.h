@@ -43,6 +43,8 @@ C stochastic_monotonic_climb(
         double current_config_quality = compute_quality(current_configuration);
         std::vector<double> quality_diffs;
 
+        cC neighbours = find_neighbours(current_configuration);
+        
         am_at_local_optimum = true;
         for (C const &neighbour : neighbours) {
             double quality_diff;

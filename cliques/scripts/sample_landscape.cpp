@@ -69,53 +69,52 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples)
 }
 
 int main(int ac, char* av[]) {
-	typedef cliques::VectorPartition VecPartition;
-	typedef std::unordered_set<VecPartition, cliques::partition_hash,
-			cliques::partition_equal> VecPartitionSet;
+	typedef typename cliques::VectorPartition VecPart;
+	typedef typename std::unordered_set<VecPart, cliques::partition_hash, cliques::partition_equal> partition_set;
 
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
+	int num_samples;
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 
 	cliques::output("Sampling Partitions Uniformly");
-	int num_samples = 50000;
 	double markov_time = 1.0;
 	double precision = 1e-9;
 	int num_steps_per_sample = 3;
 
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);
-	std::vector<VecPartition> test = cliques::uniform_sample<VecPartition>(orange_graph,num_samples, num_steps_per_sample);
+	std::vector<VecPart> test = cliques::uniform_sample<VecPart>(orange_graph,num_samples, num_steps_per_sample);
 
 	cliques::output("Sampling basins");
 	int num_samples_per_sample = 1000;
-	vecPart initial_partition(lemon::countNodes(orange_graph));
+	VecPart initial_partition(lemon::countNodes(orange_graph));
 	initial_partition.initialise_as_singletons();
 	cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);
 
 	// Use a lambda to close over orange_graph so that the function passed to stochastic_climb only takes one param
 	// - the partition, but has necessary access to orange_graph
 
-	auto unary_stochastic_monotic_climb = 
-	[&orange_graph, &quality_func, &markov_time] (vecPart initial_partition) -> vecPart {
-	    return cliques::stochastic_monotonic_climb
-	        <vecPart, partition_set>
-	        (initial_partition,
-	        [&orange_graph] (vecPart partition) -> partition_set {
-	            return cliques::find_neighbours(orange_graph, partition);
-	        },
-	        cliques::Direction::ASCENT,
-	        [&quality_func, &markov_time] (vecPart partition) -> double {
-	            return quality_func(partition, markov_time);
-	        });
-	});
+	// auto unary_stochastic_monotic_climb = 
+	// [&orange_graph, &quality_func, &markov_time] (VecPart initial_partition) -> VecPart {
+	//     return cliques::stochastic_monotonic_climb
+	//         <VecPart, partition_set>
+	//         (initial_partition,
+	//         [&orange_graph] (VecPart partition) -> partition_set {
+	//             return cliques::find_neighbours(orange_graph, partition);
+	//         },
+	//         cliques::Direction::ASCENT,
+	//         [&quality_func, &markov_time] (VecPart partition) -> double {
+	//             return quality_func(partition, markov_time);
+	//         });
+	// });
 
-	std::map<int, std::map<int, double> > basin_to_config_to_prob = 
-		cliques::sample_probabalistic_basins(
-			test,
-			unary_stochastic_monotic_climb,
-			num_samples_per_sample,
-			x);
+	// std::map<int, std::map<int, double> > basin_to_config_to_prob = 
+	// 	cliques::sample_probabalistic_basins(
+	// 		test,
+	// 		unary_stochastic_monotic_climb,
+	// 		num_samples_per_sample,
+	// 		x);
 
 
 	cliques::partitions_to_file("sampling_test.txt",test);
