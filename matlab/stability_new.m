@@ -482,10 +482,17 @@ end
 
 end
 
+%--------------------------------------------------------------------------
+function shares = split_even(N,nr_threads)
+%Function to compute an even split of N runs between t threads 
+shares = ones(1,nr_threads)*floor(N/nr_threads);
+shares(1) = shares(1)+ rem(N,nr_threads);
+end
+
 %TODO Implement edge statistics variant more fully, double check
 %implementation of directed graph, parallel computations etc.
 %------------------------------------------------------------------------------
-function [S, N, C, VI VAROUT] = louvain_FNL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_FNL(Graph, time, PARAMS)
 % Computes the full normalised stabilty
 
 VAROUT =[]; % init varying outputs 
@@ -620,17 +627,11 @@ clear lnk;
 
 end
 
-%--------------------------------------------------------------------------
-function shares = split_even(N,nr_threads)
-%Function to compute an even split of N runs between t threads 
-shares = ones(1,nr_threads)*floor(N/nr_threads);
-shares(1) = shares(1)+ rem(N,nr_threads);
-end
-
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_FCL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_FCL(Graph, time, PARAMS)
 % Computes the full combinatorial stability
 
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
@@ -682,9 +683,10 @@ clear lnk;
 
 end
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_FCNL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_FCNL(Graph, time, PARAMS)
 % Computes the full normalised corr stabilty
 
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
@@ -740,9 +742,10 @@ end
 
 %THIS FUNCTION IS A TESTBED ATM!!!!!!!!!!!! BE AWARE!
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_MINL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_MINL(Graph, time, PARAMS)
 % Computes the full normalised mutual information stabilty
 
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
@@ -810,8 +813,10 @@ end
 
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_k_stability(Graph, time, PARAMS)
-% Computes the full k-Laplacian stabilty
+function [S, N, C, VI, VAROUT] = louvain_k_stability(Graph, time, PARAMS)
+%Computes the full k-Laplacian stabilty
+
+VAROUT =[]; % init varying outputs 
 if(isnan(PARAMS.K))
     error('Please provide a value for K if using k-Laplacian stability');
 elseif(PARAMS.K == -1)
@@ -868,8 +873,9 @@ end
 end
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_Ruelle_k_stability(Graph, time, PARAMS)
-% Computes the full k-Laplacian stabilty
+function [S, N, C, VI, VAROUT] = louvain_Ruelle_k_stability(Graph, time, PARAMS)
+% Computes the full k-Laplacian Ruelle stabilty
+VAROUT =[]; % init varying outputs 
 if(isnan(PARAMS.K))
     error('Please provide a value for K if using k-Ruelle stability');
 else
@@ -935,7 +941,8 @@ end
 end
 
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_LCL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_LCL(Graph, time, PARAMS)
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
@@ -972,7 +979,8 @@ clear lnk;
 
 end
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_LNL(Graph, time, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_LNL(Graph, time, PARAMS)
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
@@ -1010,7 +1018,8 @@ clear lnk;
 
 end
 %------------------------------------------------------------------------------
-function [S, N, C, VI] = louvain_CLNL(Graph, PARAMS)
+function [S, N, C, VI, VAROUT] = louvain_CLNL(Graph, PARAMS)
+VAROUT =[]; % init varying outputs 
 %TODO adjust below code properly to work with paremters struct, so far just
 % copy
 ComputeES = PARAMS.ComputeES;
