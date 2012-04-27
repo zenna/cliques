@@ -13,6 +13,7 @@
 #include <cliques/algorithms/all_partitions.h>
 #include <cliques/algorithms/all_communities.h>
 #include <cliques/quality_functions/stability.h>
+#include <cliques/quality_functions/stability_full.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/landscapes/landscape_space.h>
 #include <cliques/landscapes/landscape_maxima.h>

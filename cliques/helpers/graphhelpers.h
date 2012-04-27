@@ -7,7 +7,6 @@
 #include <set>
 #include <lemon/maps.h>
 #include <lemon/core.h>
-//#include <math.h>
 
 namespace cliques {
 

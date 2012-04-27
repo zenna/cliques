@@ -11,6 +11,7 @@
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/logger.h>
 #include <cliques/landscapes/sample_from_landscape.h>
+#include <cliques/quality_functions/stability_full.h>
 
 namespace po = boost::program_options;
 
@@ -78,7 +79,7 @@ int main(int ac, char* av[]) {
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 
 	cliques::output("Sampling Partitions Uniformly");
-	double markov_time = 1.0;
+//	double markov_time = 1.0;
 	double precision = 1e-9;
 	int num_steps_per_sample = 3;
 	
@@ -88,7 +89,7 @@ int main(int ac, char* av[]) {
 	std::vector<VecPart> test = cliques::uniform_sample<VecPart>(orange_graph,num_samples, num_steps_per_sample);
 
 	cliques::output("Sampling basins");
-	int num_samples_per_sample = 1000;
+//	int num_samples_per_sample = 1000;
 	VecPart initial_partition(lemon::countNodes(orange_graph));
 	initial_partition.initialise_as_singletons();
 	cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);

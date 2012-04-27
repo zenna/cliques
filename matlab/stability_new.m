@@ -496,7 +496,7 @@ if PARAMS.directed == true
 	 * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
     
     clear Dout dangling
-    [v lambda] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+    [v lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
     lambda = max(diag(lambda_all));
     v = v(:,diag(lambda_all) == lambda);
     v = abs(v);              % make sure eigenvector is positive
