@@ -73,7 +73,7 @@ int main(int ac, char* av[]) {
     std::mt19937 prng_engine;
 
     cliques::output("starting to roll");
-    for (int i=0;i<1000;++i) {
+    for (int i=0;i<1;++i) {
     vecPart optimal_partition = cliques::stochastic_monotonic_climb
             <vecPart, std::vector<vecPart>>
             (initial_partition,

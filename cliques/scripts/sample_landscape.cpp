@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-
 #include <lemon/smart_graph.h>
 #include <boost/program_options.hpp>
 
@@ -11,30 +10,14 @@
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/logger.h>
 #include <cliques/landscapes/sample_from_landscape.h>
+#include <cliques/algorithms/hill_climbing.h>
+#include <cliques/landscapes/non_linear_dim_reduction.h>
+#include <cliques/landscapes/landscape_space.h>
+
+
+
 
 namespace po = boost::program_options;
-
-//template <typename V, typename S>
-//arma::umat save_walk (V &vec, S &all_partitions) {
-//    cliques::output("Finding Walk");
-//    std::vector<int> walk_steps;
-//
-//    for (auto vec_itr = vec.begin(); vec_itr != vec.end(); ++vec_itr) {
-//    	auto what = all_partitions.find(*vec_itr);
-//    	if (what != all_partitions.end()) {
-//    		int distance = std::distance(all_partitions.begin(), what);
-//    		walk_steps.push_back(distance);
-//    	}
-//    }
-//
-//    arma::umat walk_mat(walk_steps.size(),2);
-//    walk_mat.zeros();
-//    for (unsigned int i = 0; i < walk_steps.size(); ++i) {
-//    	walk_mat(i,0) = walk_steps[i];
-//    }
-//
-//    return walk_mat;
-//}
 
 template<typename G, typename M>
 void parse_arguments(int ac, char *av[], G &graph, M &weights, int &num_samples) {
@@ -74,51 +57,119 @@ int main(int ac, char* av[]) {
 
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
-	int num_samples;
+	int num_samples = 5;
+	double start_time = 0.0001, end_time = 10, num_timesteps = 3;
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
+	std::string filename_prefix = "test";
 
+	// Samples
 	cliques::output("Sampling Partitions Uniformly");
-	double markov_time = 1.0;
 	double precision = 1e-9;
 	int num_steps_per_sample = 3;
 	
+	auto all_partitions = cliques::uniform_sample<VecPart>(orange_graph,num_samples, num_steps_per_sample);
+	cliques::partitions_to_file(filename_prefix + "_partitions.mat",all_partitions);
+	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
+			orange_graph);
 
+	// Basins - must come first as may extend all_partitions
+	cliques::output("Sampling basins");
+	cliques::output(start_time, end_time, num_timesteps);
+	std::vector<double> markov_times = cliques::create_exponential_markov_times(start_time,
+			end_time, num_timesteps);
+	int num_samples_per_sample = 10;
+	std::mt19937 prng_engine;
+	std::vector<std::map<int, std::map<int, double>>>all_basins;
+	cliques::output(markov_times.size(), "time steps");
 	cliques::find_full_normalised_stability func(orange_graph, weights,
 			precision);
-	std::vector<VecPart> test = cliques::uniform_sample<VecPart>(orange_graph,num_samples, num_steps_per_sample);
 
-	cliques::output("Sampling basins");
-	int num_samples_per_sample = 1000;
-	VecPart initial_partition(lemon::countNodes(orange_graph));
-	initial_partition.initialise_as_singletons();
-	cliques::find_full_normalised_stability quality_func(orange_graph, weights, precision);
+	// Create new bains for every time point
+	for (double markov_time : markov_times) {
+		auto unary_stochastic_monotic_climb = 
+		[&orange_graph, &func, &markov_time, &prng_engine]
+		(VecPart initial_partition) -> VecPart {
+		    return cliques::stochastic_monotonic_climb
+		        <VecPart, partition_set>
+		        (initial_partition,
+		        [&orange_graph] (VecPart partition) -> partition_set {
+		            return cliques::find_neighbours(orange_graph, partition);
+		        },
+		        cliques::Direction::ASCENT,
+		        [&func, &markov_time] (VecPart partition) -> double {
+		            return func(partition, markov_time);
+		        },
+		        prng_engine);
+		};
+		
+		// This is an id function to give identity to a partition (position in container)
+		auto get_partition_id = 
+		[&all_partitions]
+		(VecPart partition) -> int {
+			auto find_result = std::find(all_partitions.begin(),all_partitions.end(),partition);
+			if (find_result == all_partitions.end()) {
+				return -1;
+			}
+			else {
+				return std::distance(all_partitions.begin(), find_result);
+			}
+		};
 
-	// Use a lambda to close over orange_graph so that the function passed to stochastic_climb only takes one param
-	// - the partition, but has necessary access to orange_graph
+		cliques::output("Really sampling");
+		auto basins = cliques::sample_probabalistic_basins
+			<VecPart, std::vector<VecPart>>
+			(all_partitions, unary_stochastic_monotic_climb, num_samples_per_sample, get_partition_id);
 
-	// auto unary_stochastic_monotic_climb = 
-	// [&orange_graph, &quality_func, &markov_time] (VecPart initial_partition) -> VecPart {
-	//     return cliques::stochastic_monotonic_climb
-	//         <VecPart, partition_set>
-	//         (initial_partition,
-	//         [&orange_graph] (VecPart partition) -> partition_set {
-	//             return cliques::find_neighbours(orange_graph, partition);
-	//         },
-	//         cliques::Direction::ASCENT,
-	//         [&quality_func, &markov_time] (VecPart partition) -> double {
-	//             return quality_func(partition, markov_time);
-	//         });
-	// });
+		cliques::output("time", markov_time, "num_basins", basins.size());
+		all_basins.push_back(basins);
+	}
+	cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
+			markov_times);
 
-	// std::map<int, std::map<int, double> > basin_to_config_to_prob = 
-	// 	cliques::sample_probabalistic_basins(
-	// 		test,
-	// 		unary_stochastic_monotic_climb,
-	// 		num_samples_per_sample,
-	// 		x);
+	// Stabilities
+	std::vector<std::vector<double> > all_stabilities;
+	cliques::output("Finding stabilities");
+	std::ofstream stabs_file;
+	stabs_file.open(filename_prefix + "_energy.mat");
+	for (unsigned int i = 0; i < markov_times.size(); ++i) {
+		std::vector<double> stabilities;
+		stabs_file << markov_times[i] << " ";
+		for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
+			double stability = func(*itr, markov_times[i]);
+			stabilities.push_back(stability);
+			stabs_file << stability << " ";
+		}
 
+		all_stabilities.push_back(stabilities);
+		if (i + 1 != markov_times.size()) {
+			stabs_file << std::endl;
+		}
+	}
+	stabs_file.close();
 
-	cliques::partitions_to_file("sampling_test.txt",test);
+	// Distances
+	arma::mat X;
+	cliques::output("Finding distances");
+	X = cliques::find_edit_dists(all_partitions);
+	X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
+
+	// Graph
+	lemon::SmartGraph space;
+	lemon::SmartGraph::EdgeMap<double> space_weights(space);
+	cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
+    cliques::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
+    cliques::output("number of nodes", lemon::countNodes(space));
+    cliques::output("number of edges", lemon::countEdges(space));
+
+	// Embedding
+	cliques::output("finding embedding");
+	auto L = cliques::embed_mds(X, 2);
+	arma::mat L_t = arma::trans(L);
+	L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
+
+	auto D_y = cliques::euclid_pairwise_dists(L_t);
+	cliques::output("residual variance", cliques::residual_variance(X, D_y));
 
 	return 0;
 }
+

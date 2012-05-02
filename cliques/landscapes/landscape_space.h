@@ -500,10 +500,10 @@ std::map<int, std::map<int, double> > compute_probabalistic_basins(G &graph,
 template<typename C, typename cC>
 std::map<int, std::map<int, double> >
 sample_probabalistic_basins( 
-        const cC &all_configs,
+        cC &all_configs,
         std::function<C (C)> optimisation_func,
         const int num_samples,
-        std::function<int (C)> get_config_id) {
+        std::function<int (C)> get_id) {
 
     std::map<int, std::map<int, int> > config_to_basin_to_count;
 
@@ -511,7 +511,22 @@ sample_probabalistic_basins(
     for (C const &config : all_configs) {
         int config_id = get_id(config);
         for (int i = 0;i<num_samples;++i) {
+            cliques::output("sample ",i," of ",num_samples);
             C basin = optimisation_func(config);
+
+            // If the basin is not found then add it
+            // FIXME: make all_configs const, and return a new container
+            // Make independent of vector type (remove push_back)
+            int basin_id = get_id(basin);
+            if (basin_id == -1 )  { // magic number for not found
+                all_configs.push_back(basin);
+                cliques::output("basin not in original list, adding");
+                basin_id = get_id(basin);
+                if (basin_id == -1) {
+                    cliques::output("HOUSTON");
+                }
+            }
+
             config_to_basin_to_count[config_id][get_id(basin)]++;
         }
     };
@@ -520,12 +535,12 @@ sample_probabalistic_basins(
     
     // For very nodes n, normalise counts to find prob of going to each basin
     for (auto &config_to_basin_to_count1 : config_to_basin_to_count) {
-        int config_id = config_to_basin_to_count1->first();
-        auto basin_to_count = config_to_basin_to_count1->second();
+        int config_id = config_to_basin_to_count1.first;
+        auto basin_to_count = config_to_basin_to_count1.second;
 
         for (auto basin : basin_to_count) {
-            int basin_id = basin_to_count->first();
-            int count = basin_to_count->second();
+            int basin_id = basin.first;
+            int count = basin.second;
             basin_to_config_to_prob[basin_id][config_id] = (double)count / (double)num_samples;
         }
     }

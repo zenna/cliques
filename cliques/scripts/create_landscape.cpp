@@ -201,16 +201,7 @@ int main(int ac, char* av[]) {
 		cliques::find_connected_partitions(orange_graph, all_partitions,
 				no_logging);
 		cliques::output("complete size:", all_partitions.size());
-
-		std::ofstream vector_file;
-		vector_file.open(filename_prefix + "_partitions.mat");
-		for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-			int length = itr->element_count();
-			for (int i = 0; i < length; i++) {
-				vector_file << itr->find_set(i) << " ";
-			}
-			vector_file << std::endl;
-		}
+		partitions_to_file(filename_prefix + "_partitions.mat", all_partitions);
 	}
 
 	lemon::SmartGraph space;

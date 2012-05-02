@@ -45,4 +45,19 @@ struct partition_equal {
     }
 };
 
+struct partition_comp {
+    template<typename P>
+    bool operator()(P const& x, P const& y) const {
+        int x_element_count = x.element_count();
+        int y_element_count = y.element_count();
+        if (x_element_count == 0 || y_element_count == 0) {
+            return true;
+        }
+        else {
+            return x.find_set(x_element_count-1) < y.find_set(y_element_count - 1);
+        }
+    }
+};
+
 }
+

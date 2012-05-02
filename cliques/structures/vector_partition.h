@@ -1,6 +1,5 @@
 /* Copyright (c) Z Tavares, M Schaub - 2010-2011 */
-#ifndef VECTOR_PARTITION_H
-#define VECTOR_PARTITION_H
+#pragma once
 
 #include <vector>
 #include <set>
@@ -142,142 +141,11 @@ public:
 			b.normalise_ids();
 			return a.partition_vector == b.partition_vector;
 		}
-		/*if (partition_vector.size() != other.partition_vector.size()) {
-		 return false;
-		 }
-		 const int MAGIC_NUM = -321;
-		 int num_elements = partition_vector.size();
-
-		 std::vector<int> this_to_other(num_elements, MAGIC_NUM);
-		 std::vector<int> other_to_this(num_elements, MAGIC_NUM);
-
-		 for (int i=0; i<num_elements; ++i) {
-		 int a = partition_vector[i];
-		 int b = other.partition_vector[i];
-
-		 // TODO:Replace with exception handling or generalise to any set num
-		 if (a >= num_elements || b >= num_elements || a < 0 || b < 0) {
-		 std::cout << "out of bounds!";
-		 }
-
-		 if (this_to_other[a] == MAGIC_NUM && other_to_this[b] == MAGIC_NUM) {
-		 this_to_other[a] = b;
-		 other_to_this[b] = a;
-		 }
-		 else if (this_to_other[a] != b || other_to_this[b] != a) {
-		 return false;
-		 }
-		 }
-		 return true;*/
 	}
 
 	bool operator!=(const VectorPartition& other) const {
 		return !(partition_vector == other.partition_vector);
 	}
-
-	//#################### ITERATOR SETUP ####################
-	class PartIterator;
-	class NodeIterator;
-
-	PartIterator begin() {
-		std::vector<int>::iterator tmp_part_itr = partition_vector.begin();
-		return PartIterator(tmp_part_itr, *this);
-	}
-
-	PartIterator end() {
-		std::vector<int>::iterator tmp_part_itr = partition_vector.end();
-		return PartIterator(tmp_part_itr, *this);
-	}
-
-	/*NodeIterator start() {
-	 std::vector<int>::iterator tmp_part_itr =
-	 partition_vector.begin();
-	 return NodeIterator(tmp_part_itr, *this);
-	 }
-
-	 NodeIterator finish() {
-	 std::vector<int>::iterator tmp_part_itr =
-	 partition_vector.end();
-	 return NodeIterator(tmp_part_itr, *this);
-	 }*/
-
-	//#################### ITERATORS ####################
-	class PartIterator {
-	private:
-		std::set<int> visited_sets;
-		std::vector<int>::iterator part_itr;
-		VectorPartition &parent_partition;
-
-	public:
-		PartIterator(std::vector<int>::iterator part_itr,
-				VectorPartition &parent_partition) :
-			part_itr(part_itr), parent_partition(parent_partition) {
-		}
-
-		PartIterator& operator=(const PartIterator& other) {
-			part_itr = other.part_itr;
-			visited_sets = other.visited_sets;
-			return (*this);
-		}
-
-		bool operator==(const PartIterator& other) {
-			return (part_itr == other.part_itr);
-		}
-
-		bool operator!=(const PartIterator& other) {
-			return (part_itr != other.part_itr);
-		}
-
-		int operator*() {
-			return (*part_itr);
-		}
-
-		PartIterator& operator++() {
-			int current_set = *part_itr;
-			visited_sets.insert(current_set);
-
-			if (visited_sets.size() == parent_partition.partition_vector.size()) {
-				part_itr = parent_partition.partition_vector.end();
-			} else {
-				do {
-					++part_itr;
-				} while (visited_sets.find(*part_itr) != visited_sets.end());
-			}
-			return *this;
-		}
-	};
-
-	/*class NodeIterator {
-	 NodeIterator(std::vector<int>::iterator part_itr,
-	 VectorPartition &parent_partition) :
-	 part_itr(part_itr), parent_partition(parent_partition) {}
-
-	 NodeIterator& operator=(const PartIterator& other) {
-	 part_itr = other.part_itr;
-	 visited_sets = other.visited_sets;
-	 return (*this);
-	 }
-
-	 bool operator==(const NodeIterator& other) {
-	 return (part_itr == other.part_itr);
-	 }
-
-	 bool operator!=(const NodeIterator& other) {
-	 return (part_itr != other.part_itr);
-	 }
-
-	 int operator*() {
-	 return (*part_itr);
-	 }
-
-	 PartIterator& operator++() {
-	 current_node++;
-	 return *this;
-	 }
-	 };*/
-
 };
 
 }
-
-#endif

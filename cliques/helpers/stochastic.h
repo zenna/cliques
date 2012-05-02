@@ -37,6 +37,8 @@ int weighted_sample(std::vector<N> weighted_list, RNG &prng_engine) {
         }
     rand_index += 1;
     }
+
+    return rand_index;
 }
 
 }
