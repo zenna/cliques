@@ -172,7 +172,7 @@ end
 
 % Parallel computation: Initialize the number of cores if matlabpool is not
 % yet running.
-if PARAMS.ComputeParallel && matlabpool('size') == 0
+if PARAMS.ComputeParallel && (matlabpool('size') == 0)
     flag_matlabpool = true;
     matlabpool
 end
@@ -584,7 +584,8 @@ if PARAMS.ComputeParallel
     precision = PARAMS.Precision;
     % computation in parallel with cell arrays
     parfor l=1:nr_threads;
-        [stability{l}, nb_comm_temp{l}, communities{l}] = stability_louvain(graph, 1, shares(l), precision ,'normalised');
+        [stability{l}, nb_comm_temp{l}, communities{l}] = ...
+            stability_louvain(graph, 1, shares(l), precision ,'normalised',randi(intmax));
     end    
     % now look at cumlative sums of shares for indexing
     shares = cumsum(shares);
@@ -600,7 +601,8 @@ if PARAMS.ComputeParallel
     
     % non parallel version
 else
-    [stability, nb_comm, communities] = stability_louvain(graph, 1, PARAMS.NbLouvain, PARAMS.Precision,'normalised');
+    [stability, nb_comm, communities] = ...
+        stability_louvain(graph, 1, PARAMS.NbLouvain, PARAMS.Precision,'normalised',randi(intmax));
     lnk = communities;
     lnkS = stability;
 end
