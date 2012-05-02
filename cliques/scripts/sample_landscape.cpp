@@ -86,6 +86,13 @@ int main(int ac, char* av[]) {
 
 	// Create new bains for every time point
 	for (double markov_time : markov_times) {
+
+		// Create a new function every time to for new markov time
+		// FIXME: THere is a more efficient way to do it
+		// This function is basically a wrapper to the optimisation function
+		// which is passed to the basin sampler
+		// A wrapper is required because the basin_sampler expects an optimisation
+		// function that takes one argument (the initial configuration)
 		auto unary_stochastic_monotic_climb = 
 		[&orange_graph, &func, &markov_time, &prng_engine]
 		(VecPart initial_partition) -> VecPart {
@@ -102,7 +109,7 @@ int main(int ac, char* av[]) {
 		        prng_engine);
 		};
 		
-		// This is an id function to give identity to a partition (position in container)
+		// This is an id function to give identity to a partition (position in container) for file export purposes
 		auto get_partition_id = 
 		[&all_partitions]
 		(VecPart partition) -> int {
@@ -115,7 +122,7 @@ int main(int ac, char* av[]) {
 			}
 		};
 
-		cliques::output("Really sampling");
+		cliques::output("Really sampling now");
 		auto basins = cliques::sample_probabalistic_basins
 			<VecPart, std::vector<VecPart>>
 			(all_partitions, unary_stochastic_monotic_climb, num_samples_per_sample, get_partition_id);

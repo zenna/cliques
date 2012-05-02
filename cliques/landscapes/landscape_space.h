@@ -507,7 +507,7 @@ sample_probabalistic_basins(
 
     std::map<int, std::map<int, int> > config_to_basin_to_count;
 
-    // For all configs, optimise to optima num samples times
+    // For all configs, optimise to optimum num_samples times
     for (C const &config : all_configs) {
         int config_id = get_id(config);
         for (int i = 0;i<num_samples;++i) {
@@ -531,8 +531,8 @@ sample_probabalistic_basins(
         }
     };
 
-    std::map<int, std::map<int, double> > basin_to_config_to_prob;
-    
+    std::map<int, std::map<int, double> > basin_to_config_to_prob;    
+
     // For very nodes n, normalise counts to find prob of going to each basin
     for (auto &config_to_basin_to_count1 : config_to_basin_to_count) {
         int config_id = config_to_basin_to_count1.first;
