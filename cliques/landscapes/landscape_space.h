@@ -507,9 +507,12 @@ sample_probabalistic_basins(
 
     std::map<int, std::map<int, int> > config_to_basin_to_count;
 
+    cliques::output("size of all configs before ", all_configs.size());
+
     // For all configs, optimise to optimum num_samples times
+    int jj = 0;
     for (C const &config : all_configs) {
-        int config_id = get_id(config);
+        int config_id = jj;//get_id(config);
         for (int i = 0;i<num_samples;++i) {
             cliques::output("sample ",i," of ",num_samples);
             C basin = optimisation_func(config);
@@ -527,9 +530,16 @@ sample_probabalistic_basins(
                 }
             }
 
+
             config_to_basin_to_count[config_id][get_id(basin)]++;
         }
+        ++jj;
     };
+
+    cliques::output("size of all configs after ", all_configs.size());
+
+
+    cliques::output("size is ", config_to_basin_to_count.size());
 
     std::map<int, std::map<int, double> > basin_to_config_to_prob;    
 

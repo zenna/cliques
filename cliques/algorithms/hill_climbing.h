@@ -47,7 +47,6 @@ C stochastic_monotonic_climb(
         // cliques::print_partition_line(current_configuration);
 
         cC neighbours = find_neighbours(current_configuration);
-
         
         am_at_local_optimum = true;
         for (C const &neighbour : neighbours) {
@@ -62,6 +61,8 @@ C stochastic_monotonic_climb(
             // cliques::output("quality_diff", quality_diff);
 
             am_at_local_optimum = am_at_local_optimum && (quality_diff <= 0);
+            
+            // We don't want to sample worse neighbours, so set them to zero
             quality_diff = quality_diff > 0 ? quality_diff : 0;
             quality_diffs.push_back(quality_diff);
         }

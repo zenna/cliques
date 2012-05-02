@@ -252,6 +252,13 @@ void print_partition_line(P &partition) {
     std::cout << std::endl;
 }
 
+/**
+ @brief  Write a set of basins to a file.
+
+ Iterates through a list of basins and stores them in the format
+
+ markov_time basin_id node_id_x probability_of_node_reaching_basin_x node_y_id prob_of_node_y_reaching_basin_x
+ */
 void basins_to_file(std::string filename,
         std::vector<std::map<int, std::map<int, double> >> all_basins,
         std::vector<double> markov_times) {

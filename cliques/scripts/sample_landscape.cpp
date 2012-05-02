@@ -57,8 +57,8 @@ int main(int ac, char* av[]) {
 
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
-	int num_samples = 5;
-	double start_time = 0.0001, end_time = 10, num_timesteps = 3;
+	int num_samples = 100;
+	double start_time = 0.0001, end_time = 10, num_timesteps = 10;
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 	std::string filename_prefix = "test";
 
@@ -68,16 +68,13 @@ int main(int ac, char* av[]) {
 	int num_steps_per_sample = 3;
 	
 	auto all_partitions = cliques::uniform_sample<VecPart>(orange_graph,num_samples, num_steps_per_sample);
-	cliques::partitions_to_file(filename_prefix + "_partitions.mat",all_partitions);
-	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
-			orange_graph);
 
 	// Basins - must come first as may extend all_partitions
 	cliques::output("Sampling basins");
 	cliques::output(start_time, end_time, num_timesteps);
 	std::vector<double> markov_times = cliques::create_exponential_markov_times(start_time,
 			end_time, num_timesteps);
-	int num_samples_per_sample = 10;
+	int num_samples_per_sample = 100;
 	std::mt19937 prng_engine;
 	std::vector<std::map<int, std::map<int, double>>>all_basins;
 	cliques::output(markov_times.size(), "time steps");
@@ -132,6 +129,11 @@ int main(int ac, char* av[]) {
 	}
 	cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
 			markov_times);
+	
+	// Must come after basin finding, since it can modify all_partitions
+	cliques::partitions_to_file(filename_prefix + "_partitions.mat",all_partitions);
+	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
+			orange_graph);
 
 	// Stabilities
 	std::vector<std::vector<double> > all_stabilities;
