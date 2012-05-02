@@ -148,13 +148,13 @@ std::vector<P> find_neighbours2(
         {
             P temp_partition = partition;
             temp_partition.isolate_node(n1_id);
-            temp_partition.normalise_ids();
+            temp_partition.normalise_id_vector();
             neighbour_partitions.insert(temp_partition);
 
             if (!are_in_same_set) {
                 P temp_partition = partition;
                 temp_partition.add_node_to_set(n1_id, set_of_n2);
-                temp_partition.normalise_ids();
+                temp_partition.normalise_id_vector();
                 neighbour_partitions.insert(temp_partition);
             }
         }
@@ -162,13 +162,13 @@ std::vector<P> find_neighbours2(
         {
             P temp_partition = partition;
             temp_partition.isolate_node(n2_id);
-            temp_partition.normalise_ids();
+            temp_partition.normalise_id_vector();
             neighbour_partitions.insert(temp_partition);
 
             if (!are_in_same_set) {
                 P temp_partition = partition;
                 temp_partition.add_node_to_set(n2_id, set_of_n1);
-                temp_partition.normalise_ids();
+                temp_partition.normalise_id_vector();
                 neighbour_partitions.insert(temp_partition);
             }
         }

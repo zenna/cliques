@@ -60,6 +60,13 @@ C stochastic_monotonic_climb(
             quality_diffs.push_back(quality_diff);
         }
 
+        if (am_at_local_optimum == true) {
+            cliques::output("got to local max in steps:", i+1);
+        }
+        else if (i == max_num_steps-1) {
+            cliques::output("didn't reach local maxima");
+        }
+
         // Then sample a neighbour from multinomial distribution of qualities
         // Return if we've found a local optimum
         if (am_at_local_optimum == false) {

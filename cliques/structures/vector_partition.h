@@ -109,31 +109,37 @@ public:
 		}
 	}
 
-        void normalise_id_vector(){
+    void normalise_id_vector(){
         // create tempory vector to store mapping and a counter variable for the new ids assigned so far
         std::vector<int> old_to_new(num_nodes,-1);
-        new_id_assignment = 0;
-        int old_id = -1;
-        for(int i=0; i<num_nodes; i++){
+        int new_id_assignment = 0;
 
-        // current, i.e. "old" id of node
-        old_id = partition_vector[i];
+        if (!is_normalised) {
+	        for(int i=0; i<num_nodes; i++){
+    	        // current, i.e. "old" id of node
+    	        int old_id = partition_vector[i];
 
-            // if the old id has not been mapped to a new one so far, 
-            // map it to a new id and adjust partition vector
-            if(old_to_new[old_id] ==-1){
-                old_to_new[old_id] = new_id_assignment;
-                partition_vector[i] = new_id_assignment;
-                new_assignment++;
-            }
-            // otherwise apply map
-            else{
-                partition_vector[i] = old_to_new[old_id];
-            }
-        }
-        is_normalised = true;
+    	        // Unassigned node (e.g. from isolate node)
+    	        if (old_id == -1) {
+    	        	partition_vector[i] = new_id_assignment;
+    	        	new_id_assignment++;
+    	        }
 
-        }
+	            // if the old id has not been mapped to a new one so far, 
+	            // map it to a new id and adjust partition vector
+	            else if(old_to_new[old_id] == -1){
+	                old_to_new[old_id] = new_id_assignment;
+	                partition_vector[i] = new_id_assignment;
+	                new_id_assignment++;
+	            }
+	            // otherwise apply map
+	            else{
+	                partition_vector[i] = old_to_new[old_id];
+	            }
+	        }
+	        is_normalised = true;
+    	}
+    }
 
 	int element_count() const {
 		return partition_vector.size();
