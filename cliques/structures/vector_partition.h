@@ -70,14 +70,22 @@ public:
 		is_normalised = false;
 	}
 
+	// Modifies ids such that they are contiguous, start at 0
+	// e.g. 2,1,4,2 -> 0,1,2,0
 	std::map<int, int> normalise_ids() {
+		// A mapping from new set ids to old set ids
+		// May be useful in some algorithms
 		std::map<int, int> set_new_to_old;
 		if (!is_normalised) {
 			int start_num = 0;
 			std::map<int, int> set_old_to_new;
+
+			// For every element, make a map
 			for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 					!= partition_vector.end(); ++itr) {
 
+				// Map the old set_id to a new one (starting at 0)
+				// Unless the mapping has already been done (then look it up)
 				std::map<int, int>::iterator old_set =
 						set_old_to_new.find(*itr);
 				if (old_set == set_old_to_new.end()) {
@@ -92,6 +100,7 @@ public:
 			is_normalised = true;
 			return set_new_to_old;
 		} else {
+			// Still need to reconstruct new to old mapping (since we don't store it)
 			for (std::vector<int>::iterator itr = partition_vector.begin(); itr
 					!= partition_vector.end(); ++itr) {
 				set_new_to_old[*itr] = *itr;

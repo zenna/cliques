@@ -11,7 +11,7 @@ else()
 endif()
 
 #set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -Wall -DUSE_BOOST")
-set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -DUSE_BOOST")
+set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -Wall -DUSE_BOOST")
 #set(CMAKE_CXX_FLAGS "-g -O3 -std=gnu++0x -Wall -stdlib=libc++ -DUSE_BOOST")
 
 

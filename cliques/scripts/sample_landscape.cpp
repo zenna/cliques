@@ -97,10 +97,10 @@ int main(int ac, char* av[]) {
 		[&orange_graph, &func, &markov_time, &prng_engine]
 		(VecPart initial_partition) -> VecPart {
 		    return cliques::stochastic_monotonic_climb
-		        <VecPart, partition_set>
+		        <VecPart, std::vector<VecPart>>
 		        (initial_partition,
-		        [&orange_graph] (VecPart partition) -> partition_set {
-		            return cliques::find_neighbours(orange_graph, partition);
+		        [&orange_graph] (VecPart partition) -> std::vector<VecPart> {
+		            return cliques::find_neighbours2(orange_graph, partition);
 		        },
 		        cliques::Direction::ASCENT,
 		        [&func, &markov_time] (VecPart partition) -> double {
