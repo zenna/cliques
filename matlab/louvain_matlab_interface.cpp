@@ -1,11 +1,10 @@
 /*
  * matlab_interface.cpp
  *
- * compile from MATLAB in directory cxx:
- * TODO add extra options for simpler name and ensure code optimization
- *   mex -DUSE_BOOST -I./ ./cliques/louvain_matlab_interface.cpp
+ * compile from MATLAB in directory cliques:
+ * mex matlab/louvain_matlab_interface.cpp CXXFLAGS="-std=gnu++0x -fPIC" -I./ -lemon
  *
- *  Created on: 11 Apr 2011
+ *  Created on: 27 Apr 2012
  *      Author: mts09
  */
 
@@ -37,6 +36,7 @@ int mode = 0;
 
 std::vector<double> m_times;
 int num_iterations = 0;
+unsigned int seed = -1; // random seed (to be set by call)
 
 bool hierarchy = false;
 int num_largest_dim = -1;
@@ -56,7 +56,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		// number of rows is important for indexing
 		num_largest_dim = mxGetM(prhs[0]);
 	}
-
+	
 	//SECOND ARGUMENT: time
 	if (nrhs > 1) {
 
@@ -124,14 +124,24 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 		mxFree(buf);
 	}
 
-	// TODO: this is not implemented fully/has no effect so far.
-	//SIXTH ARGUMENT: hierarchical output
+	//SIXTH ARGUMENT: random seed substract from time to make it independent of
+	//Matlab seeding
 	if (nrhs > 5) {
+		seed = abs( std::time(0) - ((unsigned int) mxGetScalar(prhs[5])) );
+		if (seed <=0) {
+			return false;
+		}
+	}
+
+
+	// TODO: this is not implemented fully/has no effect so far.
+	//SEVENTH ARGUMENT: hierarchical output
+	if (nrhs > 6) {
 		// get buffer length and allocate buffer
 		char *buf;
-		mwSize buflen = mxGetN(prhs[5]) * sizeof(mxChar) + 1;
+		mwSize buflen = mxGetN(prhs[6]) * sizeof(mxChar) + 1;
 		buf = (char*) mxMalloc(buflen);
-		if (!mxGetString(prhs[5], buf, buflen)) {
+		if (!mxGetString(prhs[6], buf, buflen)) {
 			//if reading successful string is created from matlab input
 			const std::string input(buf);
 			const std::string comparison("h");
@@ -147,7 +157,7 @@ bool parse_arg(int nrhs, const mxArray *prhs[]) {
 	}
 
 	// SANITY CHECK for number of arguments
-	if (nrhs > 6 || nrhs < 1) {
+	if (nrhs > 7 || nrhs < 1) {
 		return false;
 	}
 	return true;
@@ -237,7 +247,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	std::vector<double> stability(num_iterations, 0);
 
 	// randomize initial seed
-	srand(std::time(0));
+	srand(seed);
 
 	// initialise dummy null_model
 	std::vector<double> null_model(num_nodes, 0);

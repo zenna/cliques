@@ -14,7 +14,7 @@
 #include <cliques/landscapes/non_linear_dim_reduction.h>
 #include <cliques/landscapes/landscape_space.h>
 
-
+#include <cliques/quality_functions/stability_full.h>
 
 
 namespace po = boost::program_options;

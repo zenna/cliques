@@ -4,10 +4,10 @@
 
 #include <cliques/quality_functions/stability.h>
 #include <cliques/quality_functions/stability_corr.h>
+#include <cliques/quality_functions/stability_info_full.h>
 
 #include <cliques/helpers/make_graphs.h>
-//#include <cliques/drawing/colour_maps.h>
-//
+
 #include <cliques/algorithms/louvain.h>
 
 #include <cliques/structures/vector_partition.h>
@@ -22,7 +22,6 @@
 
 #include <cliques/helpers/graphhelpers.h>
 #include <cliques/helpers/helpers.h>
-//#include <cliques/helpers/math.h>
 
 // Save partition to file
 // Write multi
