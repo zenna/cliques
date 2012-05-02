@@ -43,10 +43,15 @@ C stochastic_monotonic_climb(
         double current_config_quality = compute_quality(current_configuration);
         std::vector<double> quality_diffs;
 
+        // cliques::output("my quality:",current_config_quality);
+        // cliques::print_partition_line(current_configuration);
+
         cC neighbours = find_neighbours(current_configuration);
+
         
         am_at_local_optimum = true;
         for (C const &neighbour : neighbours) {
+            // cliques::output("neighbour quality:",compute_quality(neighbour));
             double quality_diff;
             if (direction == cliques::Direction::ASCENT) {
                 quality_diff =  compute_quality(neighbour) - current_config_quality;
@@ -54,8 +59,9 @@ C stochastic_monotonic_climb(
             else if (direction == cliques::Direction::DESCENT) {
                 quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
+            // cliques::output("quality_diff", quality_diff);
 
-            am_at_local_optimum = am_at_local_optimum && (quality_diff < 0);
+            am_at_local_optimum = am_at_local_optimum && (quality_diff <= 0);
             quality_diff = quality_diff > 0 ? quality_diff : 0;
             quality_diffs.push_back(quality_diff);
         }
@@ -70,10 +76,13 @@ C stochastic_monotonic_climb(
         // Then sample a neighbour from multinomial distribution of qualities
         // Return if we've found a local optimum
         if (am_at_local_optimum == false) {
+            // cliques::output("moving to:");
             int chosen_index = weighted_sample(quality_diffs, prng_engine);
             typename cC::iterator it = neighbours.begin();
             std::advance(it, chosen_index);
+            // cliques::output("diff is:", compute_quality(*it) - current_config_quality);
             current_configuration = *it;
+            // cliques::print_partition_line(current_configuration);
         }
     }
 
