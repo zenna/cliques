@@ -58,7 +58,7 @@ int main(int ac, char* av[]) {
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
 	int num_samples = 100;
-	double start_time = 0.0001, end_time = 10, num_timesteps = 10;
+	double start_time = 1, end_time = 1.1, num_timesteps = 1;
 	parse_arguments(ac, av, orange_graph, weights, num_samples);
 	std::string filename_prefix = "test";
 
