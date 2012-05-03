@@ -72,8 +72,9 @@ int main(int ac, char* av[]) {
 	// Basins - must come first as may extend all_partitions
 	cliques::output("Sampling basins");
 	cliques::output(start_time, end_time, num_timesteps);
-	std::vector<double> markov_times = cliques::create_exponential_markov_times(start_time,
-			end_time, num_timesteps);
+	// std::vector<double> markov_times = cliques::create_exponential_markov_times(start_time,
+	// 		end_time, num_timesteps);
+	std::vector<double> markov_times = {1.0};
 	int num_samples_per_sample = 100;
 	std::mt19937 prng_engine;
 	std::vector<std::map<int, std::map<int, double>>>all_basins;

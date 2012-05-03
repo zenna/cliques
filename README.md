@@ -21,7 +21,7 @@ Make a build directory (preferably outside the source code directory)
 
 Note you may have to set flags to use a newer C++ compiler, and also to use gfortran, e.g
 
-    cmake -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.6 REPOSITORY_ROOT -DCMAKE_BUILD_TYPE=Debug
+    cmake -DCMAKE_BUILD_TYPE=Debug -D UseFortran=True -D CMAKE_CXX_COMPILER=g++-4.6 REPOSITORY_ROOT
 
 
 ### Using JSON viewer
