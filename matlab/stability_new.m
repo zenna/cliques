@@ -587,18 +587,11 @@ if PARAMS.ComputeParallel
         [stability{l}, nb_comm_temp{l}, communities{l}] = ...
             stability_louvain(graph, 1, shares(l), precision ,'normalised',randi(intmax));
     end    
-    % now look at cumlative sums of shares for indexing
-    shares = cumsum(shares);
-    % assignements can only be done non-parallel
-    stop=0;
-    for i =1:nr_threads
-        start = stop +1;
-        stop = shares(i);
-        lnkS(start:stop) = stability{i};
-        lnk(:,start:stop) = communities{i};
-        nb_comm(start:stop) = nb_comm_temp{i};
-    end
-    
+    % assignements
+    lnk = cat(2,communities{:});
+    lnkS = cat(2,stability{:});
+    nb_comm = cat(2,nb_comm_temp{:});
+       
     % non parallel version
 else
     [stability, nb_comm, communities] = ...
