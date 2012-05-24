@@ -85,6 +85,8 @@ C stochastic_monotonic_climb(
             current_configuration = *it;
             // cliques::print_partition_line(current_configuration);
         }
+
+        cliques::output("level: ",i, " quality:",compute_quality(current_configuration));
     }
 
     return current_configuration;
