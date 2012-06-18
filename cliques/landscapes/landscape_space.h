@@ -515,14 +515,18 @@ sample_probabalistic_basins(
         int config_id = jj;//get_id(config);
         for (int i = 0;i<num_samples;++i) {
             cliques::output("sample ",i," of ",num_samples);
-            C basin = optimisation_func(config);
+            cliques::output("input partition is");
+            cliques::print_partition_line(config);
+            C basin = optimisation_func(config); // INVALID READ HERE
+            cliques::output("output is");
+            cliques::print_partition_line(basin);
 
             // If the basin is not found then add it
             // FIXME: make all_configs const, and return a new container
             // Make independent of vector type (remove push_back)
             int basin_id = get_id(basin);
             if (basin_id == -1 )  { // magic number for not found
-                all_configs.push_back(basin);
+                all_configs.push_back(basin); // AND HERE
                 cliques::output("basin not in original list, adding");
                 basin_id = get_id(basin);
                 if (basin_id == -1) {
