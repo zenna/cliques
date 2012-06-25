@@ -148,25 +148,25 @@ sample_probabalistic_basins(
     std::map<int, std::map<int, int> > config_to_basin_to_count;
     cC basins;
 
-    // typedef typename cliques::VectorPartition VecPart;
-    // typedef typename std::unordered_set<VecPart, cliques::partition_hash, cliques::partition_equal> partition_set;
+    // typedef typename clq::VectorPartition VecPart;
+    // typedef typename std::unordered_set<VecPart, clq::partition_hash, clq::partition_equal> partition_set;
 
-    std::unordered_map<C, std::unordered_map<C, int, cliques::partition_hash, cliques::partition_equal>,
-        cliques::partition_hash, cliques::partition_equal > config_to_basin_to_count_x;
-    cliques::output("size of all configs before ", all_configs.size());
+    std::unordered_map<C, std::unordered_map<C, int, clq::partition_hash, clq::partition_equal>,
+        clq::partition_hash, clq::partition_equal > config_to_basin_to_count_x;
+    clq::output("size of all configs before ", all_configs.size());
 
     // For all configs, optimise to optimum num_samples times
     int jj = 0;
     for (C const &config : all_configs) {
-        cliques::output("Sampling from i=",jj, "from total of", all_configs.size());
+        clq::output("Sampling from i=",jj, "from total of", all_configs.size());
         int config_id = jj;//get_id(config);
         for (int i = 0;i<num_samples;++i) {
-            // cliques::output("sample ",i," of ",num_samples);
-            // cliques::output("input partition is");
-            // cliques::print_partition_line(config);
+            // clq::output("sample ",i," of ",num_samples);
+            // clq::output("input partition is");
+            // clq::print_partition_line(config);
             C basin = optimisation_func(config); // INVALID READ HERE
-            // cliques::output("output is");
-            // cliques::print_partition_line(basin);
+            // clq::output("output is");
+            // clq::print_partition_line(basin);
 
             // If the basin is not found then add it
             // FIXME: make all_configs const, and return a new container
@@ -176,7 +176,7 @@ sample_probabalistic_basins(
             int basin_id = get_id(basin);
             if (basin_id == -1 )  { // magic number for not found
                 basins.push_back(basin); // AND HERE
-                cliques::output("basin not in original list, adding");
+                clq::output("basin not in original list, adding");
             }
 
             // config_to_basin_to_count[config_id][get_id(basin)]++;
@@ -189,7 +189,7 @@ sample_probabalistic_basins(
         all_configs.push_back(basin);
     }
 
-    cliques::output("size of all configs after ", all_configs.size());
+    clq::output("size of all configs after ", all_configs.size());
 
     std::map<int, std::map<int, double> > basin_to_config_to_prob;    
 

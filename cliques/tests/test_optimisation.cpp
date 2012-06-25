@@ -13,7 +13,7 @@
 #include <cliques/structures/vector_partition.h>
 #include <cliques/quality_functions/stability.h>
 #include <cliques/landscapes/landscape_space.h>
-#include <cliques/algorithms/hill_climbing.h>
+#include <cliques/optimisation/hill_climbing.h>
 
 namespace po = boost::program_options;
 

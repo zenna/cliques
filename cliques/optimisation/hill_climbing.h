@@ -1,4 +1,4 @@
-    /* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2012
+/* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2012
  Stochastic hill climbing optimisation functions */
 #pragma once
 #include <functional>
@@ -55,7 +55,7 @@ C stochastic_monotonic_climb(
             if (direction == clq::Direction::ASCENT) {
                 quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
-            else if (direction == cliques::Direction::DESCENT) {
+            else if (direction == clq::Direction::DESCENT) {
                 quality_diff = current_config_quality - compute_quality(neighbour) ;
             }
             // clq::output("quality_diff", quality_diff);

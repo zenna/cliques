@@ -10,7 +10,7 @@
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/logger.h>
 #include <cliques/landscapes/sample_from_landscape.h>
-#include <cliques/algorithms/hill_climbing.h>
+#include <cliques/optimisation/hill_climbing.h>
 #include <cliques/landscapes/non_linear_dim_reduction.h>
 #include <cliques/landscapes/landscape_space.h>
 #include <cliques/quality_functions/stability_full.h>

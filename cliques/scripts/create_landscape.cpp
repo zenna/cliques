@@ -16,7 +16,6 @@
 #include <cliques/quality_functions/stability_full.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/landscapes/landscape_space.h>
-#include <cliques/landscapes/landscape_maxima.h>
 #include <cliques/algorithms/kernighan_lin.h>
 #include <cliques/quality_functions/internals/internals.h>
 #include <cliques/landscapes/non_linear_dim_reduction.h>
