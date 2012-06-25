@@ -26,15 +26,14 @@ namespace cliques {
 // TODO - check num neighbours of space corresponds to algorithm exactly
 
 /**
- @brief  Find all (single node moveset) neighbours of a partition
+ @brief  Will moving node_to_move break the partition?
  */
 template<typename G, typename P, typename NO>
-bool will_move_break_partition(G &graph, const P &partition_const,
+bool will_move_break_partition(G &graph, P partition,
         NO &node_to_move) {
     typedef typename G::Node Node;
     typedef typename G::IncEdgeIt IncEdgeIt;
 
-    P partition = partition_const;
     int node_to_move_id = graph.id(node_to_move);
     std::set<int> neighs_in_same_comm;
     int node_to_move_comm = partition.find_set(node_to_move_id);
@@ -120,14 +119,16 @@ bool will_move_break_partition(G &graph, const P &partition_const,
  @param[in] all_partitons reference to unordered set of partitions
  @param[out] space output graph representing the space
 
- //TODO: This can return (and does return the same partition as a neighbour
+ //TODO: This can return (and does) return the same partition as a neighbour
  * Needs to be fixed.  This happens for example in a set of singletons, because
  * isolating a node would not break a partition
  */
 template<typename G, typename P>
-std::vector<P> find_neighbours2(
-        G &graph,
-        P const &partition) {
+std::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
+find_neighbours(
+        G const &graph,
+        P const &partition,
+        bool allow_disconnected = true) {
     typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
 
@@ -145,84 +146,7 @@ std::vector<P> find_neighbours2(
 
         // Add partition with n1 isolated and in n2's set
         // Avoid using too much memory, destroy temp_partiton after use
-        {
-            P temp_partition = partition;
-            temp_partition.isolate_node(n1_id);
-            temp_partition.normalise_id_vector();
-            neighbour_partitions.insert(temp_partition);
-
-            if (!are_in_same_set) {
-                P temp_partition = partition;
-                temp_partition.add_node_to_set(n1_id, set_of_n2);
-                temp_partition.normalise_id_vector();
-                neighbour_partitions.insert(temp_partition);
-            }
-        }
-
-        {
-            P temp_partition = partition;
-            temp_partition.isolate_node(n2_id);
-            temp_partition.normalise_id_vector();
-            neighbour_partitions.insert(temp_partition);
-
-            if (!are_in_same_set) {
-                P temp_partition = partition;
-                temp_partition.add_node_to_set(n2_id, set_of_n1);
-                temp_partition.normalise_id_vector();
-                neighbour_partitions.insert(temp_partition);
-            }
-        }
-    }
-
-    std::vector<P> neighbour_partitions_vec;
-    for (P neighbour : neighbour_partitions) {
-        neighbour_partitions_vec.push_back(neighbour);
-    }
-
-    return neighbour_partitions_vec;
-}
-
-/**
- @brief  Find all (single node moveset) neighbours of a partition
-
- Finds neighbours of a partition where a neighbour is a partition
- which can be created by moving one node into an adjacent group
- or by isolating it into its own group.
-
- Basic algorithm: Iterate through edges, for each node u, v of edge:
- If moving the node (or isolation) would not break the partition:
- 1. Isolate it
- 2. If u and v are not in the same set, move u to v's set
-
- @param[in] all_partitons reference to unordered set of partitions
- @param[out] space output graph representing the space
-
- //TODO: This can return (and does return the same partition as a neighbour
- * Needs to be fixed.  This happens for example in a set of singletons, because
- * isolating a node would not break a partition
- */
-template<typename G, typename P>
-std::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_neighbours(
-        G &graph,
-        P const &partition) {
-    typedef typename G::EdgeIt EdgeIt;
-    typedef typename G::Node Node;
-
-    std::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
-            neighbour_partitions;
-
-    for (EdgeIt edge(graph); edge != lemon::INVALID; ++edge) {
-        Node n1 = graph.u(edge);
-        Node n2 = graph.v(edge);
-        int n1_id = graph.id(n1);
-        int n2_id = graph.id(n2);
-        int set_of_n1 = partition.find_set(n1_id);
-        int set_of_n2 = partition.find_set(n2_id);
-        bool are_in_same_set = (set_of_n1 == set_of_n2);
-
-        // Add partition with n1 isolated and in n2's set
-        // Avoid using too much memory, destroy temp_partiton after use
-        if (will_move_break_partition(graph, partition, n1) == false) {
+        if (allow_disconnected || will_move_break_partition(graph, partition, n1) == false) {
             P temp_partition = partition;
             temp_partition.isolate_node(n1_id);
             temp_partition.normalise_ids();
@@ -236,7 +160,7 @@ std::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_ne
             }
         }
 
-        if (will_move_break_partition(graph, partition, n2) == false) {
+        if (allow_disconnected || will_move_break_partition(graph, partition, n2) == false) {
             P temp_partition = partition;
             temp_partition.isolate_node(n2_id);
             temp_partition.normalise_ids();
@@ -253,64 +177,25 @@ std::unordered_set<P, cliques::partition_hash, cliques::partition_equal> find_ne
     return neighbour_partitions;
 }
 
-template<typename G, typename P, typename E, typename R>
-P find_random_connected_neighbour(G &graph, P const &partition, E &edge,
-        R &rand_engine) {
+/**
+ @brief  Same as find_neighbours, but converts to stl vector
+ */
+template<typename G, typename P>
+std::vector<P> find_neighbours2(
+        G const &graph,
+        P const &partition) {
+    typedef typename G::EdgeIt EdgeIt;
     typedef typename G::Node Node;
 
-    Node n1 = graph.u(edge);
-    Node n2 = graph.v(edge);
-    int n1_id = graph.id(n1);
-    int n2_id = graph.id(n2);
-    int set_of_n1 = partition.find_set(n1_id);
-    int set_of_n2 = partition.find_set(n2_id);
-    bool are_in_same_set = (set_of_n1 == set_of_n2);
-    std::unordered_set<P, cliques::partition_hash, cliques::partition_equal>
-            neighbour_partitions;
+    auto neighbour_partitions = find_neighbours(graph, partition);
 
-    // Add partition with n1 isolated and in n2's set
-    // Avoid using too much memory, destroy temp_partiton after use
-    if (will_move_break_partition(graph, partition, n1) == false) {
-        P temp_partition = partition;
-        temp_partition.isolate_node(n1_id);
-        temp_partition.normalise_ids();
-        neighbour_partitions.insert(temp_partition);
-
-        if (!are_in_same_set) {
-            P temp_partition = partition;
-            temp_partition.add_node_to_set(n1_id, set_of_n2);
-            temp_partition.normalise_ids();
-            neighbour_partitions.insert(temp_partition);
-        }
+    // Convert to vector
+    std::vector<P> neighbour_partitions_vec;
+    for (P neighbour : neighbour_partitions) {
+        neighbour_partitions_vec.push_back(neighbour);
     }
 
-    if (will_move_break_partition(graph, partition, n2) == false) {
-        P temp_partition = partition;
-        temp_partition.isolate_node(n2_id);
-        temp_partition.normalise_ids();
-        neighbour_partitions.insert(temp_partition);
-
-        if (!are_in_same_set) {
-            P temp_partition = partition;
-            temp_partition.add_node_to_set(n2_id, set_of_n1);
-            temp_partition.normalise_ids();
-            neighbour_partitions.insert(temp_partition);
-        }
-    }
-
-    std::uniform_int_distribution<int> distribution(0,
-            neighbour_partitions.size() - 1);
-
-    int rand_neigh = distribution(rand_engine);
-    auto set_itr = neighbour_partitions.begin();
-    if (neighbour_partitions.size() > 0) {
-        for (int i = 0; i < rand_neigh; ++i) {
-            ++set_itr;
-        }
-        return *set_itr;
-    } else {
-        return partition;
-    }
+    return neighbour_partitions_vec;
 }
 
 /**
@@ -326,53 +211,49 @@ P find_random_connected_neighbour(G &graph, P const &partition, E &edge,
  */
 template<typename G, typename P>
 boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
-        cliques::partition_equal>, boost::bimaps::set_of<typename G::Node> > create_space(
-        G &graph,
-        std::unordered_set<P, cliques::partition_hash,
-                cliques::partition_equal> &all_partitions, G &space) {
+        cliques::partition_equal>, boost::bimaps::set_of<typename G::Node> >
+create_space(
+    G const &graph,
+    std::unordered_set<P, cliques::partition_hash,
+        cliques::partition_equal> const &all_partitions,
+    G &space) {
 
     typedef typename G::Node Node;
     typedef typename G::Edge Edge;
     typedef typename std::unordered_set<P, cliques::partition_hash,
             cliques::partition_equal> partition_set;
-    typedef typename std::unordered_set<P, cliques::partition_hash,
-            cliques::partition_equal>::iterator partition_set_itr;
     typedef boost::bimap<boost::bimaps::unordered_set_of<P,
             cliques::partition_hash, cliques::partition_equal>,
             boost::bimaps::set_of<Node> > Bimap;
+
 
     typedef typename Bimap::value_type bimap_value;
     Bimap partition_tofrom_Node;
 
     // Create node in space for each partition
     // And add to bimap relating node in space_map to partition
-    for (partition_set_itr itr = all_partitions.begin(); itr
-            != all_partitions.end(); ++itr) {
+    for (P const &partition : all_partitions) {
         Node temp_node = space.addNode();
-        partition_tofrom_Node.insert(bimap_value(*itr, temp_node));
+        partition_tofrom_Node.insert(bimap_value(partition, temp_node));
     }
 
-    // For each partition, finds its neighbours and create edges
-    // in space map
-    for (partition_set_itr itr = all_partitions.begin(); itr
-            != all_partitions.end(); ++itr) {
+    // Find neighbour of each partition and make edges in space map
+    for (P const &partition : all_partitions) {
 
-        Node current_node = partition_tofrom_Node.left.at(*itr);
+        Node current_node = partition_tofrom_Node.left.at(partition);
         if (space.id(current_node) % 1000 == 0) {
             std::cout << space.id(current_node) << "\n";
         }
-        partition_set neighbour_partitions = cliques::find_neighbours(graph, *itr);
+        partition_set neighbour_partitions = cliques::find_neighbours(graph, partition);
 
-        for (partition_set_itr neigh_itr = neighbour_partitions.begin(); neigh_itr
-                != neighbour_partitions.end(); ++neigh_itr) {
+        for (P const &neigh_partition : neighbour_partitions) {
 
             // TODO: Hack! find_neighbours can return disconnected partition
-            // Because of isolation
             // This discards if not in the set of all connected partitions
-            if (all_partitions.find(*neigh_itr) == all_partitions.end()) {
+            if (all_partitions.find(neigh_partition) == all_partitions.end()) {
                 continue;
             }
-            Node neighbour_node = partition_tofrom_Node.left.at(*neigh_itr);
+            Node neighbour_node = partition_tofrom_Node.left.at(neigh_partition);
 
             if (current_node != neighbour_node) {
                 Edge e = lemon::findEdge(space, current_node, neighbour_node);
@@ -385,6 +266,9 @@ boost::bimap<boost::bimaps::unordered_set_of<P, cliques::partition_hash,
     return partition_tofrom_Node;
 }
 
+/**
+ @brief  Convert a set of partitions into a graph
+ */
 template<typename G, typename DG, typename M>
 void graph_to_transition_digraph(G &graph, std::vector<double> qualities,
         DG &transition_graph, M &transition_weights) {
@@ -452,42 +336,6 @@ void find_basins_depth_first(DG &transition_graph, M& transition_weights,
         find_basins_depth_first(transition_graph, transition_weights,
                 new_alpha, lower_node, basin_to_probabilities);
     }
-
-}
-
-template<typename G>
-std::map<int, std::map<int, double> > compute_probabalistic_basins(G &graph,
-        std::vector<double> qualities) {
-
-    typedef typename lemon::SmartDigraph::NodeIt NodeIt;
-    typedef typename lemon::SmartDigraph::OutArcIt OutArcIt;
-
-    lemon::SmartDigraph transition_graph;
-    lemon::SmartDigraph::ArcMap<double> transition_weights(transition_graph);
-    graph_to_transition_digraph(graph, qualities, transition_graph,
-            transition_weights);
-
-    std::map<int, std::map<int, double> > all_basins;
-
-    for (NodeIt node(transition_graph); node != lemon::INVALID; ++node) {
-        int num_better_nodes = 0;
-        for (OutArcIt arc(transition_graph, node); arc != lemon::INVALID; ++arc) {
-            num_better_nodes++;
-        }
-
-        // I.e. only if this node is a maxima
-        if (num_better_nodes == 0) {
-            cliques::output("maxima");
-            int node_id = transition_graph.id(node);
-            double alpha = 1.0;
-            std::map<int, double> basin_to_probabilities;
-            find_basins_depth_first(transition_graph, transition_weights,
-                    alpha, node, basin_to_probabilities);
-            all_basins[node_id] = basin_to_probabilities;
-        }
-    }
-
-    return all_basins;
 
 }
 

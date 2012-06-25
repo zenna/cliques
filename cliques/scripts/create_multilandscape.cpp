@@ -35,20 +35,21 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 		double &start_time, double &end_time, bool merge_moveset) {
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
-	desc.add_options()("help", "produce help message")("graph,G",
-			po::value<std::string>(), "input graphs")("partitions_file,H",
-			po::value<std::string>(), "partition file for landscape")("intermediate_graphs,I",
-					po::value<std::string>(), "intermediate_graphs")(
-			"num-samples,S", po::value<int>(), "number of samples")(
-			"dimensions,D", po::value<int>(), "number of dimensions")(
-			"prefix,x", po::value<std::string>(), "filename prefix")(
-			"find_partitions,p", "Find Partitions")("create_space,s",
-			"Create Space")("merge_moveset,mm", "moveset")(
-			"find_stabilities,r", "Find Stabilities")("find_distances,d",
-			"Find Distances")("do_embedding,e", "Do Embedding")(
-			"find_basins,b", "Find Basins")("time_steps", po::value<int>(),
-			"Number of time steps")("start_time", po::value<double>(),
-			"start time")("end_time", po::value<double>(), "end time");
+	desc.add_options()("help", "produce help message")
+		("graph,G", po::value<std::string>(), "input graphs")
+		("partitions_file,H", po::value<std::string>(), "partition file for landscape")
+		("intermediate_graphs,I", po::value<std::string>(), "intermediate_graphs")
+		("num-samples,S", po::value<int>(), "number of samples")
+		("dimensions,D", po::value<int>(), "number of dimensions")
+		("prefix,x", po::value<std::string>(), "filename prefix")
+		("find_partitions,p", "Find Partitions")
+		("create_space,s","Create Space")("merge_moveset,mm", "moveset")
+		("find_stabilities,r", "Find Stabilities")
+		("find_distances,d","Find Distances")("do_embedding,e", "Do Embedding")
+		("find_basins,b", "Find Basins")
+		("time_steps", po::value<int>(),"Number of time steps")
+		("start_time", po::value<double>(),"start time")
+		("end_time", po::value<double>(), "end time");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(ac, av, desc), vm);
@@ -144,7 +145,7 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 		std::string filename = vm["partitions_file"].as<std::string> ();
 		read_partitions_file(optimal_partitions, filename);
 	} else {
-		std::cout << "Need partitiosn file" << std::endl;
+		std::cout << "Need partitions file" << std::endl;
 		exit(1);
 	}
 
@@ -182,16 +183,7 @@ int main(int ac, char* av[]) {
 		cliques::find_connected_partitions(orange_graph, all_partitions,
 				no_logging);
 		cliques::output("complete size:", all_partitions.size());
-
-		std::ofstream vector_file;
-		vector_file.open(filename_prefix + "_0_partitions.mat");
-		for (auto itr = all_partitions.begin(); itr != all_partitions.end(); ++itr) {
-			int length = itr->element_count();
-			for (int i = 0; i < length; i++) {
-				vector_file << itr->find_set(i) << " ";
-			}
-			vector_file << std::endl;
-		}
+		partitions_to_file(filename_prefix + "_0_partitions.mat", all_partitions);
 	}
 
 	lemon::SmartGraph space;
