@@ -7,7 +7,7 @@
 #include <map>
 #include <iostream>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  A partition where the position in the vector denotes the node_id
  and its value determines its set id.

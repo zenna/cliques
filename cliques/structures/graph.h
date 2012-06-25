@@ -1,11 +1,11 @@
-#ifndef CLIQUES_GRAPH_H
-#define CLIQUES_GRAPH_H
+#ifndef clq_GRAPH_H
+#define clq_GRAPH_H
 
 #include <lemon/list_graph.h>
 #include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 
-namespace cliques {
+namespace clq {
     template <class T>
     struct Graph
     {
@@ -40,6 +40,6 @@ namespace cliques {
         int num_edges() {return lemon::countEdges(this->graph);}
         int num_nodes() {return lemon::countNodes(this->graph);}
     };
-} //namespace cliques
+} //namespace clq
 
-#endif //CLIQUES_STRUCTURES_H
+#endif //clq_STRUCTURES_H

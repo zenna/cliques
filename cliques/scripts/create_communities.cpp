@@ -22,6 +22,7 @@
 #include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/algorithms/aglob.h>
+#include "cliques/landscapes/basins.h"
 
 namespace po = boost::program_options;
 
@@ -79,14 +80,14 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		find_partitions = true;
 	}
 
-	cliques::output("bools", find_partitions, create_space, find_stabilities, find_distances, do_embedding, find_basins);
+	clq::output("bools", find_partitions, create_space, find_stabilities, find_distances, do_embedding, find_basins);
 
 	// Do everything if nothing specified
 	if (!(find_partitions || create_space || find_stabilities || find_distances
 			|| do_embedding || find_basins)) {
 		find_partitions = create_space = find_stabilities = find_distances
 				= do_embedding = find_basins = true;
-		cliques::output("F", find_partitions);
+		clq::output("F", find_partitions);
 	}
 
 	if (vm.count("help")) {
@@ -108,22 +109,22 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	}
 
 	if (vm.count("graph")) {
-		cliques::output("Loading Graph");
+		clq::output("Loading Graph");
 		std::string filename = vm["graph"].as<std::string> ();
-		cliques::read_edgelist_weighted(filename, graph, weights);
+		clq::read_edgelist_weighted(filename, graph, weights);
 	} else {
-		cliques::output("making default graph graph");
-		//cliques::make_path_graph(graph, 7, weights);
-		//      cliques::make_ring_graph(graph, 12, weights);
-		cliques::make_complete_graph(graph, 8, weights);
+		clq::output("making default graph graph");
+		//clq::make_path_graph(graph, 7, weights);
+		//      clq::make_ring_graph(graph, 12, weights);
+		clq::make_complete_graph(graph, 8, weights);
 	}
 }
 
 int main(int ac, char* av[]) {
 	double precision = 1e-9;
-	typedef cliques::VectorPartition VecPartition;
-	typedef std::unordered_set<VecPartition, cliques::partition_hash,
-			cliques::partition_equal> VecPartitionSet;
+	typedef clq::VectorPartition VecPartition;
+	typedef std::unordered_set<VecPartition, clq::partition_hash,
+			clq::partition_equal> VecPartitionSet;
 
 	lemon::SmartGraph orange_graph;
 	std::string filename_prefix;
@@ -138,18 +139,18 @@ int main(int ac, char* av[]) {
 			filename_prefix, find_partitions, create_space, find_stabs,
 			find_distances, do_embedding, find_basins);
 
-	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
+	clq::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
 			orange_graph);
 
 	std::vector<std::vector<int> > communities;
 	if (find_partitions) {
-		cliques::output("Find Connected Communities");
-		communities = cliques::find_connected_communities(orange_graph);
-		cliques::output(communities.size(), "communities");
+		clq::output("Find Connected Communities");
+		communities = clq::find_connected_communities(orange_graph);
+		clq::output(communities.size(), "communities");
 	    std::ofstream vector_file;
 	    vector_file.open(filename_prefix + "_partitions.mat");
 	    for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
-	        cliques::VectorPartition p = cliques::community_to_partition(
+	        clq::VectorPartition p = clq::community_to_partition(
 	                orange_graph, *itr, 0);
 	        int length = p.element_count();
 	        for (int i = 0; i < length; i++) {
@@ -162,18 +163,18 @@ int main(int ac, char* av[]) {
 	std::vector<double> markov_times;
 	std::vector<std::vector<double> > all_stabilities;
 	if (find_stabs) {
-		cliques::output("Finding stabilities");
+		clq::output("Finding stabilities");
 		std::ofstream stabs_file;
 		stabs_file.open(filename_prefix + "_energy.mat");
-		cliques::find_full_normalised_stability func(orange_graph, weights, precision);
-		markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
-		cliques::output("time_steps", markov_times.size());
+		clq::find_full_normalised_stability func(orange_graph, weights, precision);
+		markov_times = clq::create_exponential_markov_times(0.00001, 500, 500);
+		clq::output("time_steps", markov_times.size());
 		for (unsigned int i = 0; i < markov_times.size(); ++i) {
-			cliques::output("time",markov_times[i]);
+			clq::output("time",markov_times[i]);
 			std::vector<double> stabilities;
 			stabs_file << markov_times[i] << " ";
 			for (auto itr = communities.begin(); itr != communities.end(); ++itr) {
-				cliques::VectorPartition p = cliques::community_to_partition(
+				clq::VectorPartition p = clq::community_to_partition(
 						orange_graph, *itr, 0);
 				double stability = func(p, 1, markov_times[i]);
 				stabilities.push_back(stability);
@@ -190,49 +191,49 @@ int main(int ac, char* av[]) {
 
 	arma::mat X;
 	if (find_distances) {
-		cliques::output("Finding distances");
-		X = cliques::find_community_edit_dists(orange_graph, communities);
+		clq::output("Finding distances");
+		X = clq::find_community_edit_dists(orange_graph, communities);
 		X.save(filename_prefix + "_dists.mat", arma::raw_ascii);
 	}
-//    cliques::output("Finding distances Hasse");
-//    cliques::create_hasse_community_space(space,communities,space);
+//    clq::output("Finding distances Hasse");
+//    clq::create_hasse_community_space(space,communities,space);
 //    std::vector<lemon::SmartGraph::Node> all_nodes;
 //    for (unsigned int i = 0; i < communities.size(); ++i) {
 //        all_nodes.push_back(space.nodeFromId(i));
 //    }
-//    cliques::make_weights_from_edges(space,space_weights);
-//    auto X = cliques::convert_graph_to_geodesic_dists(space,all_nodes,space_weights);
+//    clq::make_weights_from_edges(space,space_weights);
+//    auto X = clq::convert_graph_to_geodesic_dists(space,all_nodes,space_weights);
 
 	lemon::SmartGraph space;
 	lemon::SmartGraph::EdgeMap<double> space_weights(space);
 	if (create_space) {
-		cliques::convert_dists_to_graph(space,space_weights,X, 1.0);
-	    cliques::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
-	    cliques::output("number of nodes", lemon::countNodes(space));
-	    cliques::output("number of edges", lemon::countEdges(space));
+		clq::convert_dists_to_graph(space,space_weights,X, 1.0);
+	    clq::graph_to_edgelist_file(filename_prefix + "_landscape_edgelist.edj", space);
+	    clq::output("number of nodes", lemon::countNodes(space));
+	    clq::output("number of edges", lemon::countEdges(space));
 	}
 
 	if (do_embedding) {
-		cliques::output("Finding embedding");
-		auto L = cliques::embed_mds(X, num_dim);
+		clq::output("Finding embedding");
+		auto L = clq::embed_mds(X, num_dim);
 		arma::mat L_t = arma::trans(L);
 		L_t.save(filename_prefix + "_coords.mat", arma::raw_ascii);
 
-		auto D_y = cliques::euclid_pairwise_dists(L_t);
-		cliques::output("residual variance", cliques::residual_variance(X, D_y));
+		auto D_y = clq::euclid_pairwise_dists(L_t);
+		clq::output("residual variance", clq::residual_variance(X, D_y));
 	}
 
 	if (find_basins) {
-		cliques::output("Finding Probabalistic Community Basins");
+		clq::output("Finding Probabalistic Community Basins");
 		std::vector<std::map<int, std::map<int, double> >> all_basins;
 		int j =0;
 		for (auto stabilities = all_stabilities.begin(); stabilities != all_stabilities.end(); ++ stabilities) {
-			auto basins = cliques::compute_probabalistic_basins_new(space, *stabilities);
-			cliques::output("time", markov_times[j], "num_basins",basins.size());
+			auto basins = clq::compute_mp_probabalistic_basins(space, *stabilities);
+			clq::output("time", markov_times[j], "num_basins",basins.size());
 			all_basins.push_back(basins);
 			++j;
 		}
-		cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
+		clq::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
 	}
     return 0;
 }

@@ -14,7 +14,7 @@
 #include <cliques/quality_functions/internals/generators.h>
 
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Refines a given partition using Kernighan Lin style movements
 
@@ -53,14 +53,14 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
     int num_nodes = lemon::countNodes(graph);
     P partition = input_partition;
     P buffer_partition = partition;
-    auto internals = cliques::gen(compute_quality, graph, weights, partition);
+    auto internals = clq::gen(compute_quality, graph, weights, partition);
     double minimum_improve = 0.000000001;
     double original_quality, best_quality, current_quality;
     original_quality = best_quality = current_quality = compute_quality(
             internals);
 
-//    cliques::output("beginning", best_quality);
-//    cliques::print_partition_line(partition);
+//    clq::output("beginning", best_quality);
+//    clq::print_partition_line(partition);
 
     // keep track of nodes that have moved before
     std::set<Node> moved_nodes; //TODO change to unordered_set
@@ -161,7 +161,7 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 
         if (current_quality > best_quality) {
-//            cliques::output(current_quality, best_quality);
+//            clq::output(current_quality, best_quality);
             buffer_partition = partition;
             best_quality = current_quality;
         }
@@ -170,13 +170,13 @@ double refine_partition_kernighan_lin(T &graph, W &weights, QF compute_quality,
 
 
     double total_quality_improvement = best_quality - original_quality;
-//     cliques::print_partition_line(buffer_partition);
-//     cliques::output(current_quality,total_quality_improvement, best_quality, original_quality);
+//     clq::print_partition_line(buffer_partition);
+//     clq::output(current_quality,total_quality_improvement, best_quality, original_quality);
 
     // TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
     if (total_quality_improvement > minimum_improve) {
-//        cliques::output("end",best_quality);
-//        cliques::print_partition_line(buffer_partition);
+//        clq::output("end",best_quality);
+//        clq::print_partition_line(buffer_partition);
         return total_quality_improvement + refine_partition_kernighan_lin(
                 graph, weights, compute_quality, compute_quality_diff,
                 buffer_partition, output_partition);
@@ -204,14 +204,14 @@ double refine_partition_kernighan_lin_hijack(T &graph, W &weights, QF compute_qu
     int num_nodes = lemon::countNodes(graph);
     P partition = input_partition;
     P buffer_partition = partition;
-    auto internals = cliques::gen(compute_quality, graph, weights, partition, partition);
+    auto internals = clq::gen(compute_quality, graph, weights, partition, partition);
     double minimum_improve = 0.000000001;
     double original_quality, best_quality, current_quality;
     original_quality = best_quality = current_quality = compute_quality(
             internals);
 
-//    cliques::output("beginning", best_quality);
-//    cliques::print_partition_line(partition);
+//    clq::output("beginning", best_quality);
+//    clq::print_partition_line(partition);
 
     // keep track of nodes that have moved before
     std::set<Node> moved_nodes; //TODO change to unordered_set
@@ -312,20 +312,20 @@ double refine_partition_kernighan_lin_hijack(T &graph, W &weights, QF compute_qu
 
 
         if (current_quality > best_quality) {
-//            cliques::output(current_quality, best_quality);
+//            clq::output(current_quality, best_quality);
             buffer_partition = partition;
             best_quality = current_quality;
         }
     }
 
     double total_quality_improvement = best_quality - original_quality;
-//     cliques::print_partition_line(buffer_partition);
-//     cliques::output(current_quality,total_quality_improvement, best_quality, original_quality);
+//     clq::print_partition_line(buffer_partition);
+//     clq::output(current_quality,total_quality_improvement, best_quality, original_quality);
 
     // TODO maybe it is better to have an iterative instead of recursive implementation as the stack might grow large unnecessarily
     if (total_quality_improvement > minimum_improve) {
-//        cliques::output("end",best_quality);
-//        cliques::print_partition_line(buffer_partition);
+//        clq::output("end",best_quality);
+//        clq::print_partition_line(buffer_partition);
         return total_quality_improvement + refine_partition_kernighan_lin(
                 graph, weights, compute_quality, compute_quality_diff,
                 buffer_partition, output_partition);

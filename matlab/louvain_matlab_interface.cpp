@@ -1,7 +1,7 @@
 /*
  * matlab_interface.cpp
  *
- * compile from MATLAB in directory cliques:
+ * compile from MATLAB in directory clq:
  * mex matlab/louvain_matlab_interface.cpp CXXFLAGS="-std=gnu++0x -fPIC" -I./ -lemon
  *
  *  Created on: 27 Apr 2012
@@ -230,7 +230,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	}
 
 	// typedef for convenience
-	typedef cliques::VectorPartition partition;
+	typedef clq::VectorPartition partition;
 
 	// get number of nodes and time points;
 	unsigned int num_nodes = lemon::countNodes(mygraph);
@@ -252,7 +252,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	// initialise dummy null_model
 	std::vector<double> null_model(num_nodes, 0);
 	if (mode == 2) {
-		null_model = cliques::create_correlation_graph_from_graph(mygraph,
+		null_model = clq::create_correlation_graph_from_graph(mygraph,
 				myweights);
 	}
 
@@ -263,7 +263,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		for (unsigned int j = 0; j < num_times; ++j) {
 
 			// Logging feature
-			cliques::Logging<partition> log_louvain;
+			clq::Logging<partition> log_louvain;
 
 			// create empty vector of partitions
 			std::vector<partition> hierarchical_louvain_partitions;
@@ -273,13 +273,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 			// normalised Laplacian
 			case 0: {
-				cliques::find_linearised_normalised_stability quality(
+				clq::find_linearised_normalised_stability quality(
 						m_times[j]);
-				cliques::linearised_normalised_stability_gain quality_gain(
+				clq::linearised_normalised_stability_gain quality_gain(
 						m_times[j]);
 				// now run Louvain method
 				stability[i]
-						= cliques::find_optimal_partition_louvain<partition>(
+						= clq::find_optimal_partition_louvain<partition>(
 								mygraph, myweights, null_model, quality,
 								quality_gain, singletons,
 								hierarchical_louvain_partitions, precision,
@@ -289,13 +289,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 				// combinatorial Laplacian
 			case 1: {
-				cliques::find_linearised_combinatorial_stability quality(
+				clq::find_linearised_combinatorial_stability quality(
 						m_times[j]);
-				cliques::linearised_combinatorial_stability_gain quality_gain(
+				clq::linearised_combinatorial_stability_gain quality_gain(
 						m_times[j]);
 				// now run Louvain method
 				stability[i]
-						= cliques::find_optimal_partition_louvain<partition>(
+						= clq::find_optimal_partition_louvain<partition>(
 								mygraph, myweights, null_model, quality,
 								quality_gain, singletons,
 								hierarchical_louvain_partitions, precision,
@@ -305,13 +305,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 				// corr normalised Laplacian
 			case 2: {
-				cliques::find_linearised_normalised_corr_stability quality(
+				clq::find_linearised_normalised_corr_stability quality(
 						m_times[j]);
-				cliques::linearised_normalised_corr_stability_gain
+				clq::linearised_normalised_corr_stability_gain
 						quality_gain(m_times[j]);
 				// now run Louvain method
 				stability[i]
-						= cliques::find_optimal_partition_louvain<partition>(
+						= clq::find_optimal_partition_louvain<partition>(
 								mygraph, myweights, null_model, quality,
 								quality_gain, singletons,
 								hierarchical_louvain_partitions, precision,
@@ -320,12 +320,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			}
 				// mutual information version
 			case 3: {
-				cliques::find_mutual_information_stability quality;
-				cliques::mutual_information_stability_gain quality_gain;
+				clq::find_mutual_information_stability quality;
+				clq::mutual_information_stability_gain quality_gain;
 
 				// now run Louvain method
 				stability[i]
-						= cliques::find_optimal_partition_louvain<partition>(
+						= clq::find_optimal_partition_louvain<partition>(
 								mygraph, myweights, null_model, quality,
 								quality_gain, singletons,
 								hierarchical_louvain_partitions, precision,

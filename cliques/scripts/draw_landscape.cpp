@@ -41,7 +41,7 @@ int main() {
     orange_graph.addEdge(orange_graph.nodeFromId(7),orange_graph.nodeFromId(4));
 
 	// Find all partitions
-    cliques::umap partition_map;
+    clq::umap partition_map;
     find_connected_partitions(orange_graph, partition_map);
 
     //Create landscape
@@ -56,8 +56,8 @@ int main() {
     current_markov_time.push_back(1000);
     std::vector<float> stabilities;
 
-    cliques::draw_graph canvas(orange_graph);
-    //canvas.draw(cliques::make_energy_edge_colour_map(edge_weights));
+    clq::draw_graph canvas(orange_graph);
+    //canvas.draw(clq::make_energy_edge_colour_map(edge_weights));
 
     return 0;
 };

@@ -53,7 +53,7 @@
 //Tomorrow
 //Combinatorial stability
 
-namespace cliques {
+namespace clq {
 
 template<typename G>
 void find_connected_communities(G &graph, std::vector<bool> allowed,
@@ -64,7 +64,7 @@ void find_connected_communities(G &graph, std::vector<bool> allowed,
 	int allowed_neigh = -1;
 
 	if (community_list.size() % 10000 == 0) {
-		cliques::output(community_list.size());
+		clq::output(community_list.size());
 	}
 
 	if (community.size() == 0) {

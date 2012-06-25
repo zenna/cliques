@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 
-namespace cliques {
+namespace clq {
 std::vector<char> string_to_char_p(std::string str) {
     std::vector<char> writable(str.size() + 1);
     std::copy(str.begin(), str.end(), writable.begin());

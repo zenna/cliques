@@ -6,7 +6,7 @@
 #include <cliques/landscapes/landscape_space.h>
 #include <lemon/concepts/graph.h>
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Use Metropolis Hastings to approximate distribution of stability values
@@ -16,20 +16,20 @@ template<typename G, typename Q, typename M, typename Logger>
 void sample_metropolis(G &graph, Q &quality_function, double markov_time,
         int num_samples, int num_steps_per_sample, M &sample_to_count,
         Logger &logger) {
-    typedef typename std::unordered_set<cliques::VectorPartition,
-            cliques::partition_hash, cliques::partition_equal> partition_set;
+    typedef typename std::unordered_set<clq::VectorPartition,
+            clq::partition_hash, clq::partition_equal> partition_set;
 
     int num_sampled = 0;
     int num_steps = 0;
     int num_nodes = lemon::countNodes(graph);
-    cliques::VectorPartition current_partition(num_nodes);
+    clq::VectorPartition current_partition(num_nodes);
     current_partition.initialise_as_singletons();
 
     std::uniform_real_distribution<> real_distribution(0, 1);
     std::mt19937 m_engine; // Mersenne twister MT19937
 
     while (true) {
-        partition_set neigh_partitions = cliques::find_neighbours(graph, current_partition);
+        partition_set neigh_partitions = clq::find_neighbours(graph, current_partition);
         int num_current_neighs = neigh_partitions.size();
         std::uniform_int_distribution<int> distribution(0,
                 num_current_neighs - 1);
@@ -52,12 +52,12 @@ void sample_metropolis(G &graph, Q &quality_function, double markov_time,
             for (int i = 0; i < rand_neigh; ++i) {
                 ++set_itr;
             }
-            cliques::VectorPartition proposed_partition = *set_itr;
+            clq::VectorPartition proposed_partition = *set_itr;
             logger.log(proposed_partition);
             partition_set proposed_neighs;
 
             // Need num neighbours to compute Q(x_t ; x_p)
-            cliques::find_neighbours(graph, proposed_partition);
+            clq::find_neighbours(graph, proposed_partition);
             int num_proposed_neighs = proposed_neighs.size();
 
             //Metropolis-Hastings acceptance alpha
@@ -100,8 +100,8 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
         int num_steps_per_sample = 10) {
 
     // define partition_set as unordered_set of partitions
-    typedef typename std::unordered_set<P, cliques::partition_hash,
-            cliques::partition_equal> partition_set;
+    typedef typename std::unordered_set<P, clq::partition_hash,
+            clq::partition_equal> partition_set;
 
     std::vector<P> sampled_partitions;
 
@@ -116,7 +116,7 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
     std::mt19937 m_engine; // Mersenne twister MT19937
 
     // initialise and find neighbouring partitions
-    partition_set neigh_partitions = cliques::find_neighbours(graph, current_partition);
+    partition_set neigh_partitions = clq::find_neighbours(graph, current_partition);
 
     // get number of neighbours of current partition
     int num_current_neighs = neigh_partitions.size();
@@ -136,7 +136,7 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
         P proposed_partition = *set_itr;
 
         // find the neighbours of the proposed partition, to compute acceptance ratio etc.
-        partition_set proposed_neighs = cliques::find_neighbours(graph, proposed_partition);
+        partition_set proposed_neighs = clq::find_neighbours(graph, proposed_partition);
         int num_proposed_neighs = proposed_neighs.size(); // numbber of proposed neighbours
 
         //Metropolis-Hastings acceptance probability
@@ -159,24 +159,5 @@ std::vector<P> uniform_sample(G &graph, int num_samples,
     }
     return sampled_partitions;
 }
-
-//
-///**
-// @brief  Given iterable set of solutions (e.g. partitions) find sampled probabilistic basins
-// @tparam P                          Partition type
-// @tparam G                          Graph type
-// @param[in]  graph                  Graph to partition (not the landscape graph)
-// @param[in]  num_samples            Number of samples that should be drawn
-// @param[in]  num_steps_per_sample   Number of steps before sample is taken as output
-// @param[out] output_partitions      Vector containing the sampled partitions
-// */
-//template<typename P, typename G>
-//std::vector<P> sample_basins(G &graph, std::vector<P> sampled_partitions,
-//    int num_samples, int num_steps_per_sample = 10) {
-//    for (current_partition& :sampled_partitions) {
-//        auto optimal_partition = stochastic_climb(current_partition, find_neighours, ascent, compute_quality);
-//
-//    }
-//}
 
 }

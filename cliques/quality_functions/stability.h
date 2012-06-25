@@ -17,7 +17,7 @@
 #include <cliques/quality_functions/internals/linearised_internals_comb.h>
 #include <cliques/helpers/graphhelpers.h>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Functor for finding normalised linearised stability of weighted graph
  */
@@ -30,7 +30,7 @@ struct find_linearised_normalised_stability {
 
 	template<typename G, typename P, typename W>
 	double operator ()(G &graph, P &partition, W &weights) {
-		cliques::LinearisedInternals internals(graph, weights, partition);
+		clq::LinearisedInternals internals(graph, weights, partition);
 		return (*this)(internals);
 	}
 
@@ -38,7 +38,7 @@ struct find_linearised_normalised_stability {
 	double operator ()(I &internals) {
 		double q = 1.0 - markov_time;
 		int size = internals.comm_w_tot.size();
-		//				cliques::output("time", markov_time, "size", size);
+		//				clq::output("time", markov_time, "size", size);
 
 		for (int i = 0; i < size; i++) {
 			if (internals.comm_w_tot[i] > 0) {
@@ -47,7 +47,7 @@ struct find_linearised_normalised_stability {
 						/ internals.two_m) * (double(internals.comm_w_tot[i])
 						/ internals.two_m));
 			}
-			//						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
+			//						clq::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
 		}
 
 		return q;
@@ -58,7 +58,7 @@ struct find_linearised_normalised_stability {
 		double q = -1;
 		int i = comm_id;
 		if (internals.comm_w_tot[i] > 0) {
-			//            cliques::output("internals", internals.comm_w_tot[i], internals.two_m, markov_time);
+			//            clq::output("internals", internals.comm_w_tot[i], internals.two_m, markov_time);
 			q = internals.comm_w_tot[i] / internals.two_m * (1.0 - markov_time);
 			q += markov_time * double(internals.comm_w_in[i] / internals.two_m)
 					- ((double(internals.comm_w_tot[i]) / internals.two_m)
@@ -117,7 +117,7 @@ struct find_linearised_combinatorial_stability {
 
 	template<typename G, typename P, typename W>
 	double operator ()(G &graph, P &partition, W &weights, P &partition_init) {
-		cliques::LinearisedInternalsComb internals(graph, weights, partition,
+		clq::LinearisedInternalsComb internals(graph, weights, partition,
 				partition_init);
 		return (*this)(internals);
 	}
@@ -126,10 +126,10 @@ struct find_linearised_combinatorial_stability {
 	double operator ()(I &internals) {
 		double q = 1.0 - markov_time;
 		int size = internals.comm_tot_nodes.size();
-		//				cliques::output("time", markov_time, "size", size);
+		//				clq::output("time", markov_time, "size", size);
 
 		for (int i = 0; i < size; i++) {
-			//			cliques::print_collection(internals.comm_tot_nodes);
+			//			clq::print_collection(internals.comm_tot_nodes);
 			if (internals.comm_tot_nodes[i] > 0) {
 				q += markov_time * double(internals.comm_w_in[i]
 						/ internals.two_m)
@@ -138,7 +138,7 @@ struct find_linearised_combinatorial_stability {
 								* (double(internals.comm_tot_nodes[i])
 										/ internals.num_nodes_init));
 			}
-			//						cliques::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
+			//						clq::output("in", internals.comm_w_in[i], "tot",internals.comm_w_tot[i], "nodew", internals.node_to_w[i], "2m", internals.two_m,"q", q);
 		}
 
 		return q;

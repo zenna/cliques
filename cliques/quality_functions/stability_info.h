@@ -13,7 +13,7 @@
 #include <cliques/helpers/graphhelpers.h>
 #include <cliques/quality_functions/internals/linearised_internals_info.h>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Functor for finding mutual information stability of weighted graph
  */
@@ -21,7 +21,7 @@ struct find_mutual_information_stability {
 
 	template<typename G, typename P, typename W>
 	double operator ()(G &graph, P &partition, W &weights) {
-		cliques::LinearisedInternalsInfo internals(graph, weights, partition);
+		clq::LinearisedInternalsInfo internals(graph, weights, partition);
 		return (*this)(internals);
 	}
 
@@ -36,7 +36,7 @@ struct find_mutual_information_stability {
 			if (internals.comm_w_in[i] > 0) {
 				q2 += double(internals.comm_w_in[i]);
 			}
-			//			cliques::output("number", i, "in", internals.comm_w_in[i], "q2", q2);
+			//			clq::output("number", i, "in", internals.comm_w_in[i], "q2", q2);
 		}
 
 		return q2;

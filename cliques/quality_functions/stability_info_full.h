@@ -16,7 +16,7 @@
 
 
 
-namespace cliques {
+namespace clq {
 
 // Create exponential mutual information graph for full information stability
 template<typename G, typename W>
@@ -80,7 +80,7 @@ void create_mutual_information_graph_from_graph(G &graph, W &weights,
       minus_t_D_inv_L[node_id_u + num_nodes * node_id_v] += weight_uv
               / node_weighted_degree[node_id_u];
   }
-  //cliques::print_collection(minus_t_D_inv_L);
+  //clq::print_collection(minus_t_D_inv_L);
   // create graph structure
   //reserve memory space for number of nodes
   exp_graph.reserveNode(num_nodes);
@@ -93,7 +93,7 @@ void create_mutual_information_graph_from_graph(G &graph, W &weights,
   // copy graph
   lemon::graphCopy(exp_graph, graph).run();
   // call expokit
-  std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L,
+  std::vector<double> exp_graph_vec = clq::exp(minus_t_D_inv_L,
           markov_time, num_nodes);
 
 
@@ -108,7 +108,7 @@ void create_mutual_information_graph_from_graph(G &graph, W &weights,
                       * (node_weighted_degree[j] / two_m))
                       / ((node_weighted_degree[j] / two_m)
                               * (node_weighted_degree[i] / two_m))) / log(2);
-              //cliques::output(weight);
+              //clq::output(weight);
               lemon::SmartGraph::Edge edge = graph.addEdge(
                       graph.nodeFromId(i), graph.nodeFromId(j));
               weights[edge] = weight;

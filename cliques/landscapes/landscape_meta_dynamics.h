@@ -1,7 +1,7 @@
 /* @authors Zenna Tavares-zennatavares@gmail.com, Michael Schuab 2010-2011 */
 #pragma once
 
-namespace cliques {
+namespace clq {
 
 void dump_gaussian(std::vector<int> &comm, std::map<std::vector<int>, int> &community_to_dump_count) {
 
@@ -40,7 +40,7 @@ void explore_landscape(G &graph, M &weights, QF &compute_quality, double const t
 
         auto neighs = find_community_neighbours(graph, comm);
         for (auto neigh = neighs.begin(); neigh != neighs.end(); ++neigh) {
-            cliques::VectorPartition p = cliques::community_to_partition(graph,
+            clq::VectorPartition p = clq::community_to_partition(graph,
                     *neigh, 0);
             double neigh_quality = compute_quality(p, 1, time);
         }
@@ -74,32 +74,32 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
     int iterations_per_snapshot = 10;
 
     for (int i = 0; i < num_iterations; ++i) {
-        //      cliques::print_collection(comm);
-        cliques::VectorPartition p = cliques::community_to_partition(graph,
+        //      clq::print_collection(comm);
+        clq::VectorPartition p = clq::community_to_partition(graph,
                 comm, 0);
         auto neighs = find_community_neighbours(graph, comm);
         double current_quality = compute_quality(p, 1, time);
         double real_quality = current_quality;
         for (auto maximum = maxima_to_seen_count.begin(); maximum
                 != maxima_to_seen_count.end(); ++maximum) {
-            int dist_to_maximum = cliques::find_community_dist(graph, weights,
+            int dist_to_maximum = clq::find_community_dist(graph, weights,
                     comm, maximum->first, buffer);
-            //          cliques::output("dist between following two is", dist_to_maximum);
-            //          cliques::print_collection(comm);
-            //          cliques::print_collection(maximum->first);
+            //          clq::output("dist between following two is", dist_to_maximum);
+            //          clq::print_collection(comm);
+            //          clq::print_collection(maximum->first);
             current_quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)
                     * maximum->second;
         }
 
         std::vector<double> neigh_qualities;
-        //      cliques::output("current quality:", current_quality);
+        //      clq::output("current quality:", current_quality);
 
         // Compute neighbour qualities then bias by history dependent maxima filling
         bool is_real_maximum = true;
         for (auto neigh = neighs.begin(); neigh != neighs.end(); ++neigh) {
-            //          cliques::print_collection(*neigh);
+            //          clq::print_collection(*neigh);
 
-            cliques::VectorPartition p = cliques::community_to_partition(graph,
+            clq::VectorPartition p = clq::community_to_partition(graph,
                     *neigh, 0);
             double neigh_quality = compute_quality(p, 1, time);
 
@@ -108,13 +108,13 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
             }
             for (auto maximum = maxima_to_seen_count.begin(); maximum
                     != maxima_to_seen_count.end(); ++maximum) {
-                int dist_to_maximum = cliques::find_community_dist(graph,
+                int dist_to_maximum = clq::find_community_dist(graph,
                         weights, *neigh, maximum->first, buffer);
 
                 neigh_quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)
                         * maximum->second;
             }
-            //          cliques::output("neigh quality:", neigh_quality);
+            //          clq::output("neigh quality:", neigh_quality);
 
             neigh_qualities.push_back(neigh_quality);
         }
@@ -139,22 +139,22 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
         // If not maxima in meta landscape
         if (best_quality_diff > 0.0) {
             comm = neighs[best_neighbour];
-            cliques::output("moving", i);
-            //          cliques::print_collection(comm);
+            clq::output("moving", i);
+            //          clq::print_collection(comm);
         } else {
-            cliques::output("meta maxima", i);
+            clq::output("meta maxima", i);
             maxima_to_seen_count[comm]++;
         }
 
         if (i % iterations_per_snapshot == 0) {
             std::vector<double> stabilities;
             for (auto comm = communities.begin(); comm != communities.end(); ++comm) {
-                cliques::VectorPartition p = cliques::community_to_partition(
+                clq::VectorPartition p = clq::community_to_partition(
                         graph, *comm, 0);
                 double quality = compute_quality(p, 1, time);
                 for (auto maximum = maxima_to_seen_count.begin(); maximum
                         != maxima_to_seen_count.end(); ++maximum) {
-                    int dist_to_maximum = cliques::find_community_dist(graph,
+                    int dist_to_maximum = clq::find_community_dist(graph,
                             weights, *comm, maximum->first, buffer);
 
                     quality -= discrete_gauss_kernel(dist_to_maximum, 0.5)

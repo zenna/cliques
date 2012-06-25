@@ -53,7 +53,7 @@ int main() {
 		w  = w + 1.0;
     }
 
-	std::cout << "bottle neck is " << cliques::find_bottleneck(orange_graph,weights,source,target,filter) << std::endl;
+	std::cout << "bottle neck is " << clq::find_bottleneck(orange_graph,weights,source,target,filter) << std::endl;
 
     return 0;
 };

@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 
-namespace cliques {
+namespace clq {
 
 template<typename G>
 void read_edgelist(G &graph, std::string filename) {
@@ -271,7 +271,7 @@ void basins_to_file(std::string filename,
         for (auto itr = basins.begin(); itr != basins.end(); ++itr) {
             int basin_id = itr->first;
             basins_file << time << " " << basin_id << " ";
-            cliques::output(time, itr->second.size());
+            clq::output(time, itr->second.size());
 
             for (auto b = itr->second.begin(); b != itr->second.end(); ++b) {
                 basins_file << b->first << " " << b->second << " ";

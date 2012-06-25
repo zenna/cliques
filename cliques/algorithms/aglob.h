@@ -6,13 +6,13 @@
 #include <map>
 #include <cliques/structures/vector_partition.h>
 
-namespace cliques {
+namespace clq {
 
 template<typename G>
-cliques::VectorPartition community_to_partition(G &graph,
+clq::VectorPartition community_to_partition(G &graph,
         std::vector<int> comm, int outside_comm_set_id) {
     int num_nodes = lemon::countNodes(graph);
-    cliques::VectorPartition partition(num_nodes, outside_comm_set_id);
+    clq::VectorPartition partition(num_nodes, outside_comm_set_id);
     for (auto node = comm.begin(); node != comm.end(); ++node) {
         partition.add_node_to_set(*node, 1);
     }
@@ -26,8 +26,8 @@ cliques::VectorPartition community_to_partition(G &graph,
 template<typename G, typename NO>
 bool will_removal_break_community(G &graph, std::vector<int> comm,
         NO &node_to_remove) {
-    cliques::VectorPartition partition = community_to_partition(graph, comm, 0);
-    return cliques::will_move_break_partition(graph, partition, node_to_remove);
+    clq::VectorPartition partition = community_to_partition(graph, comm, 0);
+    return clq::will_move_break_partition(graph, partition, node_to_remove);
 }
 
 template<typename G>
@@ -54,8 +54,8 @@ std::vector<std::vector<int> > find_community_neighbours(G &graph,
             contracted_comm.erase(location);
             forbidden.insert(node_id);
             std::sort(contracted_comm.begin(), contracted_comm.end());
-            //		    cliques::output("WHAAC");
-            //		    cliques::print_collection(contracted_comm);
+            //		    clq::output("WHAAC");
+            //		    clq::print_collection(contracted_comm);
             neighbours.push_back(contracted_comm);
         }
 
@@ -86,9 +86,9 @@ std::vector<std::vector<int> > find_community_neighbours(G &graph,
 template<typename G, typename M, typename QF>
 bool is_community_maxima(G &graph, M &weights, std::vector<int> comm,
         QF compute_quality, double &stability) {
-    cliques::VectorPartition comm_partition = community_to_partition(graph,
+    clq::VectorPartition comm_partition = community_to_partition(graph,
             comm, 0);
-    auto internals = cliques::gen(compute_quality, graph, weights,
+    auto internals = clq::gen(compute_quality, graph, weights,
             comm_partition);
     double current_quality = compute_quality(internals, 1, 2.3);
     double best_quality = -std::numeric_limits<float>::max();
@@ -96,9 +96,9 @@ bool is_community_maxima(G &graph, M &weights, std::vector<int> comm,
 
     auto neighs = find_community_neighbours(graph, comm);
     for (auto itr = neighs.begin(); itr != neighs.end(); ++itr) {
-        cliques::VectorPartition neigh_partition = community_to_partition(
+        clq::VectorPartition neigh_partition = community_to_partition(
                 graph, *itr, 0);
-        auto neigh_internals = cliques::gen(compute_quality, graph, weights,
+        auto neigh_internals = clq::gen(compute_quality, graph, weights,
                 neigh_partition);
         double neigh_quality = compute_quality(neigh_internals, 1, 2.3);
 

@@ -6,7 +6,7 @@
 #include <set>
 #include <map>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Finds the variation of information between two partitions
  @param[in]  partition1     First partition

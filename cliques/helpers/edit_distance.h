@@ -1,12 +1,11 @@
-#ifndef CLIQUES_EDIT_DISTANCE_H
-#define CLIQUES_EDIT_DISTANCE_H
+#pragma once 
 
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
 #include <iostream>
 
-namespace cliques {
+namespace clq {
 #define MAX_N 55             //max number of vertices in one part
 #define INF 100000000    //just infinity
 
@@ -179,5 +178,3 @@ public:
 };
 
 }
-
-#endif

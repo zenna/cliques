@@ -23,6 +23,7 @@
 #include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/algorithms/aglob.h>
+#include "cliques/landscapes/basins.h"
 
 namespace po = boost::program_options;
 
@@ -131,14 +132,14 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 	}
 
 	if (vm.count("graph")) {
-		cliques::output("Loading Graph");
+		clq::output("Loading Graph");
 		std::string filename = vm["graph"].as<std::string> ();
-		cliques::read_edgelist_weighted(filename, graph, weights);
+		clq::read_edgelist_weighted(filename, graph, weights);
 	} else {
-		cliques::output("making default graph graph");
-		//cliques::make_path_graph(graph, 7, weights);
-		//      cliques::make_ring_graph(graph, 12, weights);
-		cliques::make_complete_graph(graph, 8, weights);
+		clq::output("making default graph graph");
+		//clq::make_path_graph(graph, 7, weights);
+		//      clq::make_ring_graph(graph, 12, weights);
+		clq::make_complete_graph(graph, 8, weights);
 	}
 
 	if (vm.count("partitions_file")) {
@@ -153,9 +154,9 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 }
 
 int main(int ac, char* av[]) {
-	typedef cliques::VectorPartition VecPartition;
-	typedef std::unordered_set<VecPartition, cliques::partition_hash,
-			cliques::partition_equal> VecPartitionSet;
+	typedef clq::VectorPartition VecPartition;
+	typedef std::unordered_set<VecPartition, clq::partition_hash,
+			clq::partition_equal> VecPartitionSet;
 
 	lemon::SmartGraph orange_graph;
 	std::string filename_prefix;
@@ -173,45 +174,45 @@ int main(int ac, char* av[]) {
 			create_space, find_stabs, find_distances, do_embedding,
 			find_basins, num_timesteps, start_time, end_time, merge_moveset);
 
-	cliques::graph_to_edgelist_file(filename_prefix + "_0_graph_edgelist.edj",
+	clq::graph_to_edgelist_file(filename_prefix + "_0_graph_edgelist.edj",
 			orange_graph);
 
 	VecPartitionSet all_partitions;
 	if (find_partitions) {
-		cliques::output("Finding Connected Partitions");
-		cliques::NoLogging no_logging;
-		cliques::find_connected_partitions(orange_graph, all_partitions,
+		clq::output("Finding Connected Partitions");
+		clq::NoLogging no_logging;
+		clq::find_connected_partitions(orange_graph, all_partitions,
 				no_logging);
-		cliques::output("complete size:", all_partitions.size());
+		clq::output("complete size:", all_partitions.size());
 		partitions_to_file(filename_prefix + "_0_partitions.mat", all_partitions);
 	}
 
 	lemon::SmartGraph space;
 	lemon::SmartGraph::EdgeMap<float> space_weights(space);
-	boost::bimap<boost::bimaps::unordered_set_of<cliques::VectorPartition,
-			cliques::partition_hash, cliques::partition_equal>,
+	boost::bimap<boost::bimaps::unordered_set_of<clq::VectorPartition,
+			clq::partition_hash, clq::partition_equal>,
 			boost::bimaps::set_of<lemon::SmartGraph::Node> > map;
 	if (create_space) {
-		cliques::output("Creating space graph");
-		map = cliques::create_space(orange_graph, all_partitions, space);
+		clq::output("Creating space graph");
+		map = clq::create_space(orange_graph, all_partitions, space);
 		lemon::SmartGraph::EdgeMap<float> space_weights(space);
-		cliques::make_weights_from_edges(space, space_weights);
-		cliques::output("number of nodes", lemon::countNodes(space));
-		cliques::output("number of edges", lemon::countEdges(space));
+		clq::make_weights_from_edges(space, space_weights);
+		clq::output("number of nodes", lemon::countNodes(space));
+		clq::output("number of edges", lemon::countEdges(space));
 	}
 
 	std::vector<double> markov_times;
 	std::vector<std::vector<double> > all_stabilities;
 	if (find_stabs) {
-		cliques::output("Finding stabilities");
+		clq::output("Finding stabilities");
 		std::ofstream stabs_file;
 		stabs_file.open(filename_prefix + "_0_energy.mat");
-		cliques::output(start_time, end_time, num_timesteps);
-		markov_times = cliques::create_exponential_markov_times(start_time,
+		clq::output(start_time, end_time, num_timesteps);
+		markov_times = clq::create_exponential_markov_times(start_time,
 				end_time, num_timesteps);
-		cliques::output(markov_times.size(), "time steps");
+		clq::output(markov_times.size(), "time steps");
 		double precision = 1e-9;
-		cliques::find_full_normalised_stability func(orange_graph, weights,
+		clq::find_full_normalised_stability func(orange_graph, weights,
 				precision);
 		for (unsigned int i = 0; i < markov_times.size(); ++i) {
 			std::vector<double> stabilities;
@@ -228,21 +229,21 @@ int main(int ac, char* av[]) {
 			}
 		}
 		stabs_file.close();
-		cliques::graph_to_edgelist_file(
+		clq::graph_to_edgelist_file(
 				filename_prefix + "_0_landscape_edgelist.edj", space);
 	}
 
 	arma::mat X;
 	if (find_distances) {
-		cliques::output("Finding distances");
+		clq::output("Finding distances");
 		//TODO comment out appropriately..
-		//auto X = cliques::find_geodesic_dists(space, landmark_nodes, space_weights);
+		//auto X = clq::find_geodesic_dists(space, landmark_nodes, space_weights);
 
-		X = cliques::find_edit_dists(all_partitions);
+		X = clq::find_edit_dists(all_partitions);
 		if (merge_moveset) {
-			X = cliques::find_split_merge_dists(all_partitions);
-			cliques::convert_dists_to_graph(space, space_weights, X, 1.0);
-			cliques::graph_to_edgelist_file(
+			X = clq::find_split_merge_dists(all_partitions);
+			clq::convert_dists_to_graph(space, space_weights, X, 1.0);
+			clq::graph_to_edgelist_file(
 					filename_prefix + "_0_landscape_edgelist.edj", space);
 		}
 
@@ -251,13 +252,13 @@ int main(int ac, char* av[]) {
 
 	arma::mat L_t;
 	if (do_embedding) {
-		cliques::output("finding embedding");
-		auto L = cliques::embed_mds(X, num_dim);
+		clq::output("finding embedding");
+		auto L = clq::embed_mds(X, num_dim);
 		L_t = arma::trans(L);
 		L_t.save(filename_prefix + "_0_coords.mat", arma::raw_ascii);
 
-		auto D_y = cliques::euclid_pairwise_dists(L_t);
-		cliques::output("residual variance", cliques::residual_variance(X, D_y));
+		auto D_y = clq::euclid_pairwise_dists(L_t);
+		clq::output("residual variance", clq::residual_variance(X, D_y));
 
 	}
 
@@ -276,55 +277,55 @@ int main(int ac, char* av[]) {
 		lemon::SmartGraph tangerine_graph;
 		lemon::SmartGraph::EdgeMap<double> weights(tangerine_graph);
 
-		if (cliques::read_edgelist_weighted(current_hierarchy_filename,
+		if (clq::read_edgelist_weighted(current_hierarchy_filename,
 				tangerine_graph, weights) != true) {
 			break;
 		}
 
-		cliques::graph_to_edgelist_file(filename_prefix + "_" + hierarchy_level +  + "_graph_edgelist.edj",
+		clq::graph_to_edgelist_file(filename_prefix + "_" + hierarchy_level +  + "_graph_edgelist.edj",
 					tangerine_graph);
 
-		cliques::output("Building landscape at level: ", i);
+		clq::output("Building landscape at level: ", i);
 
 		VecPartitionSet all_partitions;
 		if (find_partitions) {
-			cliques::output("Finding Connected Partitions");
-			cliques::NoLogging no_logging;
-			cliques::find_connected_partitions(tangerine_graph, all_partitions,
+			clq::output("Finding Connected Partitions");
+			clq::NoLogging no_logging;
+			clq::find_connected_partitions(tangerine_graph, all_partitions,
 					no_logging);
-			cliques::output("complete size:", all_partitions.size());
-			cliques::partitions_to_file(filename_prefix + "_" + hierarchy_level + "_partitions.mat",
+			clq::output("complete size:", all_partitions.size());
+			clq::partitions_to_file(filename_prefix + "_" + hierarchy_level + "_partitions.mat",
 					all_partitions);
 		}
 
 		lemon::SmartGraph space;
 		lemon::SmartGraph::EdgeMap<float> space_weights(space);
-		boost::bimap<boost::bimaps::unordered_set_of<cliques::VectorPartition,
-				cliques::partition_hash, cliques::partition_equal>,
+		boost::bimap<boost::bimaps::unordered_set_of<clq::VectorPartition,
+				clq::partition_hash, clq::partition_equal>,
 				boost::bimaps::set_of<lemon::SmartGraph::Node> > map2;
 		if (create_space) {
-			cliques::output("Creating space graph");
-			map2 = cliques::create_space(tangerine_graph, all_partitions, space);
+			clq::output("Creating space graph");
+			map2 = clq::create_space(tangerine_graph, all_partitions, space);
 			lemon::SmartGraph::EdgeMap<float> space_weights(space);
-			cliques::make_weights_from_edges(space, space_weights);
-			cliques::output("number of nodes", lemon::countNodes(space));
-			cliques::output("number of edges", lemon::countEdges(space));
+			clq::make_weights_from_edges(space, space_weights);
+			clq::output("number of nodes", lemon::countNodes(space));
+			clq::output("number of edges", lemon::countEdges(space));
 		}
 
 		std::vector<double> markov_times;
 		std::vector<std::vector<double> > all_stabilities;
 		if (find_stabs) {
-			cliques::output("Finding stabilities");
+			clq::output("Finding stabilities");
 			std::ofstream stabs_file;
 			stabs_file.open(
 					filename_prefix + "_" + hierarchy_level
 							+ "_energy.mat");
-			cliques::output(start_time, end_time, num_timesteps);
-			markov_times = cliques::create_exponential_markov_times(start_time,
+			clq::output(start_time, end_time, num_timesteps);
+			markov_times = clq::create_exponential_markov_times(start_time,
 					end_time, num_timesteps);
-			cliques::output(markov_times.size(), "time steps");
+			clq::output(markov_times.size(), "time steps");
 			double precision = 1e-9;
-			cliques::find_full_normalised_stability func(tangerine_graph, weights,
+			clq::find_full_normalised_stability func(tangerine_graph, weights,
 					precision);
 			for (unsigned int i = 0; i < markov_times.size(); ++i) {
 				std::vector<double> stabilities;
@@ -345,18 +346,18 @@ int main(int ac, char* av[]) {
 				}
 			}
 			stabs_file.close();
-			cliques::graph_to_edgelist_file(
+			clq::graph_to_edgelist_file(
 					filename_prefix + "_" + hierarchy_level
 							+ "_landscape_edgelist.edj", space);
 		}
 
-		cliques::output("Mapping down to original level");
+		clq::output("Mapping down to original level");
 		arma::mat new_L_t(all_partitions.size(), num_dim);
 		int h=0;
 		for (auto coarse_partition = all_partitions.begin(); coarse_partition
 				!= all_partitions.end(); ++coarse_partition) {
 			VecPartition flat_partition(size_original_graph);
-			cliques::VectorPartition &optimal_partition = optimal_partitions[i-1];
+			clq::VectorPartition &optimal_partition = optimal_partitions[i-1];
 
 			// Find which partition in original landscape new partition refers to
 			for (int j = 1; j < size_original_graph; j++) {
@@ -378,47 +379,47 @@ int main(int ac, char* av[]) {
 
 	find_basins = false;
 	if (find_basins) {
-		cliques::output("Finding Probabilistic Basins");
+		clq::output("Finding Probabilistic Basins");
 		std::vector<std::map<int, std::map<int, double>>>all_basins;
 		int j = 0;
 		for (auto stabilities = all_stabilities.begin(); stabilities
 				!= all_stabilities.end(); ++stabilities) {
-			auto basins = cliques::compute_probabalistic_basins_new(space,
+			auto basins = clq::compute_mp_probabalistic_basins(space,
 					*stabilities);
-			cliques::output("time", markov_times[j], "num_basins", basins.size());
+			clq::output("time", markov_times[j], "num_basins", basins.size());
 			all_basins.push_back(basins);
 			++j;
 		}
 
-		cliques::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
+		clq::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
 				markov_times);
 	}
 
 	bool find_klin_basins = false;
 	if (find_klin_basins) {
-		cliques::output("Finding Kerninghan Lin Basins");
+		clq::output("Finding Kerninghan Lin Basins");
 		std::vector<std::map<int, std::map<int, double>>>all_basins;
 
 		//        for (auto map_itr = map.left.begin(); map_itr != map.left.end(); ++map_itr) {
-		//            cliques::print_partition_line(*map_itr);
+		//            clq::print_partition_line(*map_itr);
 		//        }
 
 
 		for (auto time = markov_times.begin(); time != markov_times.end(); ++time) {
 			lemon::SmartGraph exp_graph;
 			lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
-			cliques::graph_to_exponential_graph(orange_graph, weights,exp_graph, exp_graph_weights, *time);
+			clq::graph_to_exponential_graph(orange_graph, weights,exp_graph, exp_graph_weights, *time);
 			//TODO map is not initialised for hasse distances.
-			auto basins = cliques::compute_kernighan_lin_basins(orange_graph,weights,
-					cliques::find_linearised_normalised_stability(*time),
-					cliques::linearised_normalised_stability_gain(*time),
+			auto basins = clq::compute_kernighan_lin_basins(orange_graph,weights,
+					clq::find_linearised_normalised_stability(*time),
+					clq::linearised_normalised_stability_gain(*time),
 					map,
 					space,
 					*time,
 					all_partitions);
 			all_basins.push_back(basins);
 		}
-		cliques::basins_to_file(filename_prefix + "_klin_basins.mat", all_basins,
+		clq::basins_to_file(filename_prefix + "_klin_basins.mat", all_basins,
 				markov_times);
 	}
 	return 0;

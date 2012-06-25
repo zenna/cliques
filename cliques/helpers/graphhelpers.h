@@ -9,7 +9,7 @@
 #include <lemon/core.h>
 #include <math.h>
 
-namespace cliques {
+namespace clq {
 
 template<typename G>
 float A(G &graph, int node1_id, int node2_id) {
@@ -127,7 +127,7 @@ std::vector<double> create_correlation_graph_from_graph(G &graph, W &weights) {
 	for (unsigned int node_id = 0; node_id < num_nodes; ++node_id) {
 		null_model_vec[node_id] = null_model_vec[node_id] / two_m;
 	}
-	//cliques::print_collection(null_model_vec);
+	//clq::print_collection(null_model_vec);
 	return null_model_vec;
 }
 
@@ -198,7 +198,7 @@ std::map<int, double> find_weight_node_to_communities(G &graph, P &partition,
 			community_to_weight[comm_node] += edge_weight;
 		}
 	}
-	//cliques::print_map(community_to_weight);
+	//clq::print_map(community_to_weight);
 	return community_to_weight;
 }
 

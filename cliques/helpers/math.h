@@ -8,7 +8,7 @@
 extern "C" void dgpadm_(int* ideg, int* m, double* t, double* A, int* ldh,
         double* wsp, int* lwsp, int* iwsp, int* iexp, int* ns, int* iflag);
 
-namespace cliques {
+namespace clq {
 
 std::vector<double> exp(std::vector<double> matrix, double t, int order) {
     int ideg = 6;
@@ -111,7 +111,7 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
 
     // call expokit
     int N2 = node_weighted_degree.size();
-    std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L,
+    std::vector<double> exp_graph_vec = clq::exp(minus_t_D_inv_L,
             markov_time, N2);
 
     // reserve memory space for number of nodes

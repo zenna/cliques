@@ -11,7 +11,7 @@
 
 #include <cliques/structures/common.h>
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Finds the Bottleneck Shortest Path between two points
@@ -97,7 +97,7 @@ float find_bottleneck(
 
         //cout << "Creating new map";
         //std::map<Edge,float> *temp_weight_map = new std::map<Edge,float>;
-        cliques::setumap edges_map;
+        clq::setumap edges_map;
         for (unsigned int i = 0; i < deleted_v.size(); ++i) {
             int component_of_v = comp[deleted_v[i]];
             int component_of_u = comp[deleted_u[i]];
@@ -107,7 +107,7 @@ float find_bottleneck(
                 components.insert(component_of_u);
                 components.insert(component_of_v);
 
-                cliques::setumap::iterator itr = edges_map.find(components);
+                clq::setumap::iterator itr = edges_map.find(components);
                 if (itr == edges_map.end()) {
                     edges_map[components] = deleted_weights[i];
                 } else {
@@ -118,7 +118,7 @@ float find_bottleneck(
             }
         }
         std::vector<lemon::SmartGraph::Edge> edges;
-        for (cliques::setumap::iterator itr = edges_map.begin(); itr
+        for (clq::setumap::iterator itr = edges_map.begin(); itr
                 != edges_map.end(); ++itr) {
             std::vector<int> uv;
             for (std::set<int>::iterator sitr = itr->first.begin(); sitr
@@ -132,7 +132,7 @@ float find_bottleneck(
         lemon::IterableValueMap<lemon::SmartGraph, lemon::SmartGraph::Edge,
                 float> weights(temp_graph); // Map must be made after edges are added
         int i = 0;
-        for (cliques::setumap::iterator itr = edges_map.begin(); itr
+        for (clq::setumap::iterator itr = edges_map.begin(); itr
                 != edges_map.end(); ++itr) {
             weights.set(edges[i], itr->second);
             i++;

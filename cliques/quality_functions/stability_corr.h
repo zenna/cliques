@@ -14,7 +14,7 @@
 #include <cliques/helpers/graphhelpers.h>
 #include <cliques/quality_functions/internals/linearised_internals_corr.h>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Functor for finding normalised linearised correlation stability of weighted graph
  */
@@ -27,7 +27,7 @@ struct find_linearised_normalised_corr_stability {
 
 	template<typename G, typename P, typename W>
 	double operator ()(G &graph, P &partition, W &weights,P &partition_init, std::vector<double> null_model) {
-		cliques::LinearisedInternalsCorr internals(graph, weights, partition, partition_init,null_model);
+		clq::LinearisedInternalsCorr internals(graph, weights, partition, partition_init,null_model);
 		return (*this)(internals);
 	}
 
@@ -51,7 +51,7 @@ struct find_linearised_normalised_corr_stability {
 						- (double(internals.comm_loss[i])
 								* double(internals.comm_loss[i]));
 			}
-//			cliques::output("number",i,"in", internals.comm_w_in[i], "tot",internals.comm_loss[i], "nodew", internals.node_to_w[i],"q2", q2);
+//			clq::output("number",i,"in", internals.comm_w_in[i], "tot",internals.comm_loss[i], "nodew", internals.node_to_w[i],"q2", q2);
 		}
 
 		return q * (1.0 - markov_time) + q2;

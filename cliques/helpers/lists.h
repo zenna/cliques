@@ -1,7 +1,7 @@
 /* Copyright (c) Z Tavares, M Schaub - zennatavares@gmail.com, 2010-2012
 Helper functions for working with lists, vectors and other array like containers */
 #pragma once
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Summation for iterable containers of numerical type

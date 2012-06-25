@@ -15,7 +15,7 @@
 
 #define SET_MAX_SIZE 63
 
-namespace cliques {
+namespace clq {
 
 typedef struct c_partition {
     int size;

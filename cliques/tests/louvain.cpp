@@ -29,46 +29,46 @@
 
 int main(int argc, char *argv []) {
 	//std::vector<double> matrix = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
-	//auto a = cliques::exp(matrix,1.0,3);
-	//cliques::print_2d_vector(a);
-	//cliques::print_collection(a);
+	//auto a = clq::exp(matrix,1.0,3);
+	//clq::print_2d_vector(a);
+	//clq::print_collection(a);
 
 
-	typedef cliques::VectorPartition partition;
+	typedef clq::VectorPartition partition;
 	lemon::SmartGraph orange_graph;
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph);
 
 	double stability = 0;
 	double current_markov_time = 1;
 
-	//cliques::make_complete_graph(orange_graph,10,weights);
-	cliques::read_edgelist_weighted(argv[1],
+	//clq::make_complete_graph(orange_graph,10,weights);
+	clq::read_edgelist_weighted(argv[1],
 			orange_graph, weights);
 
 	std::vector<double> null_model;
-	//std::vector<double> null_model = cliques::create_correlation_graph_from_graph(
+	//std::vector<double> null_model = clq::create_correlation_graph_from_graph(
 	//		orange_graph, weights);
-	cliques::create_mutual_information_graph_from_graph(orange_graph, weights,
+	clq::create_mutual_information_graph_from_graph(orange_graph, weights,
 			current_markov_time);
 
-	cliques::VectorPartition singletons(lemon::countNodes(orange_graph));
+	clq::VectorPartition singletons(lemon::countNodes(orange_graph));
 	singletons.initialise_as_singletons();
 
-	cliques::find_mutual_information_stability quality;
-	cliques::mutual_information_stability_gain quality_gain;
+	clq::find_mutual_information_stability quality;
+	clq::mutual_information_stability_gain quality_gain;
 
 	//stability = quality(orange_graph, singletons, weights, singletons,null_model);
 //	std::cout << "singleton stability: " << stability << std::endl;
 
-	cliques::Logging<partition> log_louvain;
+	clq::Logging<partition> log_louvain;
 	std::vector<partition> optimal_partitions;
 
-	cliques::output("Start Louvain");
+	clq::output("Start Louvain");
 
-	stability = cliques::find_optimal_partition_louvain<partition>(
+	stability = clq::find_optimal_partition_louvain<partition>(
 			orange_graph, weights, null_model, quality, quality_gain,
 			singletons, optimal_partitions, 1e-9, log_louvain,true);
-	cliques::partitions_to_file("optimal_partitions.mat", optimal_partitions);
+	clq::partitions_to_file("optimal_partitions.mat", optimal_partitions);
 
 
 	partition best_partition = optimal_partitions.back();

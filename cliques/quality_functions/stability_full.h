@@ -15,7 +15,7 @@
 #include <cliques/quality_functions/internals/linearised_internals.h>
 #include <cliques/helpers/graphhelpers.h>
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Functor for finding full normalised stability of weighted graph
@@ -103,10 +103,10 @@ struct find_full_normalised_stability {
 
 			// call expokit
 			int N = node_weighted_degree.size();
-			std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L,
+			std::vector<double> exp_graph_vec = clq::exp(minus_t_D_inv_L,
 					markov_time, N);
 
-			//		cliques::print_collection(exp_graph_vec);
+			//		clq::print_collection(exp_graph_vec);
 
 
 			// reassign markov time
@@ -139,8 +139,8 @@ struct find_full_normalised_stability {
 			}
 		}
 
-		//		cliques::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", (N * (N-1))/2, N*N, (N*N)/2);
-		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
+		//		clq::output("nodes", lemon::countNodes(exp_graph), "edges",lemon::countEdges(exp_graph), "complete", (N * (N-1))/2, N*N, (N*N)/2);
+		clq::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);
 		return lin_norm_stability(internals);
 	}
@@ -152,12 +152,12 @@ struct find_full_normalised_stability {
 			// call expokit
 			int N = node_weighted_degree.size();
 
-			//        cliques::output("minus");
-			//        cliques::print_collection(minus_t_D_inv_L, N);
-			std::vector<double> exp_graph_vec = cliques::exp(minus_t_D_inv_L,
+			//        clq::output("minus");
+			//        clq::print_collection(minus_t_D_inv_L, N);
+			std::vector<double> exp_graph_vec = clq::exp(minus_t_D_inv_L,
 					markov_time, N);
-			//        cliques::output("exp");
-			//        cliques::print_collection(exp_graph_vec, N);
+			//        clq::output("exp");
+			//        clq::print_collection(exp_graph_vec, N);
 
 			// create new weight map out of matrix find_stability<lemon::SmartGraph>(partiton,time)
 
@@ -189,7 +189,7 @@ struct find_full_normalised_stability {
 			}
 		}
 
-		cliques::LinearisedInternals internals(exp_graph, exp_graph_weights,
+		clq::LinearisedInternals internals(exp_graph, exp_graph_weights,
 				partition);
 		return lin_norm_stability(internals, comm_id);
 	}

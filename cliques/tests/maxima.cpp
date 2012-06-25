@@ -58,12 +58,12 @@ int main() {
     stabilities[5] = 8.5;
     stabilities[7] = 11.0;
 
-    cliques::print_collection(cliques::find_maxima(orange_graph, stabilities));
+    clq::print_collection(clq::find_maxima(orange_graph, stabilities));
 
     //std::vector<int> alpha;
-    //cliques::print_vector(alpha);
+    //clq::print_vector(alpha);
 
-	//std::cout << "bottle neck is " << cliques::find_bottleneck(orange_graph,weights,source,target,filter) << std::endl;
+	//std::cout << "bottle neck is " << clq::find_bottleneck(orange_graph,weights,source,target,filter) << std::endl;
 
     return 0;
 };

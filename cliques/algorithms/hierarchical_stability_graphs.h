@@ -12,7 +12,7 @@
 
 #include <cliques/helpers.h>
 
-namespace cliques {
+namespace clq {
 /**
  @brief  Create a hierarchical layers using stability at different time-scales
 
@@ -32,8 +32,8 @@ std::vector<P> create_hsg_layers(G &graph, std::vector<float> &markov_times,
 
         std::vector<float> current_time;
         current_time.push_back(*itr);
-        P best_partition = cliques::find_optimal_partition_louvain<P>(graph,
-                cliques::find_linearised_stability(current_time));
+        P best_partition = clq::find_optimal_partition_louvain<P>(graph,
+                clq::find_linearised_stability(current_time));
         partitions.push_back(best_partition);
         layer_stabilities.push_back(*itr);
     }
@@ -53,7 +53,7 @@ void create_hsg(G &graph, std::vector<float> &markov_times, G &hsg,
         std::map<int, std::vector<float> > positions) {
     std::vector<float> layer_stabilities;
 
-    typedef cliques::DisjointSetForest<int> DjForest;
+    typedef clq::DisjointSetForest<int> DjForest;
     typedef typename G::Node Node;
     typedef typename G::Edge Edge;
     std::vector<DjForest> layers = create_hsg_layers<DjForest> (graph,
@@ -63,7 +63,7 @@ void create_hsg(G &graph, std::vector<float> &markov_times, G &hsg,
 
     for (std::vector<DjForest>::iterator partition = layers.begin(); partition
             != layers.end(); ++partition) {
-        cliques::print_partition(*partition);
+        clq::print_partition(*partition);
         for (DjForest::PartIterator pitr = partition->begin(); pitr
                 != partition->end(); ++pitr) {
             Node new_node = hsg.addNode();
@@ -95,7 +95,7 @@ void create_hsg(G &graph, std::vector<float> &markov_times, G &hsg,
         std::map<int, std::vector<float> > positions) {
     std::vector<float> layer_stabilities;
 
-    typedef cliques::DisjointSetForest<int> DjForest;
+    typedef clq::DisjointSetForest<int> DjForest;
     typedef typename G::Node Node;
     typedef typename G::Edge Edge;
     std::vector<DjForest> layers = create_hsg_layers<DjForest> (graph,

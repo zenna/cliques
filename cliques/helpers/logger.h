@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cliques {
+namespace clq {
 
 struct NoLogging {
     template <typename P>

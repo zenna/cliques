@@ -1,11 +1,11 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_SCALERS_H
-#define CLIQUES_SCALERS_H
+#ifndef clq_SCALERS_H
+#define clq_SCALERS_H
 
 #include <vector>
 #include <limits>
 
-namespace cliques {
+namespace clq {
 /**
 @brief  A linear scaler functor
 
@@ -71,4 +71,4 @@ public:
 
 }
 
-#endif // CLIQUES_HSG_H
+#endif // clq_HSG_H

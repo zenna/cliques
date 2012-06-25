@@ -5,7 +5,7 @@
  use templated typedefs instead http://stackoverflow.com/questions/26151/template-typedefs-whats-your-work-around
  or get rid of typedefs alltogether
  */
-namespace cliques {
+namespace clq {
 
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v)

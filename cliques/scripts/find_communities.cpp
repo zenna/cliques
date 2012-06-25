@@ -79,14 +79,14 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 		find_partitions = true;
 	}
 
-	cliques::output("bools", find_partitions, create_space, find_stabilities, find_distances, do_embedding, find_basins);
+	clq::output("bools", find_partitions, create_space, find_stabilities, find_distances, do_embedding, find_basins);
 
 	// Do everything if nothing specified
 	if (!(find_partitions || create_space || find_stabilities || find_distances
 			|| do_embedding || find_basins)) {
 		find_partitions = create_space = find_stabilities = find_distances
 				= do_embedding = find_basins = true;
-		cliques::output("F", find_partitions);
+		clq::output("F", find_partitions);
 	}
 
 	if (vm.count("help")) {
@@ -108,21 +108,21 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
 	}
 
 	if (vm.count("graph")) {
-		cliques::output("Loading Graph");
+		clq::output("Loading Graph");
 		std::string filename = vm["graph"].as<std::string> ();
-		cliques::read_edgelist_weighted(filename, graph, weights);
+		clq::read_edgelist_weighted(filename, graph, weights);
 	} else {
-		cliques::output("making default graph graph");
-		//cliques::make_path_graph(graph, 7, weights);
-		//      cliques::make_ring_graph(graph, 12, weights);
-		cliques::make_complete_graph(graph, 8, weights);
+		clq::output("making default graph graph");
+		//clq::make_path_graph(graph, 7, weights);
+		//      clq::make_ring_graph(graph, 12, weights);
+		clq::make_complete_graph(graph, 8, weights);
 	}
 }
 
 int main(int ac, char* av[]) {
-	typedef cliques::VectorPartition VecPartition;
-	typedef std::unordered_set<VecPartition, cliques::partition_hash,
-			cliques::partition_equal> VecPartitionSet;
+	typedef clq::VectorPartition VecPartition;
+	typedef std::unordered_set<VecPartition, clq::partition_hash,
+			clq::partition_equal> VecPartitionSet;
 
 	lemon::SmartGraph orange_graph;
 	std::string filename_prefix;
@@ -137,7 +137,7 @@ int main(int ac, char* av[]) {
 			filename_prefix, find_partitions, create_space, find_stabs,
 			find_distances, do_embedding, find_basins);
 
-	cliques::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
+	clq::graph_to_edgelist_file(filename_prefix + "_graph_edgelist.edj",
 			orange_graph);
 
 //	std::vector<int> comm1 = {0,1};
@@ -145,21 +145,21 @@ int main(int ac, char* av[]) {
 //	std::vector<int> comm3 = {2};
 //	std::vector<int> buffer(4,0);
 //
-//	auto d1 = cliques::find_community_dist(orange_graph, weights, comm1, comm2, buffer);
-//	auto d2 = cliques::find_community_dist(orange_graph, weights, comm1, comm3, buffer);
+//	auto d1 = clq::find_community_dist(orange_graph, weights, comm1, comm2, buffer);
+//	auto d2 = clq::find_community_dist(orange_graph, weights, comm1, comm3, buffer);
 //
-//	cliques::output("dists", d1, d2);
+//	clq::output("dists", d1, d2);
 
 
 
-//	markov_times = cliques::create_exponential_markov_times(0.00001, 500, 500);
-	cliques::find_full_normalised_stability func(orange_graph, weights,1e-9);
+//	markov_times = clq::create_exponential_markov_times(0.00001, 500, 500);
+	clq::find_full_normalised_stability func(orange_graph, weights,1e-9);
 //	double stability = func(p, 1, markov_times[i]);
 //	std::vector<std::vector<double> > all_stabilities;
-//	auto all_maxima = cliques::find_optimal_communities_huxley(orange_graph, weights, func, 1.0, all_stabilities);
-//	cliques::output("maximum");
+//	auto all_maxima = clq::find_optimal_communities_huxley(orange_graph, weights, func, 1.0, all_stabilities);
+//	clq::output("maximum");
 //	for (auto maximum = all_maxima.begin(); maximum != all_maxima.end(); ++maximum) {
-//		cliques::print_collection(*maximum);
+//		clq::print_collection(*maximum);
 //	}
 
     return 0;

@@ -1,12 +1,11 @@
 /* Copyright (c) Modified by Zenna Tavares-zennatavares@gmail.com, 2010-2011 */
-#ifndef CLIQUES_MAKEGRAPHS_H
-#define CLIQUES_MAKEGRAPHS_H
+#pragma once
 #include <assert.h>
 #include <cstdlib>
 #include <iostream>
 #include <lemon/concepts/graph.h>
 
-namespace cliques {
+namespace clq {
 
 template<typename G, typename M>
 void make_fish_graph(G &graph, M &weights, double epsilon, bool many_links) {
@@ -141,4 +140,3 @@ void make_weights_from_edges(G &graph, M &weights) {
 }
 
 }
-#endif

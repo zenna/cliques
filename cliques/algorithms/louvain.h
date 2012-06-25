@@ -16,7 +16,7 @@
 // TODO: Separate out louvain into smaller functions
 // TODO: update random shuffling to not depend on time random seed
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Louvain method - greedy algorithm to find community structure of a network.
@@ -55,11 +55,11 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 	P partition_init = initial_partition;
 	if (!optimal_partitions.empty()) {
 		partition_init = optimal_partitions.back();
-	} auto internals = cliques::gen(compute_quality, graph, weights, partition, partition_init, null_model_vec);
+	} auto internals = clq::gen(compute_quality, graph, weights, partition, partition_init, null_model_vec);
 
 	//double minimum_improve = 0.000000001; //1e-9
 	double current_quality = compute_quality(internals);
-	//cliques::output("current_quality", current_quality);
+	//clq::output("current_quality", current_quality);
 	bool one_level_end = false;
 	double old_quality = current_quality;
 	bool did_nodes_move = false;
@@ -210,7 +210,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 		P singleton_partition(lemon::countNodes(reduced_graph));
 		singleton_partition.initialise_as_singletons();
 
-		return cliques::find_optimal_partition_louvain<P>(reduced_graph,
+		return clq::find_optimal_partition_louvain<P>(reduced_graph,
 				reduced_weight_map, null_model_vec, compute_quality,
 				compute_quality_diff, singleton_partition, optimal_partitions,
 				minimum_improve, log, log_switch);

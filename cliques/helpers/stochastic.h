@@ -3,7 +3,7 @@
 #pragma once
 #include <cliques/helpers/lists.h>
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Samples from multinomial distribution

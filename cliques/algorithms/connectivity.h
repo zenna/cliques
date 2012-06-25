@@ -1,7 +1,7 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com, 2010- 2011 */
 #pragma once
 
-namespace cliques
+namespace clq
 {
 /**
 @brief  Louvain method - greedy algorithm to find community structure of a network.

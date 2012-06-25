@@ -3,7 +3,7 @@
  *
  * compile from MATLAB in directory cxx:
  * TODO add extra options for simpler name and ensure code optimization
- *   mex  -DUSE_BOOST -I./ ./cliques/KL_matlab_interface.cpp
+ *   mex  -DUSE_BOOST -I./ ./clq/KL_matlab_interface.cpp
  *
  *  Created on: 11 Apr 2011
  *      Author: mts09
@@ -12,9 +12,9 @@
 #include "mex.h"
 #include <lemon/smart_graph.h>
 #include <map>
-#include "cliques/algorithms/kernighan_lin.h"
-#include "cliques/quality_functions/stability.h"
-#include "cliques/structures/vector_partition.h"
+#include "clq/algorithms/kernighan_lin.h"
+#include "clq/quality_functions/stability.h"
+#include "clq/structures/vector_partition.h"
 #include <vector>
 #include <string>
 
@@ -28,7 +28,7 @@ double m_time = 1;
 bool hierarchy = false;
 int num_largest_dim = -1;
 
-typedef cliques::VectorPartition partition;
+typedef clq::VectorPartition partition;
 partition refined_partition(1);
 partition input_partition(1);
 
@@ -183,9 +183,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	double improvement = 0;
 
 	// run KL algorithm
-	improvement = cliques::refine_partition_kernighan_lin(mygraph, myweights,
-			cliques::find_weighted_linearised_stability(markov_times),
-			cliques::linearised_stability_gain_louvain(m_time),
+	improvement = clq::refine_partition_kernighan_lin(mygraph, myweights,
+			clq::find_weighted_linearised_stability(markov_times),
+			clq::linearised_stability_gain_louvain(m_time),
 			input_partition, refined_partition);
 
 	//****************************************************

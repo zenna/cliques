@@ -2,7 +2,7 @@
 
 #include <cliques/helpers/graphhelpers.h>
 
-namespace cliques {
+namespace clq {
 // Define internal structure to carry statistics for combinatorial stability
 
 struct LinearisedInternalsInfo {
@@ -78,7 +78,7 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 
 	// reset weights
 	while (!internals.neighbouring_communities_list.empty()) {
-		//cliques::output("empty");
+		//clq::output("empty");
 		unsigned int old_neighbour =
 				internals.neighbouring_communities_list.back();
 		internals.neighbouring_communities_list.pop_back();
@@ -101,7 +101,7 @@ void isolate_and_update_internals(G &graph, M &weights, typename G::Node node,
 	internals.comm_w_in[comm_id] -= 2
 			* internals.node_weight_to_communities[comm_id]
 			+ find_weight_selfloops(graph, weights, node);
-	//cliques::output("in", internals.comm_w_in[comm_id]);
+	//clq::output("in", internals.comm_w_in[comm_id]);
 
 	partition.isolate_node(node_id);
 }
@@ -119,8 +119,8 @@ void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
 			* internals.node_weight_to_communities[best_comm]
 			+ find_weight_selfloops(graph, weights, node);
 	partition.add_node_to_set(node_id, best_comm);
-//	    cliques::output("in", internals.comm_w_in[best_comm]);
-//	    cliques::print_partition_line(partition);
+//	    clq::output("in", internals.comm_w_in[best_comm]);
+//	    clq::print_partition_line(partition);
 }
 
 }

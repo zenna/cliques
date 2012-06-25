@@ -54,21 +54,21 @@ void parse_arguments(int ac, char *av[], G &graph, M &weights,
     	filename_prefix = "out";
     }
 
-    cliques::output("making graph");
+    clq::output("making graph");
     if (vm.count("graph")) {
         std::string filename = vm["graph"].as<std::string> ();
-        cliques::read_edgelist_weighted(filename, graph, weights);
+        clq::read_edgelist_weighted(filename, graph, weights);
     } else {
-        //cliques::make_path_graph(graph, 7, weights);
-        //      cliques::make_ring_graph(graph, 12, weights);
-        cliques::make_complete_graph(graph, 7, weights);
+        //clq::make_path_graph(graph, 7, weights);
+        //      clq::make_ring_graph(graph, 12, weights);
+        clq::make_complete_graph(graph, 7, weights);
     }
 }
 
 int main(int ac, char* av[]) {
-    typedef cliques::VectorPartition VecPartition;
-    typedef std::unordered_set<VecPartition, cliques::partition_hash,
-            cliques::partition_equal> VecPartitionSet;
+    typedef clq::VectorPartition VecPartition;
+    typedef std::unordered_set<VecPartition, clq::partition_hash,
+            clq::partition_equal> VecPartitionSet;
 
     lemon::SmartGraph orange_graph;
     std::string filename_prefix;
@@ -77,10 +77,10 @@ int main(int ac, char* av[]) {
     int num_dim = 3;
     parse_arguments(ac, av, orange_graph, weights, num_samples, num_dim, filename_prefix);
 
-    cliques::output("starting robustness");
+    clq::output("starting robustness");
     for (double t = 0.01; t < 5.0; t = t * 1.005) {
-        double robustness = cliques::variance_of_vi(orange_graph, weights, t, 1000);
-        cliques::output(t, robustness);
+        double robustness = clq::variance_of_vi(orange_graph, weights, t, 1000);
+        clq::output(t, robustness);
     }
     return 0;
 }

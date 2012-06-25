@@ -4,7 +4,7 @@
 
 //TODO: move node_weight to communities out of internals..
 
-namespace cliques {
+namespace clq {
 
 struct LinearisedInternals {
 	//    typedef lemon::RangeMap<double> range_map;
@@ -86,14 +86,14 @@ void isolate_and_update_internals(G &graph, M &weights,
 
 	// reset weights
 	while (!internals.neighbouring_communities_list.empty()) {
-		//cliques::output("empty");
+		//clq::output("empty");
 		unsigned int old_neighbour =
 				internals.neighbouring_communities_list.back();
 		internals.neighbouring_communities_list.pop_back();
 		internals.node_weight_to_communities[old_neighbour] = 0;
 
 	}
-	//cliques::output(internals.neighbouring_communities_list.size());
+	//clq::output(internals.neighbouring_communities_list.size());
 	// get weights from node to each community
 	for (typename G::IncEdgeIt e(graph, node); e != lemon::INVALID; ++e) {
 		if (graph.u(e) != graph.v(e)) {
@@ -106,13 +106,13 @@ void isolate_and_update_internals(G &graph, M &weights,
 			internals.node_weight_to_communities[comm_node] += edge_weight;
 		}
 	}
-	//cliques::print_collection(internals.node_weight_to_communities);
+	//clq::print_collection(internals.node_weight_to_communities);
 	internals.comm_w_tot[comm_id] -= internals.node_to_w[node_id];
-	//cliques::output("in", internals.comm_w_in[comm_id]);
+	//clq::output("in", internals.comm_w_in[comm_id]);
 	internals.comm_w_in[comm_id] -= 2
 			* internals.node_weight_to_communities[comm_id]
 			+ find_weight_selfloops(graph, weights, node);
-	//cliques::output("in", internals.comm_w_in[comm_id]);
+	//clq::output("in", internals.comm_w_in[comm_id]);
 
 	partition.isolate_node(node_id);
 }
@@ -134,8 +134,8 @@ void insert_and_update_internals(G &graph, M &weights, typename G::Node node,
 	//              std::cout << "new_weight int " <<internals.comm_w_in[best_comm] << std::endl;
 
 	partition.add_node_to_set(node_id, best_comm);
-	//    cliques::output("in", internals.comm_w_in[best_comm], "tot",internals.comm_w_tot[best_comm], "nodew", internals.node_to_w[best_comm], "2m", internals.two_m);
-	//    cliques::print_partition_line(partition);
+	//    clq::output("in", internals.comm_w_in[best_comm], "tot",internals.comm_w_tot[best_comm], "nodew", internals.node_to_w[best_comm], "2m", internals.two_m);
+	//    clq::print_partition_line(partition);
 }
 
 }

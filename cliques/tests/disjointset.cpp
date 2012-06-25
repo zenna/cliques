@@ -5,7 +5,7 @@
 //TODO
 //REMOVE NEIGHBOURS TO SELF
 int main() {
-	cliques::DisjointSetForest<int> partition;
+	clq::DisjointSetForest<int> partition;
     int num_elements = 10;
     for (int i =0; i<num_elements; ++i) {
     	partition.add_element(i);
@@ -17,9 +17,9 @@ int main() {
     partition.union_sets(4,5);
     partition.union_sets(9,8);
 
-    cliques::print_partition(partition);
+    clq::print_partition(partition);
 
-    for (cliques::DisjointSetForest<int>::PartIterator pitr = partition.begin();
+    for (clq::DisjointSetForest<int>::PartIterator pitr = partition.begin();
     		pitr != partition.end(); ++pitr) {
     	std::cout << partition.set_size(pitr) << std::endl;
     }

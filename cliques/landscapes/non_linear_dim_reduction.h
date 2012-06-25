@@ -34,7 +34,7 @@
 // Find k neighbours in low_d and high d
 // Compute score of overlap
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  Find the pairwise geodesic (shortest path) distances between subset of nodes
@@ -59,7 +59,7 @@ arma::mat convert_graph_to_geodesic_dists(G &graph, std::vector<
 			X(i, j) = dist;
 			X(j, i) = dist;
 			if (num % 1000000 == 0) {
-				cliques::output(graph.id(n1), graph.id(n2), dist, num, ":",
+				clq::output(graph.id(n1), graph.id(n2), dist, num, ":",
 						total);
 			}
 			num++;
@@ -196,7 +196,7 @@ arma::mat find_community_edit_dists(G &graph, S &communities) {
 	//	typedef typename G::EdgeMap<float> EdgeMap;
 	//	EdgeMap eights(graph);
 	lemon::SmartGraph::EdgeMap<float> weights(graph);
-	cliques::make_weights_from_edges(graph, weights);
+	clq::make_weights_from_edges(graph, weights);
 
 	int N = communities.size();
 	arma::mat X(N, N);
@@ -216,7 +216,7 @@ arma::mat find_community_edit_dists(G &graph, S &communities) {
 			X(i, j) = edit_distance;
 			X(j, i) = edit_distance;
 			if (num % 1000000 == 0) {
-				cliques::output(i, j, edit_distance, num, ":", total);
+				clq::output(i, j, edit_distance, num, ":", total);
 			}
 			num++;
 			j++;
@@ -244,12 +244,12 @@ arma::mat find_edit_dists(G &graph, std::vector<typename G::Node> nodes,
 			auto n2 = nodes[j];
 			auto p1 = map.right.at(n1);
 			auto p2 = map.right.at(n2);
-			cliques::Hungarian hungarian(p1, p2);
+			clq::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			X(i, j) = edit_distance;
 			X(j, i) = edit_distance;
 			if (num % 1000000 == 0) {
-				cliques::output(graph.id(n1), graph.id(n2), edit_distance, num,
+				clq::output(graph.id(n1), graph.id(n2), edit_distance, num,
 						":", total);
 			}
 			num++;
@@ -277,12 +277,12 @@ arma::mat find_edit_dists(S &partitions) {
 		for (auto itr2 = itr1; ++itr2 != partitions.end();) {
 			auto p1 = *itr1;
 			auto p2 = *itr2;
-			cliques::Hungarian hungarian(p1, p2);
+			clq::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			X(i, j) = edit_distance;
 			X(j, i) = edit_distance;
 			if (num % 1000000 == 0) {
-				cliques::output(i, j, edit_distance, num, ":", total);
+				clq::output(i, j, edit_distance, num, ":", total);
 			}
 			num++;
 			j++;
@@ -308,7 +308,7 @@ arma::mat find_edit_landmark_dists(S &partitions, S &landmarks) {
 		for (auto n_itr = landmarks.begin(); n_itr != landmarks.end(); ++n_itr) {
 			auto p1 = *n_itr;
 			auto p2 = *l_itr;
-			cliques::Hungarian hungarian(p1, p2);
+			clq::Hungarian hungarian(p1, p2);
 			float edit_distance = float(hungarian.edit_distance());
 			D_l(i, j) = edit_distance;
 			++j;
@@ -346,7 +346,7 @@ arma::mat find_split_merge_dists(S &partitions) {
 
 			// get the difference of the partitions in terms of the number of communities
 			int nr_comm_diff = p1.set_count() - p2.set_count();
-			//cliques::output("difference:", nr_comm_diff);
+			//clq::output("difference:", nr_comm_diff);
 
 			// only partitions with difference one can be direct neighbours
 			if (std::abs(nr_comm_diff) == 1
@@ -354,9 +354,9 @@ arma::mat find_split_merge_dists(S &partitions) {
 				X(j, i) = 1;
 				X(i, j) = 1;
 				num++;
-//				cliques::output("direct neighbour", num);
+//				clq::output("direct neighbour", num);
 				if (num % 1000000 == 0) {
-					cliques::output(i, j, X(i, j), num, ":", total);
+					clq::output(i, j, X(i, j), num, ":", total);
 				}
 			}
 
@@ -395,9 +395,9 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 	if (std::abs(num_commi - num_commj) != 1) {
 		return false;
 	}
-//	cliques::output("comparison");
-//	cliques::print_partition_line(p1);
-//	cliques::print_partition_line(p2);
+//	clq::output("comparison");
+//	clq::print_partition_line(p1);
+//	clq::print_partition_line(p2);
 	VectorPartition greater_partition(p1.return_partition_vector());
 	VectorPartition smaller_partition(p2.return_partition_vector());
 	if (num_commi - num_commj == -1) {
@@ -418,9 +418,9 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 		std::vector<int> commi = greater_partition.get_nodes_from_set(i);
 		std::vector<int> commj = smaller_partition.get_nodes_from_set(i);
 
-//		cliques::output("communities");
-//		cliques::print_collection(commi);
-//		cliques::print_collection(commj);
+//		clq::output("communities");
+//		clq::print_collection(commi);
+//		clq::print_collection(commj);
 
 		// in here the difference is stored
 		std::vector<int> difference(commi.size() + commj.size());
@@ -437,7 +437,7 @@ bool are_partitions_connected_with_one_merge(VectorPartition p1,
 
 				// cut difference to correct size
 				difference = std::vector<int>(difference.begin(), it);
-//				cliques::print_collection(difference);
+//				clq::print_collection(difference);
 
 				// difference should be smaller then each community
 				if (difference.size() >= commi.size() && difference.size() >= commj.size()){
@@ -571,20 +571,20 @@ arma::mat embed_graph(G& graph, M& weights, int num_dim) {
 		landmark_nodes.push_back(node);
 	}
 
-	cliques::output("choosing nodes");
-	auto X = cliques::convert_graph_to_geodesic_dists(graph,
+	clq::output("choosing nodes");
+	auto X = clq::convert_graph_to_geodesic_dists(graph,
 			landmark_nodes, weights);
 	X.print("X");
 
-	cliques::output("finding embedding");
-	auto L = cliques::embed_mds(X, num_dim);
+	clq::output("finding embedding");
+	auto L = clq::embed_mds(X, num_dim);
 	L.print("L");
 
-	cliques::output("saving");
+	clq::output("saving");
 	arma::mat L_t = arma::trans(L);
 
-	auto D_y = cliques::euclid_pairwise_dists(L_t);
-	cliques::output("residual variance", cliques::residual_variance(X, D_y));
+	auto D_y = clq::euclid_pairwise_dists(L_t);
+	clq::output("residual variance", clq::residual_variance(X, D_y));
 
 	return L_t;
 }

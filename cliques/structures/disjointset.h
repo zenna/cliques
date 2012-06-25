@@ -11,7 +11,7 @@
 
 #include <unordered_map.hpp>
 
-namespace cliques {
+namespace clq {
 
 /**
  @brief  A disjoint set forest is a fairly standard data structure used to represent the partition of

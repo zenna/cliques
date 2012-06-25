@@ -33,7 +33,7 @@ int main() {
     orange_graph.addEdge(orange_graph.nodeFromId(7),orange_graph.nodeFromId(4));
 
     //Test ColourMap
-	cliques::DisjointSetForest<int> partition;
+	clq::DisjointSetForest<int> partition;
     int num_elements = 8;
     for (int i =0; i<num_elements; ++i) {
     	partition.add_element(i);
@@ -44,20 +44,20 @@ int main() {
     partition.union_sets(3,4);
     partition.union_sets(4,5);
 
-    cliques::print_partition(partition);
+    clq::print_partition(partition);
 
-    /*cliques::partition_to_map<cliques::DisjointSetForest<int> > p(partition);
+    /*clq::partition_to_map<clq::DisjointSetForest<int> > p(partition);
     std::map<int,std::vector<float> > colourmap = p();
 
     for (std::map<int,std::vector<float> >::iterator itr = colourmap.begin();
     		itr != colourmap.end(); ++itr) {
     	std::cout << "node " << itr->first << " : ";
-    	cliques::print_collection(itr->second);
+    	clq::print_collection(itr->second);
     }*/
 
     //Test drawing
-    cliques::draw_graph canvas(orange_graph);
-    //canvas.add_node_map(cliques::make_partition_colour_map<cliques::DisjointSetForest<int> >(partition));
+    clq::draw_graph canvas(orange_graph);
+    //canvas.add_node_map(clq::make_partition_colour_map<clq::DisjointSetForest<int> >(partition));
     canvas.draw("test_draw.png");
     //canvas.draw();
 

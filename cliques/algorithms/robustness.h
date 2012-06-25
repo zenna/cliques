@@ -1,16 +1,16 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com */
 #pragma once
-#include "cliques/algorithms/louvain.h"
-#include "cliques/algorithms/varofinf.h"
-#include "cliques/quality_functions/stability.h"
-#include "cliques/structures/vector_partition.h"
+#include "clq/algorithms/louvain.h"
+#include "clq/algorithms/varofinf.h"
+#include "clq/quality_functions/stability.h"
+#include "clq/structures/vector_partition.h"
 
-namespace cliques {
+namespace clq {
 
 template<typename G, typename M>
 double variance_of_vi(G &graph, M &weights, double markov_time,
         int num_iterations) {
-    typedef cliques::VectorPartition VectorPartition;
+    typedef clq::VectorPartition VectorPartition;
     std::vector<VectorPartition> all_optima;
     VectorPartition singleton_partition(lemon::countNodes(graph));
     singleton_partition.initialise_as_singletons();
@@ -19,14 +19,14 @@ double variance_of_vi(G &graph, M &weights, double markov_time,
     for (int i = 0; i < num_iterations; ++i) {
         double current_markov_time = markov_time;
         std::vector<double> markov_times(1, markov_time);
-        cliques::NoLogging no_logging;
+        clq::NoLogging no_logging;
         std::vector<VectorPartition> optimal_partitions;
 
-        cliques::find_optimal_partition_louvain_with_gain(
+        clq::find_optimal_partition_louvain_with_gain(
                 graph,
                 weights,
-                cliques::find_weighted_linearised_stability(markov_times),
-                cliques::linearised_stability_gain_louvain(current_markov_time),
+                clq::find_weighted_linearised_stability(markov_times),
+                clq::linearised_stability_gain_louvain(current_markov_time),
                 singleton_partition, optimal_partitions, no_logging);
 
         VectorPartition optima = optimal_partitions.back();
