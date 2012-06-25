@@ -767,6 +767,7 @@ pi = sum(Graph)/sum(sum(Graph));
 solution = (solution+pi'*pi).*log2(solution./(pi'*pi));
 % solution = solution.*log2(solution./(pi'*pi));% +(eye(size(M_null))-M_null)*diagdeg*expm(-(eye(size(M_null))-M_null)*time);
 %solution = solution - diagdeg*expm(-(eye(size(M_null))-M_null)*time*.9);
+solution = createNormalizedLyapunovStabilityMatrix(Graph,time);
 solution = (solution+solution')/2;
 clear exponential;
 clear diagdeg;

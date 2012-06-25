@@ -5,6 +5,7 @@
 #include <random>
 #include <functional>
 #include <list>
+#include <unordered_map>
 
 #include <unordered_set>
 #include <boost/unordered_map.hpp>

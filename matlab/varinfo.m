@@ -101,6 +101,6 @@ vi_mat_new=vi_mat_new(c,:);
 
 vi_mat = vi_mat_new+vi_mat_new';%vi_mat+vi_mat';
 
-vi = 2*vi_tot/max((number_of_partitions*(number_of_partitions-1)),1);
+vi = mean(squareform(vi_mat));
 
 end

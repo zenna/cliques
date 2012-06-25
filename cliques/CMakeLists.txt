@@ -16,7 +16,8 @@ add_subdirectory (structures)
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 SET (CMAKE_Fortran_COMPILER gfortran)
-set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
+set(CMAKE_CXX_FLAGS "-std=gnu++0x -O3 -Wall -DUSE_BOOST")
+#set(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pg -Wall -DUSE_BOOST")
 
 
 #option(BUILD_SHARED_LIBS "Build shared libraries" OFF)

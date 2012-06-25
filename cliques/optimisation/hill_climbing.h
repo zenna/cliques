@@ -55,8 +55,8 @@ C stochastic_monotonic_climb(
             if (direction == clq::Direction::ASCENT) {
                 quality_diff =  compute_quality(neighbour) - current_config_quality;
             }
-            else if (direction == clq::Direction::DESCENT) {
-                quality_diff =  compute_quality(neighbour) - current_config_quality;
+            else if (direction == cliques::Direction::DESCENT) {
+                quality_diff = current_config_quality - compute_quality(neighbour) ;
             }
             // clq::output("quality_diff", quality_diff);
 
