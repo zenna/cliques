@@ -1,3 +1,4 @@
+# A script for turning landscape data into a json file for the online viewer
 import getopt, sys
 import simplejson
 from collections import defaultdict
@@ -54,7 +55,6 @@ def parse_args(args, level):
     
     for o, a in opts:
         if o in ("-x", "--prefix"):
-            print "araraad", a
             prefix = a
             coords_file = '%s_%s_%s.mat' % (a, level, 'coords')
             edges_file = '%s_%s_%s.edj' % (a, level, 'landscape_edgelist')
@@ -239,9 +239,12 @@ def main():
     output = [do_level(params)]
 
     if params['multi_level']:
+        print("Creating multilevel json")
         while (True):
             level += 1
             print "trying level", level
+            # Do parse args for every level
+            # expects files of form prefix_level_datatype.
             new_params = parse_args(sys.argv[1:], level)
             try:
                 output.append(do_level(new_params))
