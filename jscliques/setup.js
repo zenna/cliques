@@ -10,22 +10,38 @@ $(document).ready(function() {
         var height = parseInt($("#yLength").val());
         landscape_view = new App(width, height, "landscapeView");
         landscape_view.setup();
-        landscape = new Graph(data, landscape_view.scene, 'landscape');
-        landscape.create_random_offsets(0.02);
-        landscape.place_nodes();
-        landscape_view.camera.target.position.x = landscape.mean_position.x;
-        landscape_view.camera.target.position.y = landscape.mean_position.y;
-        landscape_view.camera.target.position.z = landscape.mean_position.z;
+
+        // Create a new graph for every graph in data_set
+        landscapes = [];
+        for (var i=0;i<data.length;++i) {
+            var landscape_layer = new Graph(data[i], landscape_view.scene, 'landscape');
+            landscape_layer.create_random_offsets(0.02);
+            landscape_layer.place_nodes();
+            landscape_layer.add_edges({
+                opacity : 0.6
+            });
+            landscapes.push(landscape_layer);
+        }
+        landscape = landscapes[0];
+        landmas = 21;
+        // landscape = new Graph(data, landscape_view.scene, 'landscape');
+        // landscape.create_random_offsets(0.02);
+        // landscape.place_nodes();
+
+        // Position tthe camera to target the centre of the 0th landscape
+        landscape_view.camera.target.position.x = landscapes[0].mean_position.x;
+        landscape_view.camera.target.position.y = landscapes[0].mean_position.y;
+        landscape_view.camera.target.position.z = landscapes[0].mean_position.z;
         landscape_view.camera.position.z = 4000;
 
-        landscape.add_edges({
-            opacity : 0.6
-        });
+        // landscape.add_edges({
+        //     opacity : 0.6
+        // });
         //landscape.update_edge_colours();
 
         graph_view = new App(300, 300, 'graph_view');
         graph_view.setup();
-        orig_graph = new Graph(data.graph, graph_view.scene);
+        orig_graph = new Graph(data[0].graph, graph_view.scene);
         orig_graph.create_random_offsets(0);
         orig_graph.place_nodes();
         graph_view.camera.target.position.x = orig_graph.mean_position.x;
@@ -38,15 +54,15 @@ $(document).ready(function() {
         box = new cliques.SelectionBox(graph_view.camera.domElement);
         toolbox = new ProcessToolbox(landscape_view);
 
-        // Add Processes
-        for(var i = 0; i < data.processes.length; ++i) {
-            var process = data.processes[i];
+        // Add Processes - HACK, just do for 0th landscape
+        for(var i = 0; i < data[0].processes.length; ++i) {
+            var process = data[0].processes[i];
             switch(process.type) {
                 case 'basins':
-                    toolbox.addProcess(new BasinProcess(process, landscape));
+                    toolbox.addProcess(new BasinProcess(process, landscapes[0]));
                     break;
                 case 'stability':
-                    toolbox.addProcess(new NodeProcess(process, landscape));
+                    toolbox.addProcess(new NodeProcess(process, landscapes[0]));
                     break;
             }
         }
