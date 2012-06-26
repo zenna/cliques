@@ -16,7 +16,6 @@ function Graph(data, scene) {
     if (data.landscapeType) {
     	this.landscapeType = data.landscapeType;
     }
-    
 
     /**
      Create geometry for each node in the graph.
@@ -26,6 +25,7 @@ function Graph(data, scene) {
         var geometry = new THREE.Geometry();
         var colours = [];
 
+        // Create a new vertex for each coordinate
         for ( var i = 0; i < coords.length; ++i) {
             var vector = new THREE.Vector3( 0.0, 0.0, 0.0 );
             geometry.vertices.push( new THREE.Vertex( vector ) );
@@ -95,7 +95,6 @@ function Graph(data, scene) {
      Move nodes into coordinates in given dimension.
      */
     this.move_nodes = function( coords_, dim1, dim2, dim3) {
-
         var dim1 = typeof dim1  == "undefined" ? 0 : dim1;
         var dim2 = typeof dim2  == "undefined" ? 1 : dim2;
         var dim3;
