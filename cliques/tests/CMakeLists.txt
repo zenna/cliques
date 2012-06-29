@@ -11,6 +11,9 @@ endif()
 ADD_EXECUTABLE(test_louvain louvain.cpp)
 target_link_libraries(test_louvain ${cliques_LIBRARIES})
 
+ADD_EXECUTABLE(louvain_pairs louvain_pairs.cpp)
+target_link_libraries(louvain_pairs ${cliques_LIBRARIES})
+
 add_executable(test_kernighanlin kernighanlin.cpp)
 target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
 
