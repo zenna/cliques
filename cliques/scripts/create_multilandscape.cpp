@@ -133,7 +133,7 @@ po::variables_map parse_arguments(int ac, char *av[], G &graph, M &weights,
 	if (vm.count("graph")) {
 		clq::output("Loading Graph");
 		std::string filename = vm["graph"].as<std::string> ();
-		clq::read_edgelist_weighted(filename, graph, weights);
+		clq::read_edgelist_weighted_maintain_ids(filename, graph, weights);
 	} else {
 		clq::output("making default graph graph");
 		//clq::make_path_graph(graph, 7, weights);
@@ -184,6 +184,16 @@ int main(int ac, char* av[]) {
 				no_logging);
 		clq::output("complete size:", all_partitions.size());
 		partitions_to_file(filename_prefix + "_0_partitions.mat", all_partitions);
+
+		clq::output("ALL PARTITIONS");
+		for (auto & parti : all_partitions) {
+			clq::print_partition_line(parti);
+		}
+
+		for (lemon::SmartGraph::EdgeIt e(orange_graph); e != lemon::INVALID; ++e) {
+			clq::output(orange_graph.id(orange_graph.v(e)), orange_graph.id(orange_graph.u(e)));
+		}
+
 	}
 
 	lemon::SmartGraph space;
@@ -262,7 +272,6 @@ int main(int ac, char* av[]) {
 	}
 
 	// ----------------- HIERARCHY
-
 	int size_original_graph = lemon::countNodes(orange_graph);
 	std::string hierarchy_prefix = vm["intermediate_graphs"].as<std::string> ();
 	int i = 1;
@@ -353,19 +362,20 @@ int main(int ac, char* av[]) {
 		clq::output("Mapping down to original level");
 		arma::mat new_L_t(all_partitions.size(), num_dim);
 		int h=0;
-		for (auto coarse_partition = all_partitions.begin(); coarse_partition
-				!= all_partitions.end(); ++coarse_partition) {
+		for (auto &coarse_partition : all_partitions) {
 			VecPartition flat_partition(size_original_graph);
 			clq::VectorPartition &optimal_partition = optimal_partitions[i-1];
 
 			// Find which partition in original landscape new partition refers to
 			for (int j = 1; j < size_original_graph; j++) {
 				int orig_set = optimal_partition.find_set(j);
-				int coarse_set = coarse_partition->find_set(orig_set);
+				int coarse_set = coarse_partition.find_set(orig_set);
 				flat_partition.add_node_to_set(j, coarse_set);
 			}
 			flat_partition.normalise_ids();
 			// Find its position
+			clq::output("INVALID KEY?");
+			clq::print_partition_line(flat_partition);
 			lemon::SmartGraph::Node node_in_orig_landscape = map.left.at(flat_partition);
 			int id_in_orig_landscape = orange_graph.id(node_in_orig_landscape);
 			new_L_t.row(h) = L_t.row(id_in_orig_landscape);
@@ -395,32 +405,32 @@ int main(int ac, char* av[]) {
 	}
 
 	bool find_klin_basins = false;
-	if (find_klin_basins) {
-		clq::output("Finding Kerninghan Lin Basins");
-		std::vector<std::map<int, std::map<int, double>>>all_basins;
+	// if (find_klin_basins) {
+	// 	clq::output("Finding Kerninghan Lin Basins");
+	// 	std::vector<std::map<int, std::map<int, double>>>all_basins;
 
-		//        for (auto map_itr = map.left.begin(); map_itr != map.left.end(); ++map_itr) {
-		//            clq::print_partition_line(*map_itr);
-		//        }
+	// 	//        for (auto map_itr = map.left.begin(); map_itr != map.left.end(); ++map_itr) {
+	// 	//            clq::print_partition_line(*map_itr);
+	// 	//        }
 
 
-		for (auto time = markov_times.begin(); time != markov_times.end(); ++time) {
-			lemon::SmartGraph exp_graph;
-			lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
-			clq::graph_to_exponential_graph(orange_graph, weights,exp_graph, exp_graph_weights, *time);
-			//TODO map is not initialised for hasse distances.
-			auto basins = clq::compute_kernighan_lin_basins(orange_graph,weights,
-					clq::find_linearised_normalised_stability(*time),
-					clq::linearised_normalised_stability_gain(*time),
-					map,
-					space,
-					*time,
-					all_partitions);
-			all_basins.push_back(basins);
-		}
-		clq::basins_to_file(filename_prefix + "_klin_basins.mat", all_basins,
-				markov_times);
-	}
+	// 	for (auto time = markov_times.begin(); time != markov_times.end(); ++time) {
+	// 		lemon::SmartGraph exp_graph;
+	// 		lemon::SmartGraph::EdgeMap<double> exp_graph_weights(exp_graph);
+	// 		clq::graph_to_exponential_graph(orange_graph, weights,exp_graph, exp_graph_weights, *time);
+	// 		//TODO map is not initialised for hasse distances.
+	// 		auto basins = clq::compute_kernighan_lin_basins(orange_graph,weights,
+	// 				clq::find_linearised_normalised_stability(*time),
+	// 				clq::linearised_normalised_stability_gain(*time),
+	// 				map2,
+	// 				space,
+	// 				*time,
+	// 				all_partitions);
+	// 		all_basins.push_back(basins);
+	// 	}
+	// 	clq::basins_to_file(filename_prefix + "_klin_basins.mat", all_basins,
+	// 			markov_times);
+	// }
 	return 0;
 }
 

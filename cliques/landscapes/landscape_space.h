@@ -171,6 +171,7 @@ create_space(
             }
         }
     }
+    clq::output("num_nodes:", lemon::countNodes(graph), "edges:", lemon::countEdges(graph));
     return partition_tofrom_Node;
 }
 
