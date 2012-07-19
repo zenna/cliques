@@ -27,9 +27,11 @@ GRAPH=$2
 fi
 
 echo `$DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH \n`
+echo "Louvain algorithm finished \n"
 echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_REP/data/graphs/$GRAPH -I ./intermediate_graphs -H ./optimal_partitions.mat \n`
 GRAPH=${GRAPH%.edj}
 GRAPH=${GRAPH##*/}
+echo "create multilandscape finished"
 echo `python $DIR_REP/pycliques/scripts/create_json.py -m -x ./out -o $DIR_REP/jscliques/data/$GRAPH.json \n`
 echo "OUTPUT FILE WRITTEN TO $DIR_REP/jscliques/data/$GRAPH.json \n"
 
