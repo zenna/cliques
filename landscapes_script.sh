@@ -16,7 +16,7 @@ fi
 if [ $1 = "Z" ] ; then
 # Zenna's DIR
 DIR_REP="$HOME/repos/cliques"
-DIR_BIN="$HOME/build/cliques/release"
+DIR_BIN="$HOME/builds/cliques/debug"
 fi
 
 # check if argument 2 is empty if yes use default test graph otherwise use graph provided
