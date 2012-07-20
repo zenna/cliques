@@ -26,15 +26,21 @@ else
 GRAPH=$2
 fi
 
-echo `$DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH \n`
-echo "Louvain algorithm finished \n"
+echo "Run: $DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH"
+echo `$DIR_BIN/tests/test_louvain $DIR_REP/data/graphs/$GRAPH`
+echo "Louvain algorithm finished"
+
 echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_REP/data/graphs/$GRAPH -I ./intermediate_graphs -H ./optimal_partitions.mat \n`
 GRAPH=${GRAPH%.edj}
 GRAPH=${GRAPH##*/}
 echo "create multilandscape finished"
-echo `python $DIR_REP/pycliques/scripts/create_json.py -m -x ./out -o $DIR_REP/jscliques/data/$GRAPH.json \n`
-echo "OUTPUT FILE WRITTEN TO $DIR_REP/jscliques/data/$GRAPH.json \n"
 
-if [ -n $3 -a $3 = "R" ] ; then
-	echo `rm out_* intermediate_graphs* optimal_partitions.mat`
+
+echo `python $DIR_REP/pycliques/scripts/create_json.py -m -x ./out -o $DIR_REP/jscliques/data/$GRAPH.json \n`
+echo "OUTPUT FILE WRITTEN TO $DIR_REP/jscliques/data/$GRAPH.json"
+
+if [ -n $3  ] ; then
+	if [ "$3" = "R" ] ; then
+		echo `rm out_* intermediate_graphs* optimal_partitions.mat`
+	fi
 fi 
