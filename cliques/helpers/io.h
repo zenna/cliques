@@ -114,6 +114,66 @@ bool read_edgelist_weighted(std::string filename, G &graph, E &weights) {
     return true;
 }
 
+// Same as read_edgelist_weighted by ensures node_ids are same as ids in file
+template<typename G, typename E>
+bool read_edgelist_weighted_maintain_ids(std::string filename, G &graph, E &weights) {
+    // initialise input stream and strings for readout
+    std::ifstream maxima_file(filename.c_str());
+    std::string line;
+    std::string maxima;
+
+    // check if file is open
+    if (!maxima_file.is_open()) {
+        std::cout << "couldn't open file:" << filename << std::endl;
+        return false;
+    }
+
+    // define Node class for convenience
+    typedef typename G::Node Node;
+    // mapping from id to node
+    std::map<int, int> node_u_to_v;
+
+    int max_node_id_seen = -1;
+
+    //readout contents from maxima_file into string, line by line
+    while (std::getline(maxima_file, line)) {
+
+        std::stringstream lineStream(line);
+        //readout node id and weights
+        std::getline(lineStream, maxima, ' ');
+        int node1_id = atoi(maxima.c_str());
+        std::getline(lineStream, maxima, ' ');
+        int node2_id = atoi(maxima.c_str());
+        std::getline(lineStream, maxima, ' ');
+        float weight = atof(maxima.c_str());
+
+        if (node1_id > max_node_id_seen) {
+            int difference = node1_id - max_node_id_seen;
+            for (int i=0;i<difference;++i) {
+                graph.addNode();
+            }
+            max_node_id_seen = node1_id;
+        }
+
+        if (node2_id > max_node_id_seen) {
+            int difference = node2_id - max_node_id_seen;
+            for (int i=0;i<difference;++i) {
+                graph.addNode();
+            }
+            max_node_id_seen = node2_id;
+        }
+
+        Node node1 = graph.nodeFromId(node1_id);
+        Node node2 = graph.nodeFromId(node2_id);
+
+        typename G::Edge edge = graph.addEdge(node1, node2);
+        weights.set(edge, weight);
+    }
+
+    maxima_file.close();
+    return true;
+}
+
 template<typename G, typename E>
 void write_edgelist_weighted(std::string filename, G &graph, E &weights) {
     // initialise input stream and strings for readout

@@ -329,12 +329,16 @@ int find_connected_partitions(G &graph, sP &all_partitions, Logger &log) {
             nodes_to_place, part_union, num_partitions,
             all_partitions, log);
 
+    // cleanup
     delete[] g->degrees;
     for (int i = 0; i < g->n; ++i) {
         delete[] g->links[i];
     }
     delete[] g->links;
     delete g;
+    free(part->sets);
+    free(part);
+    // delete[] part;
     return num_partitions;
 }
 

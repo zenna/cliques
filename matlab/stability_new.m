@@ -627,51 +627,134 @@ function [S, N, C, VI, VAROUT] = louvain_FCL(Graph, time, PARAMS)
 % Computes the full combinatorial stability
 
 VAROUT =[]; % init varying outputs 
-%TODO adjust below code properly to work with paremters struct, so far just
-% copy
-ComputeES = PARAMS.ComputeES;
-ComputeVI = PARAMS.ComputeVI  ;
-precision = PARAMS.Precision;
-NbLouvain = PARAMS.NbLouvain;
-M = PARAMS.M ;
-NbNodes = PARAMS.NbNodes;
-ComputeParallel = PARAMS.ComputeParallel;
 
-% Generate the matrix exponential
-diagdeg=sparse(1/NbNodes .* eye(NbNodes));
-Lap=sparse(Graph-diag(sum(Graph)));
-total=sum(sum(Graph));
-clear Graph;
-avdegree=total/NbNodes;
-exponential=sparse(expm((time/avdegree).*Lap));
-clear Lap;
-solution=sparse(diagdeg*exponential);
-solution=max(max(solution))*precision*round(solution/(max(max(solution))*precision));
-clear exponential;
-clear diagdeg;
+% Directed part so far "standard implementation" with out degree Laplacian,
+% check for bugs etc...
+
+% "transition matrix" and pi unknown
+if PARAMS.precomputed == false
+    % directed case: M_ij >> from i to j
+    if PARAMS.directed == true
+        dout = sum(Graph,2);
+        dangling = (dout==0);
+        av_degree = sum(dout)/PARAMS.NbNodes; 
+        clear dout;
+        M = (1-PARAMS.teleport_tau)*Graph; % deterministic part of transition
+        % teleportation according to arXiv:0812.1770
+        M =	M + av_degree*diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
+            * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
+        % dout of new Graph
+        dout = sum(M,2);
+        Dout = sparse(diag(dout));
+        av_degree = sum(dout)/PARAMS.NbNodes;         
+        % out degree Laplacian normalized by new average degree
+        Lap = (Dout -Graph)/av_degree;
+        clear Dout dangling
+        [v lambda_all] = eigs(Lap',5,'SM'); % zero eigenvalue of Laplacian matrix corresponds to stat.distribution.
+        lambda = min(diag(lambda_all));
+        v = v(:,diag(lambda_all) == lambda);
+        v = abs(v);              % make sure eigenvector is positive
+        clear lambda;
+        % store results for future use
+        VAROUT.precomputed = true;
+        VAROUT.pi = v/sum(v);
+        VAROUT.P = Lap;      
+        % now compute exponential transition matrix
+        solution = diag(v/sum(v))*expm(-time*Lap );
+        clear M v Lap;
+        % symmetrize solution
+        solution = (solution+solution')/2;
+        
+        
+        % undirected case
+    else
+        % standard Laplacian and average degree
+        av_degree = sum(sum(Graph))/PARAMS.NbNodes;
+        Lap=  sparse(Graph-diag(sum(Graph)));
+        % store results for future use
+        VAROUT.precomputed = true;
+        VAROUT.P = Lap/av_degree;
+        
+ 
+        % Generate the matrix exponential
+        exponential=sparse(expm(-time.*Lap/av_degree));
+        clear Lap;
+        
+        PI=sparse(eye(PARAMS.NbNodes)/PARAMS.NbNodes);  %diag matrix with stat distr   
+        VAROUT.pi = diag(PI);   % store results for future use
+        
+        solution=sparse(PI*exponential);
+        clear exponential;
+        clear PI;
+        
+        
+    end
+    
+    % stationary distribution and "transition matrix" have been computed before
+else
+    if PARAMS.directed == true
+        solution = diag(PARAMS.pi)*expm(-time* PARAMS.P);
+        solution = (solution +solution')/2; % symetrization needed for directed case
+    else
+        solution = diag(PARAMS.pi)*expm(-time* PARAMS.P);
+    end
+end
+
+
+
+% prune out weights that are too small as defined by precision
+solution=max(max(solution))*PARAMS.Precision*round(solution/(max(max(solution))*PARAMS.Precision));
 [row,col,val] = find(solution);
 clear solution
 graph=[col-1,row-1,val];
 
-% Optimize louvain NbLouvain times
-[stability, nb_comm, communities] = stability_louvain(graph, 1, NbLouvain, precision,'combinatorial');
-lnk = communities;
-lnkS = stability;
+% init some numbers
+lnk = zeros(PARAMS.NbNodes, PARAMS.NbLouvain);
+lnkS = zeros(PARAMS.NbLouvain,1);
+nb_comm = zeros(PARAMS.NbLouvain,1);
+
+% Optimize with Louvain NbLouvain times
+if PARAMS.ComputeParallel
+    nr_threads = matlabpool('size');
+    stability = cell(1,nr_threads);
+    nb_comm_temp = cell(1,nr_threads);
+    communities = cell(1,nr_threads);
+    shares = split_even(PARAMS.NbLouvain,nr_threads);
+    precision = PARAMS.Precision;
+    % computation in parallel with cell arrays
+    parfor l=1:nr_threads;
+        [stability{l}, nb_comm_temp{l}, communities{l}] = ...
+            stability_louvain(graph, 1, shares(l), precision ,'normalised',randi(intmax));
+    end    
+    % assignements
+    lnk = cat(2,communities{:});
+    lnkS = cat(2,stability{:});
+    nb_comm = cat(2,nb_comm_temp{:});
+       
+    % non parallel version
+else
+    [stability, nb_comm, communities] = ...
+        stability_louvain(graph, 1, PARAMS.NbLouvain, PARAMS.Precision,'normalised',randi(intmax));
+    lnk = communities;
+    lnkS = stability;
+end
+clear communities stability nr_threads shares nb_comm_temp graph;
+
+
 % Comment: maybe one should pick one of the best solutions at random,
 % if two solutions have the same value;
-index = find(stability==max(stability),1);
+index = find(lnkS==max(lnkS),1);
 
-S = stability(index);
-C = communities(:,index);
+S = lnkS(index);
+C = lnk(:,index);
 N = nb_comm(index);
 
-clear communities;
-clear graph;
 
-if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-     VI = computeRobustness(lnk, lnkS, M,ComputeParallel);
+
+if PARAMS.ComputeVI && nnz(max(lnk)==PARAMS.NbNodes-1)~=PARAMS.NbLouvain && nnz(max(lnk)==0)~=PARAMS.NbLouvain
+    VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
 else
-    VI = 0;
+    VI=0; 
 end
 
 clear lnk;
