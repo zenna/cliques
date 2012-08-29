@@ -22,7 +22,7 @@ int main(int argc, char *argv []) {
 	lemon::SmartGraph::EdgeMap<double> weights(orange_graph), exp_graph_weights(exp_graph);
 
 	double stability = 0;
-	double current_markov_time = 1;
+	double current_markov_time = 5.0;
 
 	clq::read_edgelist_weighted(argv[1],
 			orange_graph, weights);
@@ -48,9 +48,7 @@ int main(int argc, char *argv []) {
 				exp_graph, exp_graph_weights, null_model, quality, quality_gain,
 				singletons, optimal_partitions, 1e-9, log_louvain,true);
 		all_optimal_partitions.push_back(optimal_partitions);
-		// clq::partitions_to_file("optimal_partitions.mat", optimal_partitions);
 		clq::output("size", optimal_partitions.size());
-		clq::output("YEAYAE", optimal_partitions.size() > max_levels_seen, max_levels_seen, optimal_partitions.size());
 		int size = optimal_partitions.size();
 		if (size > max_levels_seen) {
 			max_levels_seen = optimal_partitions.size();
@@ -59,6 +57,7 @@ int main(int argc, char *argv []) {
 			min_levels_seen = optimal_partitions.size();
 		}
 	}
+	clq::partitions_to_file("optimal_partitions.mat", all_optimal_partitions[0]);
 
 	clq::output("max_levels_seen: ",max_levels_seen, "min_levels_seen:", min_levels_seen);
 	
@@ -66,14 +65,19 @@ int main(int argc, char *argv []) {
 		arma::mat X(num_iterations,num_iterations);
 		for (int i=0;i<all_optimal_partitions.size();++i) {
 			for (int j=0; j<all_optimal_partitions.size();++j) {
-				double var_of_inf = clq::find_variation_of_information(all_optimal_partitions[i][level],all_optimal_partitions[j][level]);
-				X(i,j) = var_of_inf;
+				if (all_optimal_partitions[i].size() > level &&
+					all_optimal_partitions[j].size() > level) {
+					double var_of_inf = clq::find_variation_of_information(all_optimal_partitions[i][level],all_optimal_partitions[j][level]);
+					X(i,j) = var_of_inf;
+				}
+				else {
+					X(i,j) = 1.5;
+				}
 			}
 		}
 		std::stringstream level_ss;
 		level_ss << level;
-		X.save("vi_lovain_dists_"+ level_ss.str() +".mat", arma::raw_ascii);
+		X.save("vi_lovain_dists_"+ level_ss.str() +".csv", arma::raw_ascii);
 	}
-
 	return 0;
 }

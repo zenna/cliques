@@ -1,0 +1,121 @@
+%%
+%% This is file `lexample.tex',
+%% Sample file for siam macros for use with LaTeX 2e
+%%
+%% October 1, 1995
+%%
+%% Version 1.0
+%%
+%% You are not allowed to change this file.
+%%
+%% You are allowed to distribute this file under the condition that
+%% it is distributed together with all of the files in the siam macro
+%% distribution. These are:
+%%
+%%  siamltex.cls (main LaTeX macro file for SIAM)
+%%  siamltex.sty (includes siamltex.cls for compatibility mode)
+%%  siam10.clo   (size option for 10pt papers)
+%%  subeqn.clo   (allows equation numbners with lettered subelements)
+%%  siam.bst     (bibliographic style file for BibTeX)
+%%  docultex.tex (documentation file)
+%%  lexample.tex (this file)
+%%
+%% If you receive only some of these files from someone, complain!
+%%
+%% You are NOT ALLOWED to distribute this file alone. You are NOT
+%% ALLOWED to take money for the distribution or use of either this
+%% file or a changed version, except for a nominal charge for copying
+%% etc.
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+
+
+\documentclass[final]{siamltex}
+
+% definitions used by included articles, reproduced here for
+% educational benefit, and to minimize alterations needed to be made
+% in developing this sample file.
+
+\newcommand{\pe}{\psi}
+\def\d{\delta}
+\def\ds{\displaystyle}
+\def\e{{\epsilon}}
+\def\eb{\bar{\eta}}
+\def\enorm#1{\|#1\|_2}
+\def\Fp{F^\prime}
+\def\fishpack{{FISHPACK}}
+\def\fortran{{FORTRAN}}
+\def\gmres{{GMRES}}
+\def\gmresm{{\rm GMRES($m$)}}
+\def\Kc{{\cal K}}
+\def\norm#1{\|#1\|}
+\def\wb{{\bar w}}
+\def\zb{{\bar z}}
+
+% some definitions of bold math italics to make typing easier.
+% They are used in the corollary.
+
+\def\bfE{\mbox{\boldmath$E$}}
+\def\bfG{\mbox{\boldmath$G$}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Actual stuff starts here
+
+
+%% encoding
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+
+
+%% Math packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\newcommand{\mycomment}[1]{{\color{blue} #1}}
+
+\title{Title}
+
+% The thanks line in the title should be filled in if there is
+% any support acknowledgement for the overall work to be included
+% This \thanks is also used for the received by date info, but
+% authors are not expected to provide this.
+
+\author{Zenna Tavares\thanks{Massachusetts Institute of Technology} Michael Schaub{Imperial College London}
+}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\begin{keywords}
+\end{keywords}
+
+Start Here
+
+\bibliographystyle{siam}
+\bibliography{library}
+
+\end{document}
