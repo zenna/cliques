@@ -118,7 +118,57 @@ Some immediate objective: Find a way to measure the “distance” between inter
 Some immediate steps: read more / get a good introduction to complexity and optimization (do you have one?); clarify probabilistic robustness notions on simple (computationally feasible) examples
 \end{enumerate}
 
-% \bibliographystyle{siam}
-% \bibliography{library}
+\section{Problem complexity and Characterising Algorithms}
+We want to gain an understanding and measure(s) of the complexity of an optimisation problem.
+The rough intuition behind these projects is that some aspect of the topology of the landscape and the dynamics it defines are informative.
+The major problem is that a landscape is defined with respect to algorithm dependent variables; in other words if you modify the permissible transitions between candidate solutions, the resulting landscape topologies can vary greatly.
+So how can we say anything about the landscape of a problem without reference to one particular algorithm; how can we differentiate the difficulty of a problem from the quality of an algorithm?
+
+Perhaps we can't; it seems to be the case that if you try to distil problem specific complexities by considering all possible algorithms, you get trivial results and no insight.
+For example you can always create a hypothetical algorithm which solves the problem instantly, and many more which consider all possible candidates, or perhaps never halt at all.
+But perhaps you can't compute these hypothetical algorithms in practice, which leads to the central idea: although with respect to all algorithms the complexity of a problem may have no meaning, perhaps we can characterise 1) classes of algorithms that we are typically interested in 2) the relationship between different kinds of problem and different kinds of algorithm.
+
+There are many ways to characterise an algorithm, for example the function it evaluates or its representation in a programming language.
+We have three dimensions of consideration: deterministic/probabilistic, halting/non-halting, computable in polynomial time / unbounded.
+Initially let's consider deterministic algorithms, but include both halting and non-halting algorithms with no bounds on the computational time, and denote the set of these with $DXX$.
+
+For these purposes we can take a behaviourist perspective and consider an algorithm as an ordered set of objective function evaluations $E = f(c_1),.., f(c_n)$ where $f(c)$ is a mapping from candidate solution $c$ to its cost (or quality).  That is, we are describing an algorithm $a$ as sequence of candidate proposals (Q: is it the candidates or the quality of the candidates. In other words, should we consider two algorithms identical if $\forall i,j$ $f(c_i) = f(c_j)$?).  Given a (finite?) set of candidate solutions $C$, algorithm $a \in DXX$ can be thought of as a sequence which is either finite or ends in an infinite repetition (limit cycle) $(a_1,..,a_n, a_1,..)$.  $|DXX|$ is always finite, since the algorithms are deterministic.  If we think of $DXX$ as a directed graph, it is identical to the configuration spaces found in cellular automata (Maybe a good avenue for exploration).  
+
+Typically however we are interested in a problem with respect to efficient algorithms, and are also not interested in those which do not halt.  So let us define a new class $DPH \subset DXX$ where $a \in DPH$ iff $|A|$ is finite and the sequence is computable in a time polynomial in $N$, where $N$ is the size of the problem instance. (TODO: make this more concrete)
+
+The hypothesis then is that some topolgical propeties of $DPH$ properties are informative on the difficulty of an optimisation process.
+
+Q: What class of algorithms does this apply to?
+
+Q: Do we need / should we impose stronger constraints on P, e.g. the orders.
+
+Q: How to even think about finding $P$ in principle and to approximation.
+
+Q: Can we relax the determinsitic
+
+\section{Stability Blobs}
+Q: What does robustness mean and why do we care?
+
+To what extent can we unify the numerous notions of robustness with respect to combinatorial optimisation and the community detection problem in particular.  In particular: robustness with respect to the graph, markov time amd the neighbourhood of a solution.
+
+Idea: is that we can generalise the notion of a stability ball.
+
+\subsection{background}
+Using the notation of \ref{sotskov} we can describe a discrete optimisation problem as follows:
+Let $E = \left\{e_i,e_2,..,e_n\right\}$ be a given set and $T_n=\left\{t_1,t_2,....,t_n\right\} m \ge 2$ be a set of subsets of $E$ (trajectories).
+Each weighting can be considered as a vector $A=(a_1,..,a_n)$
+
+Informally, a ball is defined in $R_{kk}$ space around $A$.
+The stability ball is the ball for which every matrix $\tilde{A'}$ belonging to the ball
+
+-- Need to finish this description
+
+Q: How to compute/approximate this stability blob
+
+Q: How to represent something like uniform distributions over infinite spaces, e.g. with respect to time?
+
+Q: What are the properties of the stability blob we are interested in.
+
+Q: Does this have any relation to above measures, i.e. robustness w.r.t optimisation
 
 \end{document}
