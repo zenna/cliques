@@ -94,28 +94,31 @@
 
 \newcommand{\mycomment}[1]{{\color{blue} #1}}
 
-\title{Title}
+\title{Landscapes}
 
 % The thanks line in the title should be filled in if there is
 % any support acknowledgement for the overall work to be included
 % This \thanks is also used for the received by date info, but
 % authors are not expected to provide this.
 
-\author{Zenna Tavares\thanks{Massachusetts Institute of Technology} Michael Schaub{Imperial College London}
-}
+\author{Zenna Tavares,Michael Schaub }
 \begin{document}
 
 \maketitle
 
-\begin{abstract}
-\end{abstract}
+\section{Extended summary of some of the old documents}
+I think three topics lines of research have emerged to pursue further:
+\begin{enumerate}
+ \item \textbf{Robustness in terms of the full landscape.} Pretty much along the lines of the initial project the objective is to find robustness measures / characteristics from the full landscape and then generate computable heuristics from this. Since we can only analyze small graphs we have to go for weighted graphs.
+Some immediate objectives: create and fully analyze some weighted small graphs; clarify relation of robustness measures to movesets if possible; determine proxies for robustness measures;
+Potential outcomes: introduce landscape picture for community detection; clarify faults in creation of landscapes (Good and Clauset); highlight moveset dependence and different ways to think about robustness; introduce computable proxies for robustness (in a certain context).
+\item \textbf{The intermediate Louvain landscapes.} As Louvain like algorithms for optimization are now nearly everywhere some more theoretical work appears to be insightful... In particular the connection of the intermediate Louvain steps to some aspects of the landscape (related to disconnectivity graphs?) seems worth investigating. Also the notion of the Louvain moveset as jumps in the landscapes and the relation to other optimization methods that change the landscape “on the fly” might be worth looking into.
+Some immediate objective: Find a way to measure the “distance” between intermediate Louvain landscapes; variation of information? Other matrix measures? clarify relation to disconnectivity graphs and optimization paths on landscapes if possible; comparison for some graphs with well defined hierarchical structure in comparison with some ill-defined detection problem?
+\item \textbf{Theoretical work: a more profound picture of complexity and landscapes.} Can we unify notions of robustness by considering a probabilistic approach towards the landscapes (see Zenna notes); to what extend can we separate the complexity of the problem from the complexity of the optimization, complexity of a problem instance; data uncertainty vs other uncertainties; is this probabilistic view compatible with other robustness notions that focus on the shape of the landscapes, etc.
+Some immediate steps: read more / get a good introduction to complexity and optimization (do you have one?); clarify probabilistic robustness notions on simple (computationally feasible) examples
+\end{enumerate}
 
-\begin{keywords}
-\end{keywords}
-
-Start Here
-
-\bibliographystyle{siam}
-\bibliography{library}
+% \bibliographystyle{siam}
+% \bibliography{library}
 
 \end{document}
