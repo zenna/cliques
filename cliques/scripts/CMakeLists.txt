@@ -3,9 +3,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include_directories(${BOOST_INCLUDE_DIRS})
 
 if (UseFortran)
-  set ( cliques_LIBRARIES expokit gfortran lapack blas ${Boost_LIBRARIES})
+  set ( cliques_LIBRARIES expokit gfortran lapack blas armadillo ${Boost_LIBRARIES})
 else()
-  set ( cliques_LIBRARIES expokit lapack blas ${Boost_LIBRARIES})
+  set ( cliques_LIBRARIES expokit lapack blas armadillo ${Boost_LIBRARIES})
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wall -DUSE_BOOST")

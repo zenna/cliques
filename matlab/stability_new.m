@@ -648,9 +648,9 @@ if PARAMS.precomputed == false
         Dout = sparse(diag(dout));
         av_degree = sum(dout)/PARAMS.NbNodes;         
         % out degree Laplacian normalized by new average degree
-        Lap = (Dout -Graph)/av_degree;
-        clear Dout dangling
-        [v lambda_all] = eigs(Lap',5,'SM'); % zero eigenvalue of Laplacian matrix corresponds to stat.distribution.
+        Lap = (Dout - M)/av_degree;
+        clear Dout dangling Graph
+        [v lambda_all] = eigs(eye(size(Lap))+Lap',5,'SM'); % zero eigenvalue of Laplacian matrix corresponds to stat.distribution.
         lambda = min(diag(lambda_all));
         v = v(:,diag(lambda_all) == lambda);
         v = abs(v);              % make sure eigenvector is positive
@@ -670,7 +670,7 @@ if PARAMS.precomputed == false
     else
         % standard Laplacian and average degree
         av_degree = sum(sum(Graph))/PARAMS.NbNodes;
-        Lap=  sparse(Graph-diag(sum(Graph)));
+        Lap=  -sparse(Graph-diag(sum(Graph)));
         % store results for future use
         VAROUT.precomputed = true;
         VAROUT.P = Lap/av_degree;
