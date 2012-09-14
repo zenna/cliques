@@ -1,9 +1,9 @@
 /* Copyright (c) Zenna Tavares - zennatavares@gmail.com */
 #pragma once
-#include "clq/algorithms/louvain.h"
-#include "clq/algorithms/varofinf.h"
-#include "clq/quality_functions/stability.h"
-#include "clq/structures/vector_partition.h"
+#include "cliques/algorithms/louvain.h"
+#include "cliques/algorithms/varofinf.h"
+#include "cliques/quality_functions/stability.h"
+#include "cliques/structures/vector_partition.h"
 
 namespace clq {
 

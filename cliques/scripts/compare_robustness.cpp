@@ -10,9 +10,9 @@
 #include <unordered_set>
 
 
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/algorithms/robustness.h>
-#include <cliques/structures/make_graphs.h>
+#include <cliques/helpers/make_graphs.h>
 #include <cliques/structures/common.h>
 
 

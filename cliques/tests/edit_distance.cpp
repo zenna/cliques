@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cliques/structures/vector_partition.h>
 #include <cliques/helpers/edit_distance.h>
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 
 int main() {
     clq::VectorPartition A(5);

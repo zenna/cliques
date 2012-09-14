@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/structures/disjointset.h>
 #include <cliques/algorithms/varofinf.h>
 

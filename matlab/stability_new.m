@@ -506,7 +506,7 @@ if PARAMS.precomputed == false
         dout(dangling) = 1;
         Dout = sparse(diag(dout));
         clear dout;
-        M = (1-PARAMS.teleport_tau)*Dout\Graph; % deterministic part of transition
+        M = (1-PARAMS.teleport_tau)*(Dout\Graph); % deterministic part of transition
         % teleportation according to arXiv:0812.1770
         M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
             * ones(PARAMS.NbNodes)/PARAMS.NbNodes;

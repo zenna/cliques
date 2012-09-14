@@ -6,9 +6,7 @@
 #include <lemon/concepts/graph_components.h>
 #include <lemon/concepts/graph.h>
 
-#include <cliques/algorithms/complexity.h>
-#include <cliques/algorithms/partitions.h>
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/quality_functions/stability.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/structures/disjointset.h>

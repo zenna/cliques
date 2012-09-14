@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cliques/algorithms/bottleneck.h>
-#include <cliques/helpers.h>
+#include <cliques/helpers/helpers.h>
 #include <cliques/algorithms/louvain.h>
 #include <cliques/structures/disjointset.h>
 #include <lemon/maps.h>
@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include <cliques/graphhelpers.h>
+#include <cliques/helpers/graphhelpers.h>
 
 
 //TODO
