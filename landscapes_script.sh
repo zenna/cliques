@@ -41,6 +41,9 @@ echo "OUTPUT FILE WRITTEN TO $DIR_REP/jscliques/data/$GRAPH.json"
 
 if [ -n $3  ] ; then
 	if [ "$3" = "R" ] ; then
-		echo `rm out_* intermediate_graphs* optimal_partitions.mat`
+		echo `mkdir output_$GRAPH`
+		echo `mv out_* output_$GRAPH/` 
+		echo `mv intermediate_graphs* output_$GRAPH/` 
+		echo `mv optimal_partitions.mat output_$GRAPH/`
 	fi
 fi 
