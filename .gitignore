@@ -33,6 +33,7 @@
 *.json
 *.edj
 *.mat
+*intermediate_graphs*
 
 # Project Files #
 ######################
