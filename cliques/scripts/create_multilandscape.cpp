@@ -269,7 +269,7 @@ void do_work(G &graph,
 			++j;
 		}
 
-		clq::basins_to_file(prefix + "_greedy_basins.mat", all_basins,
+		clq::basins_to_file(prefix + "_greedy_basins.bsn", all_basins,
 				markov_times);
 	}
 }
@@ -541,7 +541,7 @@ int main(int ac, char* av[]) {
 	// 		++j;
 	// 	}
 
-	// 	clq::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
+	// 	clq::basins_to_file(filename_prefix + "_greedy_basins.bsn", all_basins,
 	// 			markov_times);
 	// }
 

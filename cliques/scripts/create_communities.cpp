@@ -232,7 +232,7 @@ int main(int ac, char* av[]) {
 			all_basins.push_back(basins);
 			++j;
 		}
-		clq::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins, markov_times);
+		clq::basins_to_file(filename_prefix + "_greedy_basins.bsn", all_basins, markov_times);
 	}
     return 0;
 }

@@ -128,7 +128,7 @@ int main(int ac, char* av[]) {
 		clq::output("time", markov_time, "num_basins", basins.size());
 		all_basins.push_back(basins);
 	}
-	clq::basins_to_file(filename_prefix + "_greedy_basins.mat", all_basins,
+	clq::basins_to_file(filename_prefix + "_greedy_basins.bsn", all_basins,
 			markov_times);
 	
 	// Must come after basin finding, since it can modify all_partitions
