@@ -1,71 +1,28 @@
 import getopt, sys
-import simplejson
 from collections import defaultdict
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import math
 import IPython
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 # TODO
-
-def usage():
-    print """-x input prefix e.g. ~/path_graph (where files ~/path_graph_coords.mat etc have been generated
-    or you can be specific (will override prefix):
-    -e edges_file
-    -r energy_file (e.g. stability)
-    -c coordinates
-    -g graph_file
-    -p partitions
-    -o output_file
-    -b basin_file
-    """
 
 def parse_args():
     """Parse arguments of script"""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:g:p:r:c:e:h:x:", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "x:")
     except getopt.GetoptError, err:
         print str(err)
-        usage()
         sys.exit(2)
     
-    # default arguments
-    coords_file = None
-    edges_file = None
-    energy_file = None
-    partitions_file = None
-    graph_file = None
-    basins_file = None
-    input_file = None
-    
-    # assign file names from standard prefix
+    # assign standard prefix
     for o, a in opts:
         if o in ("-x", "--prefix"):
-            coords_file = '%s_%s.mat'%(a, 'coords')
-            edges_file = '%s_%s.edj'%(a, 'landscape_edgelist')
-            energy_file = '%s_%s.mat'%(a, 'energy')
-            basins_file = '%s_%s.mat'%(a, 'greedy_basins')
-            partitions_file = '%s_%s.mat'%(a, 'partitions')
-            graph_file = '%s_%s.edj'%(a, 'graph_edgelist')
-    
-    # in case specific files are given use these
-    for o, a in opts:
-        if o in ("-c", "--coordinates"):
-            coords_file = a
-        elif o in ("-e", "--edges"):
-            edges_file = a
-        elif o in ("-r", "--energy"):
-            energy_file = a
-        elif o in ("-b", "--basins"):
-            basins_file = a
-        elif o in ("-p", "--partitions"):
-            partitions_file = a
-        elif o in ("-g", "--graph"):
-            graph_file = a
-        elif o in ("-h", "--help"):
-            usage()
-            sys.exit()
-   
-    return coords_file, edges_file, energy_file, partitions_file, graph_file, basins_file
+            prefix = a            
+
+    return prefix
 
 def file_to_nested_list(filename, cast_type):
     """Convert file to nested list"""
@@ -96,7 +53,7 @@ def file_to_basin_sizes(filename, energies, time_limit):
     """return basin list with basins[basin_id]['time/psize/size']"""
     f = open(filename, 'r')
     data = []
-    # a dictionary with default value dictionary with default value list
+    # a dictionary with default value: dictionary with default value list
     basin_to_values = defaultdict(lambda: defaultdict(list))
     time_index = 0
     for line in f:
@@ -128,59 +85,97 @@ def file_to_basin_sizes(filename, energies, time_limit):
     return basin_to_values
 
 def extract_basins_per_time(filename, time_limit):
-    basins_per_time = [[]]
+    # basins per file is a dictionary of lists dict['time'] = [bid1, bid2..]
+    basins_per_time = defaultdict(list)
+    time = 0
     with open(filename,'r') as f:
         for line in f.readlines():
             if line:
                 l = [x for x in line.strip().split(" ") if x]
                 time = float(l[0])
-                if  time < time_limit:
-                    #todo
+                if time > time_limit:
+                    break
+                else:
+                    # append number of basin to list
+                    basins_per_time[time].append(int(l[1]))
+    return basins_per_time
                         
 
 
 def main():
     #IPython.embed()
-    # parse inputs
-    coords_file, edges_file, energy_file, partitions_file, graph_file, basins_file = parse_args()
-    time_limit = 200
-    if coords_file:
-        print "processing coords"
-        try:
-            coordinate_list = file_to_nested_list(coords_file, float)
-        except:
-            pass
-            
-    if edges_file:
-        edge_list = file_to_nested_list(edges_file, int)
+    # parse inputs, get prefix
+    global_prefix = parse_args()
+    hierarchy = "_0"
+    prefix = "out" + hierarchy
+    case = 0    # case 0 == prism_w graph
+    if case == 0:
+        eps_list = np.arange(1,1.51,0.01).tolist()
     
-    if energy_file:
-        print "processing energy"
-        energy_list = file_to_energy_process(energy_file, float)
+    # prepare stuff to plot
+    nr_basins_time = [[]]
+    
+    for eps in eps_list:
+        graphname = global_prefix.split("/")[1]
+        dir = "output_" + graphname + str(eps).strip(".00") + "/"
+        coords_file = '%s%s%s_%s.mat'%(global_prefix,dir,prefix, 'coords')
+        edges_file = '%s%s%s_%s.edj'%(global_prefix, dir, prefix, 'landscape_edgelist')
+        energy_file = '%s%s%s_%s.mat'%(global_prefix, dir, prefix, 'energy')
+        basins_file = '%s%s%s_%s.bsn'%(global_prefix, dir, prefix, 'greedy_basins')
+        partitions_file = '%s%s%s_%s.mat'%(global_prefix, dir, prefix, 'partitions')
+        graph_file = '%s%s%s_%s.edj'%(global_prefix, dir, prefix, 'graph_edgelist')
 
-    if partitions_file:
-        try:
-            partition_list = file_to_nested_list(partitions_file, int)
-        except:
-            print "couldnt open partitions"
- 
-    if graph_file:
-        import networkx as nx
-        graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
-        pos = nx.spring_layout(graph,iterations=500)
-        graph_list = {}
-        graph_list['coords'] = [x.tolist() for x in pos.values()]
-        graph_list['edges'] = file_to_nested_list(graph_file, float)
+
+        time_limit = 200
+
+        coordinate_list = file_to_nested_list(coords_file, float)
+        edge_list = file_to_nested_list(edges_file, int)
+        energy_list = file_to_energy_process(energy_file, float)
+        partition_list = file_to_nested_list(partitions_file, int)
+            
+        # get graph for analysis -- atm not used 
+        #import networkx as nx
+        #graph = nx.read_edgelist(graph_file, nodetype=int, data=(('weight',float),))
+        #pos = nx.spring_layout(graph,iterations=500)
+        #graph_list = {}
+        #graph_list['coords'] = [x.tolist() for x in pos.values()]
+        #graph_list['edges'] = file_to_nested_list(graph_file, float)
         #plt.figure()
         #nx.draw(graph)
- 
-    if basins_file:
+
+
+        #####################
+        # basin analysis
         num_partitions = float(len(partition_list))
         print "number of partitions: " +  str(num_partitions)
-                    
+        
+        # parse files in two ways
         basins = file_to_basin_sizes(basins_file, energy_list,time_limit)        
-        basins_per_time = extract_basins_per_time(basins_file,time_limit)           
-        IPython.embed()
+        basins_per_time = extract_basins_per_time(basins_file,time_limit) 
+        
+        # get some simpler statistics
+        nr_basins_per_time = []
+        time_list = []
+        for time in sorted(basins_per_time.keys()):
+            time_list.append(time)          
+            nr_basins_per_time.append( int(len(basins_per_time[time])) )
+
+        nr_basins_time.append(nr_basins_per_time)  
+
+    
+    ############################
+    # PLOTS
+
+    # remove empty entry -- why does this exist???    
+    del nr_basins_time[0]      
+    X, Y  = np.meshgrid(eps_list, time_list)
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    Z = np.array(nr_basins_time).transpose()
+    ax.plot_surface(X, Y, Z, cmap=cm.jet)
+    plt.show()
+
+    #IPython.embed()
 
 if __name__ == "__main__":
     main()

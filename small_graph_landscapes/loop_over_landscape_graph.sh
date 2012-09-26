@@ -3,9 +3,12 @@
 # script for doing all the fancy landscape operations in one go looping over different graphs
 
 DIR_BIN="$HOME/PhD/ext_programmes_and_lib/cliques"
-DIR_WKSP="$HOME/workspace/landscapes"
+DIR_WKSP="$HOME/workspace/small_graph_landscapes"
 
 REL_PATH="matlab/prism_w"
+
+START=0.5
+STOP=100
 
 for name in $REL_PATH/*.edj; do
     
@@ -14,7 +17,7 @@ for name in $REL_PATH/*.edj; do
     echo `$DIR_BIN/tests/test_louvain $DIR_WKSP/$GRAPH`
     echo "Louvain algorithm finished"
 
-    echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_WKSP/$GRAPH -I ./intermediate_graphs -H ./optimal_partitions.mat \n`
+    echo `$DIR_BIN/scripts/create_multilandscape -G $DIR_WKSP/$GRAPH --start_time $START --end_time $STOP -I ./intermediate_graphs -H ./optimal_partitions.mat \n` 
     GRAPH=${GRAPH%.edj}
     GRAPH=${GRAPH##*/}
     echo "create multilandscape finished"
