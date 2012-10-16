@@ -1,8 +1,9 @@
 % script to run a stability analysis on the "small graphs" for landscape
 % analysis.
 weights = 1:.01:1.5;
-time = logspace(log10(0.5),1,300);
+time = load('../../data/prism_w/time_vector_multilandscape.csv');
 
+%% create new graphs and run stability
 for e=weights
     name = ['prism_w' num2str(e)];
     A = load([name '.edj']);
@@ -20,10 +21,12 @@ end
 time_c2 = ones(size(weights));
 time_c6 = time_c2; time_c3 = time_c2;
 i=1;
-vi_matrix = zeros(size())
+vi_matrix = zeros(length(weights),length(time));
 for e= weights
     name = ['Stability_' 'prism_w' num2str(e) '.mat'];
     load(name);
+    
+    vi_matrix(i,:)= VI;
     
     test = find(N==6,1,'last');
     if ~(isempty(test))

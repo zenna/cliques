@@ -1,9 +1,9 @@
 % script to run a stability analysis on the "small graphs" for landscape
 % analysis.
 weights = 1:.01:1.5;
-time = logspace(log10(0.5),1,100);
+time = load('../../data/prism_w/time_vector_multilandscape.csv');
 
-%%
+%% load graphs and run stability_analysis
 for e=weights
     name = ['prism_w' num2str(e)];
     A = load([name '.edj']);
@@ -48,3 +48,5 @@ for e= weights
     %     hold all
     %     script_plot_correlation_stability
 end
+
+ surf(time,weights,vi_matrix)

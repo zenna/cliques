@@ -8,7 +8,7 @@ DIR_WKSP="$HOME/workspace/small_graph_landscapes"
 REL_PATH="matlab/prism_w"
 
 START=0.5
-STOP=100
+STOP=10
 
 for name in $REL_PATH/*.edj; do
     

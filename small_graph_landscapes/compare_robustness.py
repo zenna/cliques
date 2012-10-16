@@ -114,6 +114,7 @@ def main():
     
     # prepare stuff to plot
     nr_basins_time = [[]]
+    entropy_basins_time = [[]]
     
     for eps in eps_list:
         graphname = global_prefix.split("/")[1]
@@ -151,7 +152,8 @@ def main():
         
         # parse files in two ways
         basins = file_to_basin_sizes(basins_file, energy_list,time_limit)        
-        basins_per_time = extract_basins_per_time(basins_file,time_limit) 
+        basins_per_time = extract_basins_per_time(basins_file,time_limit)
+        basins_entropy = file_to_basin_entropy_per_time(basins_file, num_partitions)
         
         # get some simpler statistics
         nr_basins_per_time = []
@@ -160,22 +162,76 @@ def main():
             time_list.append(time)          
             nr_basins_per_time.append( int(len(basins_per_time[time])) )
 
-        nr_basins_time.append(nr_basins_per_time)  
+        nr_basins_time.append(nr_basins_per_time)
+        entropy_basins_time.append(basins_entropy)
 
-    
+    IPython.embed()
     ############################
-    # PLOTS
+    # PLOTS printout
 
     # remove empty entry -- why does this exist???    
-    del nr_basins_time[0]      
-    X, Y  = np.meshgrid(eps_list, time_list)
-    fig = plt.figure()
-    ax = Axes3D(fig)
+    del nr_basins_time[0]
     Z = np.array(nr_basins_time).transpose()
-    ax.plot_surface(X, Y, Z, cmap=cm.jet)
-    plt.show()
+    np.savetxt('nr_basins_time.txt',Z)
 
-    #IPython.embed()
+    del entropy_basins_time[0]    
+    Z = np.array(entropy_basins_time).transpose()
+    np.savetxt('entropy_basins_time.txt',Z)
+
+def file_to_basin_entropy_per_time(filename, nr_partitions):
+    # find the average entropy in reaching particular maxima
+    entropies = []
+    prev_time = 0
+
+    # go trough basins file and read lines into l
+    with open(filename,'r') as f:
+        for line in f.readlines():
+            if line:
+                l = [x for x in line.strip().split(" ") if x]
+                time = float(l[0])
+
+                # encountered new time in the list
+                if time != prev_time:
+                    # store entropy results unless it is just the start
+                    if prev_time !=0:
+                        entropy_nodes_summed = 0.0
+                        for plist in node_prob.values():
+                            entropy = compute_entropy_from_list(plist)
+                            entropy_nodes_summed += entropy
+                        # entropy of getting to basins averaged over all nodes
+                        entropies.append( entropy_nodes_summed/nr_partitions ) 
+
+                    # have to create statistics afresh
+                    node_prob = defaultdict(list)
+                    prev_time = time
+
+
+                # get statistics for each node
+                for index, val in enumerate(l[2:]):
+                    if index % 2 == 0:
+                        nodes_id = int(val)
+                    else:
+                        node_prob[nodes_id].append(float(val))
+        
+        # read in last line
+        entropy_nodes_summed = 0.0
+        for plist in node_prob.values():
+            entropy = compute_entropy_from_list(plist)
+            entropy_nodes_summed += entropy
+        # entropy of getting to basins averaged over all nodes
+        entropies.append( entropy_nodes_summed/nr_partitions ) 
+    
+                    
+    #IPython.embed()            
+
+    return entropies
+
+def compute_entropy_from_list(plist):
+    entropy = 0.0
+    for prob in plist:
+        if prob > 0:
+            entropy += -prob*math.log(prob)/math.log(2)
+    return entropy
 
 if __name__ == "__main__":
     main()
