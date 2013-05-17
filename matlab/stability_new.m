@@ -69,7 +69,7 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       the graph has not been properly
 %                       encoded.
 %
-%       prec            Precision: defines a threshold for     10e-9  
+%       prec            Precision: defines a threshold for      1e-9  
 %                       the range of weights allowed in  
 %                       the laplacian exponential matrix 
 %                       of the full stability.
@@ -340,7 +340,7 @@ PARAMS.NbNodes = 0;                             % Total number of nodes;
 PARAMS.Precision = 1e-9;                        % Threshold for stability and edges weigths
 PARAMS.M = 100;                                 % Top M partitions among the L found by louvain are used to compute the variation of information
 PARAMS.K = NaN;                                 % K stabilities value, only relevant for Ruelle random walk and k stabilities. K =-1 corresponds to the normalised Laplacian
-PARAMS.teleport_tau = 0;                        % teleportation probability (only relevant for directed graphs)
+PARAMS.teleport_tau = 0.15;                     % teleportation probability (only relevant for directed graphs)
 
 % actual parsing begins here
 attributes={'novi', 'l', 'm', 'out', 'linearised', 'nocheck', 'laplacian', 'prec', 'plot','v','t','p','k','directed','teleport','precomputed'};
@@ -538,13 +538,13 @@ if PARAMS.precomputed == false
         VAROUT.P = trans;
         
         clear trans;
-        exponential=sparse(expm(time.*Lap));
+        exponential=expm(time.*Lap);
         clear Lap;
         
         PI=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr   
         VAROUT.pi = diag(PI);   % store results for future use
         
-        solution=sparse(PI*exponential);
+        solution=PI*exponential;
         clear exponential;
         clear PI;
         
@@ -566,7 +566,7 @@ end
 % prune out weights that are too small as defined by precision
 solution=max(max(solution))*PARAMS.Precision*round(solution/(max(max(solution))*PARAMS.Precision));
 [row,col,val] = find(solution);
-clear solution
+% clear solution
 graph=[col-1,row-1,val];
 
 % init some numbers
@@ -1203,7 +1203,9 @@ function Graph = check(Graph, verbose, PARAMS)
     
     % Check for disconnected components
     if exist('graphconncomp','file') == 2
-        nbcomp=graphconncomp(sparse(Graph));
+        %' WEAK' has no effect for undirected graphs, but needed for
+        % directed case
+        nbcomp=graphconncomp(sparse(Graph),'WEAK',true);
         if nbcomp>1
             warning(['There are ' num2str(nbcomp) ' not strongly connected components in the graph. If your graph is directed please be aware of the teleportation settings.']);
         end
