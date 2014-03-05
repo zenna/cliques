@@ -142,7 +142,7 @@ if nargin > 0
     % list of edges.
     else
         if size(G,1) == size(G,2)
-            [rows,cols,vals] = find(G);
+            [rows,cols,vals] = find(G');
             if sum(vals)==length(vals)
                 Graph=[cols-1, rows-1 ones(size(cols))];
             else
@@ -512,7 +512,7 @@ if PARAMS.precomputed == false
             * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
         
         clear Dout dangling
-        [v lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+        [v, lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
         lambda = max(diag(lambda_all));
         v = v(:,diag(lambda_all) == lambda);
         v = abs(v);              % make sure eigenvector is positive
@@ -610,7 +610,13 @@ S = lnkS(index);
 C = lnk(:,index);
 N = nb_comm(index);
 
-
+% %%%%
+% %code snippet to writeout all partitions
+% allout =1;
+% if allout ==1
+%     dlmwrite(['Partition_' num2str(time,'%10.6f') '.dat'],lnk,'delimiter','\t');
+% end
+% %%%%
 
 if PARAMS.ComputeVI && nnz(max(lnk)==PARAMS.NbNodes-1)~=PARAMS.NbLouvain && nnz(max(lnk)==0)~=PARAMS.NbLouvain
     VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
@@ -836,21 +842,23 @@ ComputeParallel = PARAMS.ComputeParallel;
 
 %TODODODODODODOO
 % Generate the matrix exponential
-diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
-trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
-
-Lap=sparse(trans-eye(NbNodes));
-clear trans;
-exponential=sparse(expm(time.*Lap));
-%solution=sparse(Lap*diagdeg*exponential);% changes in here
-solution=sparse(diagdeg*exponential);% changes in here
-clear Lap;
-M_null = ones(size(sum(Graph)))'*sum(Graph)/sum(Graph(:));
-pi = sum(Graph)/sum(sum(Graph));
-solution = (solution+pi'*pi).*log2(solution./(pi'*pi));
+% diagdeg=sparse((diag(sum(Graph)))/sum(sum(Graph)));  %diag matrix with stat distr
+% trans=sparse(diag(    (sum(Graph)).^(-1)     ) * Graph);  %(stochastic) transition matrix
+% 
+% Lap=sparse(trans-eye(NbNodes));
+% clear trans;
+% exponential=sparse(expm(time.*Lap));
+% %solution=sparse(Lap*diagdeg*exponential);% changes in here
+% solution=sparse(diagdeg*exponential);% changes in here
+% clear Lap;
+% M_null = ones(size(sum(Graph)))'*sum(Graph)/sum(Graph(:));
+% pi = sum(Graph)/sum(sum(Graph));
+% solution = (solution+pi'*pi).*log2(solution./(pi'*pi));
 % solution = solution.*log2(solution./(pi'*pi));% +(eye(size(M_null))-M_null)*diagdeg*expm(-(eye(size(M_null))-M_null)*time);
 %solution = solution - diagdeg*expm(-(eye(size(M_null))-M_null)*time*.9);
-solution = createNormalizedLyapunovStabilityMatrix(Graph,time);
+% solution = createNormalizedLyapunovStabilityMatrix(Graph,time);
+
+solution = createNormalizedStabilityMatrixcorr2(Graph,time);
 solution = (solution+solution')/2;
 clear exponential;
 clear diagdeg;
@@ -1060,26 +1068,79 @@ end
 %------------------------------------------------------------------------------
 function [S, N, C, VI, VAROUT] = louvain_LNL(Graph, time, PARAMS)
 VAROUT =[]; % init varying outputs 
-%TODO adjust below code properly to work with paremters struct, so far just
-% copy
-ComputeES = PARAMS.ComputeES;
-ComputeVI = PARAMS.ComputeVI  ;
-precision = PARAMS.Precision;
-NbLouvain = PARAMS.NbLouvain;
-M = PARAMS.M ;
-NbNodes = PARAMS.NbNodes;
-ComputeParallel = PARAMS.ComputeParallel;
 
-% Optimize louvain NbLouvain times
-[stability, nb_comm, communities] = stability_louvain(Graph, time, NbLouvain, precision,'normalised');
-lnk = communities;
-lnkS = stability;
+% directed case: M_ij >> from i to j
+if PARAMS.directed == true
+    Graph = sparse(Graph(:,1)+1,Graph(:,2)+1,Graph(:,3),PARAMS.NbNodes,PARAMS.NbNodes);
+    % "transition matrix" and pi unknown
+    if PARAMS.precomputed == false
+        dout = sum(Graph,2);
+        dangling = (dout==0);
+        dout(dangling) = 1;
+        Dout = sparse(diag(dout));
+        clear dout;
+        M = (1-PARAMS.teleport_tau)*(Dout\Graph); % deterministic part of transition
+        % teleportation according to arXiv:0812.1770
+        M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
+            * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
+        
+        clear Dout dangling
+        [v, lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+        lambda = max(diag(lambda_all));
+        v = v(:,diag(lambda_all) == lambda);
+        v = abs(v);              % make sure eigenvector is positive
+        clear lambda;
+        % store results for future use
+        VAROUT.precomputed = true;
+        VAROUT.pi = v/sum(v);
+        VAROUT.P = M;        
+        %symmetrise due to trace optimsation
+        solution = diag(VAROUT.pi)*M;
+        solution = (solution +solution')/2;
+    else
+        solution = diag(PARAMS.pi)* PARAMS.P;
+        solution = (solution +solution')/2;
+    end
+    [row,col,val] = find(solution);
+    clear solution
+    Graph = [col-1,row-1,val];   
+end
+
+
+
+% Optimize with Louvain NbLouvain times
+if PARAMS.ComputeParallel
+    nr_threads = matlabpool('size');
+    stability = cell(1,nr_threads);
+    nb_comm_temp = cell(1,nr_threads);
+    communities = cell(1,nr_threads);
+    shares = split_even(PARAMS.NbLouvain,nr_threads);
+    precision = PARAMS.Precision;
+    % computation in parallel with cell arrays
+    parfor l=1:nr_threads;
+        [stability{l}, nb_comm_temp{l}, communities{l}] = ...
+            stability_louvain(Graph, time, shares(l), precision ,'normalised',randi(intmax));
+    end    
+    % assignements
+    lnk = cat(2,communities{:});
+    lnkS = cat(2,stability{:});
+    nb_comm = cat(2,nb_comm_temp{:});
+       
+    % non parallel version
+else
+    [stability, nb_comm, communities] = ...
+        stability_louvain(Graph, time, PARAMS.NbLouvain, PARAMS.Precision,'normalised',randi(intmax));
+    lnk = communities;
+    lnkS = stability;
+end
+clear communities stability nr_threads shares nb_comm_temp graph;
+
 % Comment: maybe one should pick one of the best solutions at random,
 % if two solutions have the same value;
-index = find(stability==max(stability),1);
+index = find(lnkS==max(lnkS),1);
 
-S = stability(index);
-C = communities(:,index);
+S = lnkS(index);
+C = lnk(:,index);
 N = nb_comm(index);
 
 
@@ -1087,8 +1148,8 @@ N = nb_comm(index);
 clear communities;
 clear Graph;
 
-if ComputeVI && nnz(max(lnk)==NbNodes-1)~=NbLouvain && nnz(max(lnk)==0)~=NbLouvain
-    VI = computeRobustness(lnk,lnkS, M,ComputeParallel);
+if PARAMS.ComputeVI && nnz(max(lnk)==PARAMS.NbNodes-1)~=PARAMS.NbLouvain && nnz(max(lnk)==0)~=PARAMS.NbLouvain
+    VI = computeRobustness(lnk,lnkS, PARAMS.M,PARAMS.ComputeParallel);
 else
     VI = 0;
 end
@@ -1183,21 +1244,21 @@ function Graph = check(Graph, verbose, PARAMS)
         
     % Check symmetry of the adjacency matrix if graph is not directed
     if PARAMS.directed == false
-    	if size(Graph,1) ~= size(Graph,2)
-        	error('The graph provided is a directed graph. Specify the correct options or correct your graph');
-    	end
-	if any(any(Graph~=Graph'))
-		if nnz(triu(Graph,1))>0 && nnz(tril(Graph,-1))>0
-		    error('The graph provided is a directed graph.');
-		else
-		    warning('Adjacency matrix A of provided graph is triangular -- symmetrizing A = A + A^T');
-		    Graph=Graph+Graph';
-		end
-	end
+        if size(Graph,1) ~= size(Graph,2)
+            error('The graph provided is a directed graph. Specify the correct options or correct your graph');
+        end
+        if any(any(Graph~=Graph'))
+            if nnz(triu(Graph,1))>0 && nnz(tril(Graph,-1))>0
+                error('The graph provided is a directed graph.');
+            else
+                warning('Adjacency matrix A of provided graph is triangular -- symmetrizing A = A + A^T');
+                Graph=Graph+Graph';
+            end
+        end
     end
 
     % Check for isolated nodes
-    if nnz(sum(Graph))~=size(Graph,2)
+    if ( nnz(sum(Graph))~=size(Graph,1) || nnz(sum(Graph,2))~=size(Graph,2) )
         warning('There are isolated nodes in the graph');
     end
     
@@ -1233,6 +1294,7 @@ lnk=lnk(:,i);
 lnk=lnk(:,end-M+1:end);
 VI = varinfo(lnk',ComputeParallel);
 clear i;
+
 end
 
 %------------------------------------------------------------------------------
