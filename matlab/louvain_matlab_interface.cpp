@@ -20,7 +20,7 @@
 
 // some redefinitions needed here as MATLAB tries to define its own symbols...
 //namespace matlab {
-#define CHAR16_T UINT16_T // VALID?? be careful!!
+//#define CHAR16_T UINT16_T // VALID?? be careful!!
 #include "mex.h"
 #include "matrix.h"
 //}

@@ -44,6 +44,9 @@ function [S, N, VI, C] = stability_new(G, T, varargin)
 %                       are defined for left multiplications 
 %                       here, i.e. A_ij is the link from i to j.
 %
+%        teleport_tau   teleportation probability               0.15
+%                       (only active if directed == true)
+%
 %
 %        noVI           Disables the calculation of the         none
 %                       robustness of the partitions.
@@ -465,6 +468,13 @@ if Full
         StabilityFunction = @louvain_k_stability;
     elseif strcmpi(Laplacian, 'Ruelle_k_stability')
         StabilityFunction = @louvain_Ruelle_k_stability;
+    elseif strcmpi(Laplacian, 'Lyapunov_normalised')
+        StabilityFunction = @louvain_Lyapunov_normalised;
+        if PARAMS.directed == false
+            warning(['You have not provided the directed flag but want to use Lyapunov based stability.'...
+            'Directed was set to true. For undirected graphs normlised stability equals Lyapunov stability']);
+            PARAMS.directed = true; 
+        end
     else
         error('Please provide a valid matching value for attribute laplacian. It must either be ''normalised'' or ''combinatorial''.');
     end
@@ -513,7 +523,7 @@ if PARAMS.precomputed == false
         
         clear Dout dangling
         [v, lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
-        lambda = max(diag(lambda_all));
+        lambda = max(diag(real(lambda_all)));
         v = v(:,diag(lambda_all) == lambda);
         v = abs(v);              % make sure eigenvector is positive
         clear lambda;
@@ -657,7 +667,7 @@ if PARAMS.precomputed == false
         Lap = (Dout - M)/av_degree;
         clear Dout dangling Graph
         [v lambda_all] = eigs(eye(size(Lap))+Lap',5,'SM'); % zero eigenvalue of Laplacian matrix corresponds to stat.distribution.
-        lambda = min(diag(lambda_all));
+        lambda = min(diag(real(lambda_all)));
         v = v(:,diag(lambda_all) == lambda);
         v = abs(v);              % make sure eigenvector is positive
         clear lambda;
@@ -1027,6 +1037,128 @@ else
 end
 end
 
+function [S, N, C, VI, VAROUT] = louvain_Lyapunov_normalised(Graph, time, PARAMS)
+% Computes the full normalised stabilty
+
+VAROUT =[]; % init varying outputs 
+
+% "transition matrix" and pi unknown
+if PARAMS.precomputed == false
+    % directed case: M_ij >> from i to j
+    if PARAMS.directed == true
+        dout = sum(Graph,2);
+        dangling = (dout==0);
+        dout(dangling) = 1;
+        Dout = sparse(diag(dout));
+        clear dout;
+        M = (1-PARAMS.teleport_tau)*(Dout\Graph); % deterministic part of transition
+        % teleportation according to arXiv:0812.1770
+        M =	M + diag(PARAMS.teleport_tau + dangling.*(1-PARAMS.teleport_tau))...
+            * ones(PARAMS.NbNodes)/PARAMS.NbNodes;
+        
+        clear Dout dangling
+        [v, lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
+        lambda = max(diag(real(lambda_all)));
+        v = v(:,diag(lambda_all) == lambda);
+        v = abs(v);              % make sure eigenvector is positive
+        clear lambda;
+        % store results for future use
+        VAROUT.precomputed = true;
+        VAROUT.pi = v/sum(v);
+        VAROUT.P = M;      
+        % now compute exponential transition matrix
+        solution = expm(time* (M-eye(size(M))) );
+        solution = solution'*diag(v/sum(v))*solution;
+        clear M v;
+        % symmetrize solution
+        solution = (solution+solution')/2;
+        
+        
+        % undirected case
+    else %there should only be the directed case -- otherwise we can use normal stability
+        error('do not use Lyapunov stabiliy for undirected graphs, use normalised stability instead')
+    end
+    
+    % stationary distribution and "transition matrix" have been computed before
+else
+    if PARAMS.directed == true
+        PT = expm(time* (PARAMS.P - eye(size(PARAMS.P))) );
+        
+        solution = PT'*diag(PARAMS.pi)*PT;
+        % symmetrization not needed solution is symmetric already -- but eliminates complex numbers..
+        solution = (solution +solution')/2;
+    else %there should only be the directed case -- otherwise we can use normal stability
+        error('do not use Lyapunov stabiliy for undirected graphs, use normalised stability instead')
+    end
+end
+
+
+
+% prune out weights that are too small as defined by precision
+solution=max(max(solution))*PARAMS.Precision*round(solution/(max(max(solution))*PARAMS.Precision));
+[row,col,val] = find(solution);
+% clear solution
+graph=[col-1,row-1,val];
+
+% init some numbers
+lnk = zeros(PARAMS.NbNodes, PARAMS.NbLouvain);
+lnkS = zeros(PARAMS.NbLouvain,1);
+nb_comm = zeros(PARAMS.NbLouvain,1);
+
+% Optimize with Louvain NbLouvain times
+if PARAMS.ComputeParallel
+    nr_threads = matlabpool('size');
+    stability = cell(1,nr_threads);
+    nb_comm_temp = cell(1,nr_threads);
+    communities = cell(1,nr_threads);
+    shares = split_even(PARAMS.NbLouvain,nr_threads);
+    precision = PARAMS.Precision;
+    % computation in parallel with cell arrays
+    parfor l=1:nr_threads;
+        [stability{l}, nb_comm_temp{l}, communities{l}] = ...
+            stability_louvain(graph, 1, shares(l), precision ,'normalised',randi(intmax));
+    end    
+    % assignements
+    lnk = cat(2,communities{:});
+    lnkS = cat(2,stability{:});
+    nb_comm = cat(2,nb_comm_temp{:});
+       
+    % non parallel version
+else
+    [stability, nb_comm, communities] = ...
+        stability_louvain(graph, 1, PARAMS.NbLouvain, PARAMS.Precision,'normalised',randi(intmax));
+    lnk = communities;
+    lnkS = stability;
+end
+clear communities stability nr_threads shares nb_comm_temp graph;
+
+
+% Comment: maybe one should pick one of the best solutions at random,
+% if two solutions have the same value;
+index = find(lnkS==max(lnkS),1);
+
+S = lnkS(index);
+C = lnk(:,index);
+N = nb_comm(index);
+
+% %%%%
+% %code snippet to writeout all partitions
+% allout =1;
+% if allout ==1
+%     dlmwrite(['Partition_' num2str(time,'%10.6f') '.dat'],lnk,'delimiter','\t');
+% end
+% %%%%
+
+if PARAMS.ComputeVI && nnz(max(lnk)==PARAMS.NbNodes-1)~=PARAMS.NbLouvain && nnz(max(lnk)==0)~=PARAMS.NbLouvain
+    VI = computeRobustness(lnk, lnkS, PARAMS.M,PARAMS.ComputeParallel);
+else
+    VI=0; 
+end
+
+clear lnk;
+
+end
+
 %------------------------------------------------------------------------------
 function [S, N, C, VI, VAROUT] = louvain_LCL(Graph, time, PARAMS)
 VAROUT =[]; % init varying outputs 
@@ -1086,7 +1218,7 @@ if PARAMS.directed == true
         
         clear Dout dangling
         [v, lambda_all] = eigs(M'); % largest eigenvalue of transition matrix corresponds to stat.distribution.
-        lambda = max(diag(lambda_all));
+        lambda = max(diag(real(lambda_all)));
         v = v(:,diag(lambda_all) == lambda);
         v = abs(v);              % make sure eigenvector is positive
         clear lambda;
