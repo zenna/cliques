@@ -1,4 +1,0 @@
-%script to create landscapes graphs, project them and get the basins.
-
-DIR_REP = '/home/mts09/repositories';
-DIR_BIN = '/home/mts09/ext_programmes_and_lib/cliques/';

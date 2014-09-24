@@ -40,7 +40,7 @@ struct LinearisedInternalsCorr {
 			node_to_w[i] = null_model_vec[i] / sqrt(null_model_vec[i] * (1
 					- null_model_vec[i]));
 			comm_w_in[i] = find_weight_selfloops(graph, weights, temp_node);
-			comm_loss[i] = node_to_w[i] / sqrt(null_model_vec[i] * (1
+			comm_loss[i] = null_model_vec[i] / sqrt(null_model_vec[i] * (1
 					- null_model_vec[i]));
 		}
 	}
