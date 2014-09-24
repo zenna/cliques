@@ -116,7 +116,7 @@ double find_optimal_partition_louvain(T &graph, W &weights,
 				} else if (gain == best_gain && comm_id == comm_id_neighbour) {
 					best_comm = comm_id;
 				}
-
+\
 			}
 
 			insert_and_update_internals(graph, weights, n1, internals,

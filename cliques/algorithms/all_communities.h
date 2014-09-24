@@ -71,7 +71,7 @@ void find_connected_communities(G &graph, std::vector<bool> allowed,
 		for (unsigned int i = 0; i < allowed.size(); ++i) {
 			if (allowed[i] == true) {
 				//                std::cout << "start node" << i << std::endl;
-				std::vector<int> start = { i };
+				std::vector<int> start = { int(i) };
 				community_list.push_back(start);
 				allowed[i] = false;
 				find_connected_communities(graph, allowed, start,

@@ -5,11 +5,12 @@
 2) Landscapes induced by optimisation processes.
 
 ### Dependencies
-* lemon graph library
+* lemon graph library http://lemon.cs.elte.hu/trac/lemon
 * Boost or g++ with C++ 11 support (apt-get install g++-4.7)
 * Doxygen to build documentation (apt-get install doxygen)
 * cmake for building (apt-get install cmake)
 * armadillo matrix library
+* gfortran
 
 ### How to build
 Make a build directory (preferably outside the source code directory)

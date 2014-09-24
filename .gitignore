@@ -1,53 +1,22 @@
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-*.pyc
-
-# Packages #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
+/target
+/lib
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
 *.jar
-*.rar
-*.tar
-*.zip
-
-# Logs and databases #
-######################
+*.class
+.lein-deps-sum
+.lein-failures
+.lein-plugins
+.lein-repl-history
+*.pdf
+*.so
+*.a
+*.aux
 *.log
-*.sql
-*.sqlite
-
-
-# Data Files #
-######################
-*.json
-*.edj
-*.mat
-*intermediate_graphs*
-
-# Project Files #
-######################
-.cproject
-.settings
-
-
-# OS generated files #
-######################
-.DS_Store?
-ehthumbs.db
-Icon?
-Thumbs.db
-dropin.cache
-.pydevproject
-.project
-.tmp*
+*.png
+*sublime*
+*.nrepl-port
+*.eps
+*.out
