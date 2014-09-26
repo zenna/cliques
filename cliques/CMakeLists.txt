@@ -7,7 +7,9 @@ set(BOOST_LIBRARYDIR /usr/local/Cellar/boost/1.46.1/lib)
 find_package(Boost COMPONENTS program_options)
 
 include_directories (../)
-add_subdirectory (scripts)
+
+#add_subdirectory (scripts)
+
 add_subdirectory (tests)
 add_subdirectory (algorithms)
 add_subdirectory (structures)

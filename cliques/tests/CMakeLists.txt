@@ -8,17 +8,23 @@ else()
   set ( cliques_LIBRARIES expokit lapack blas ${Boost_LIBRARIES})
 endif()
 
-ADD_EXECUTABLE(test_louvain louvain.cpp)
-target_link_libraries(test_louvain ${cliques_LIBRARIES})
+ADD_EXECUTABLE(test_main test_main.cpp test_vector_partition.cpp)
+# target_link_libraries(test_main ${cliques_LIBRARIES})
 
-ADD_EXECUTABLE(louvain_pairs louvain_pairs.cpp)
-target_link_libraries(louvain_pairs ${cliques_LIBRARIES})
+# ADD_LIBRARY(test_vector_partition STATIC test_vector_partition.cpp)
+# target_link_libraries(test_main test_vector_partition)
 
-add_executable(test_kernighanlin kernighanlin.cpp)
-target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
+# ADD_EXECUTABLE(test_louvain louvain.cpp)
+# target_link_libraries(test_louvain ${cliques_LIBRARIES})
 
-add_executable(test_optimisation test_optimisation.cpp)
-target_link_libraries(test_optimisation ${cliques_LIBRARIES})
+# ADD_EXECUTABLE(louvain_pairs louvain_pairs.cpp)
+# target_link_libraries(louvain_pairs ${cliques_LIBRARIES})
+
+# add_executable(test_kernighanlin kernighanlin.cpp)
+# target_link_libraries(test_kernighanlin ${cliques_LIBRARIES})
+
+# add_executable(test_optimisation test_optimisation.cpp)
+# target_link_libraries(test_optimisation ${cliques_LIBRARIES})
 
 #add_executable(test_edit_distance edit_distance.cpp)
 

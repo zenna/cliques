@@ -68,7 +68,7 @@ public:
 		return partition_vector[node_id];
 	}
 
-	void isolate_node(int node_id) {
+	void unassign_node(int node_id) {
 		std::vector<int> set_seen_frequency (num_nodes, 0);
 
 		for (int i=0; i<num_nodes; ++i) {

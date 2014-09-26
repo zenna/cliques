@@ -37,6 +37,7 @@ __Key question 4:__ What's the connection between robustness and timescales?
 ## TODO
 
 ### Code
-- Make cliques compile.
+
 - Codereview: cliques library, file by file
+- Make cliques compile.
 - Document file formats

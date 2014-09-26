@@ -46,7 +46,7 @@ find_neighbours(
         // Avoid using too much memory, destroy temp_partiton after use
         if (allow_disconnected || will_move_break_partition(graph, partition, n1) == false) {
             P temp_partition = partition;
-            temp_partition.isolate_node(n1_id);
+            temp_partition.unassign_node(n1_id);
             temp_partition.normalise_ids();
             neighbour_partitions.insert(temp_partition);
 
@@ -60,7 +60,7 @@ find_neighbours(
 
         if (allow_disconnected || will_move_break_partition(graph, partition, n2) == false) {
             P temp_partition = partition;
-            temp_partition.isolate_node(n2_id);
+            temp_partition.unassign_node(n2_id);
             temp_partition.normalise_ids();
             neighbour_partitions.insert(temp_partition);
 

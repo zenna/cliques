@@ -54,7 +54,7 @@ bool will_move_break_partition(G &graph, P partition,
         return false;
     }
 
-    partition.isolate_node(node_to_move_id);
+    partition.unassign_node(node_to_move_id);
     std::set<int> seen_nodes;
     std::list<int> queue(1, *neighs_in_same_comm.begin());
     // Do breadth first search from a neighbour

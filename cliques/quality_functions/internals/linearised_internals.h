@@ -114,7 +114,7 @@ void isolate_and_update_internals(G &graph, M &weights,
 			+ find_weight_selfloops(graph, weights, node);
 	//clq::output("in", internals.comm_w_in[comm_id]);
 
-	partition.isolate_node(node_id);
+	partition.unassign_node(node_id);
 }
 
 /**
