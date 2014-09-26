@@ -20,3 +20,5 @@ pom.xml.asc
 *.nrepl-port
 *.eps
 *.out
+*.mat
+small_graph_landscapes/
