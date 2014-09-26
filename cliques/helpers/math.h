@@ -10,8 +10,17 @@ extern "C" void dgpadm_(int* ideg, int* m, double* t, double* A, int* ldh,
 
 namespace clq {
 
+/**
+ @brief  Compute the matrix exponential expm(A*t) for a given input matrix A and a given time parameter t
+
+ @param[in] matrix -- the input matrix to be exponentiated, in a vectorised format
+ @param[in] t -- time parameter for the matrix exponential to be evaluated.
+ @param[in] order -- dimension of the square input matrix
+ @param[out] output -- matrix exponential in vectorised format
+ */
 std::vector<double> exp(std::vector<double> matrix, double t, int order) {
-    int ideg = 6;
+    // degree of the pade approximation
+    int ideg = 13;
     int m = order;
 
     int lda = order;
@@ -24,11 +33,12 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
 
     // output
     int iexp, ns, iflag;
-    //TODO: This does not work with MATLAB! But no idea why!
+    // This does not work with MATLAB! But no idea why!
     dgpadm_(&ideg, &m, &t, A, &lda, wsp, &lwsp, iwsp, &iexp, &ns, &iflag);
 
     double *start = wsp + iexp -1;
-
+    
+    // writout output in vectories format, too
     std::vector<double> output;
     for (unsigned int i = 0; i < matrix.size(); ++i) {
         double a = start[i];
@@ -41,6 +51,15 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
     return output;
 }
 
+
+/**
+ *  @brief Create an exponentially spaced time vector
+ *
+ *   @param[in] start_time -- first time in vector
+ *   @param[in] end_time -- last time in vector
+ *   @param[in] num_steps -- length of the vector
+ *   @params[out] vector<double> 
+ */
 std::vector<double> create_exponential_markov_times(double start_time,
         double end_time, int num_steps) {
     std::vector<double> markov_times;
@@ -55,9 +74,23 @@ std::vector<double> create_exponential_markov_times(double start_time,
     return markov_times;
 }
 
+
+// TODO: IS THIS FUNCTION NEEDED ANYWHERE??? Candidate for culling!
 double discrete_gauss_kernel(int N, double T) {
     return 1.0 / (N + 1);
 }
+
+
+/**
+ *  @brief Given an input graph, create a new "exponential" graph with the same set of nodes. 
+ *  The edge weights reflect how much flow traverse from one node to another, after a time t according to a normalized Laplacian diffusion.
+ *
+ *   @param[in] graph -- input graph
+ *   @param[in] end_time -- weights of input graph
+ *   @param[in] exp_graph -- "empty" graph used to store output
+ *   @params[in] exp_graph_weights -- empty edge weight map, used to store output
+ *   @params[in] markov_time -- time parameter for the computation of the matrix exponential
+ */
 
 template<typename G, typename M>
 void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph_weights, double markov_time) {
@@ -67,10 +100,9 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     typedef typename G::Node Node;
     typedef typename G::NodeIt NodeIt;
     typedef typename G::EdgeIt EdgeIt;
-    /////////////////
-    // read out graph into matrix
-    //////////////////
-
+    
+    // FIRST: read out graph into matrix
+    
     // number of nodes N
     int N = lemon::countNodes(graph);
     // -D^-1*L*t == t(B-I)
@@ -122,7 +154,8 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     for (int i = 0; i < N2; ++i) {
         exp_graph.addNode();
     }
-
+    
+    // set edges
     for (int i = 0; i < N2; ++i) {
         for (int j = i; j < N2; ++j) {
             double weight = exp_graph_vec[N2 * i + j] * node_weighted_degree[j];
@@ -135,4 +168,4 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     }
 }
 
-}
+} // end of namespace
