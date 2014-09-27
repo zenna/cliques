@@ -49,7 +49,6 @@ public:
         is_normalised(false) {
   }
 
-  // what is that for a horribly over complicated syntax?? --M
   void initialise_as_singletons() {
     unsigned int i = 0;
     for (int &x : partition_vector) {
