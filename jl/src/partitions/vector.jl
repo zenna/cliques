@@ -5,11 +5,6 @@
 #  Good when you need constant time assignment of a node to a set
 #  and removal of a node from a set
 
-# TORESOLVE
-# normalise_ids is buggy
-# Finish tets
-#
-
 type VectorPartition
   n_nodes::Int64
   partition_vector::Vector{Int64}
@@ -17,10 +12,10 @@ type VectorPartition
 end
 
 const nosetid = -1 #TODO This really doesn't make sense in the context of a partition, can we get rid of it?
-
+collect(0:3)
 ## ===========
 ## Constructors
-singletons(n_nodes::Int64) = VectorPartition(n_nodes, collect(1:n_nodes), true)
+singletons(n_nodes::Int64) = VectorPartition(n_nodes, collect(0:n_nodes-1), true)
 globalpartition(n_nodes::Int64) = VectorPartition(n_nodes, zeros(Int64, n_nodes), true)
 unassignedpartition(n_nodes::Int64) = VectorPartition(n_nodes, fill(nosetid, n_nodes), false)
 

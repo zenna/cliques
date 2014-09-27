@@ -16,9 +16,9 @@ A = globalpartition(3)
 A = singletons(3)
 @test node_count(A) == 3
 @test set_count(A) == 3
-@test find_set(A,1) == 1
-@test find_set(A,2) == 2
-@test find_set(A,3) == 3
+@test find_set(A,1) == 0
+@test find_set(A,2) == 1
+@test find_set(A,3) == 2
 
 unassign_node!(A,2)
 @test set_count(A) == 2
