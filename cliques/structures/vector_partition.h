@@ -69,6 +69,8 @@ public:
   }
 
   friend std::map<int, int> normalise_ids(VectorPartition &p);
+  
+  // whether partition is normalised is stored for efficiency.
   bool is_normalised() const {return is_normalised_;}
   void normalise() {is_normalised_ = true;}
   void unnormalise() {is_normalised_ = false;}
@@ -171,6 +173,7 @@ std::map<int, int> normalise_ids(VectorPartition &p) {
   return set_new_to_old;
 }
 
+/** @brief Semantic equivalence, are the groupings identical? */
 bool operator==(const VectorPartition& lhs, const VectorPartition& rhs) {
   if (lhs.is_normalised() && rhs.is_normalised()) {
     return (lhs.set_ids == rhs.set_ids);
