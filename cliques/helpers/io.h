@@ -263,7 +263,7 @@ void print_collection(T collection, int new_line) {
         if (i % new_line == 0) {
             std::cout << "\n";
         }
-        std::cout << *itr << ", ";
+        std::cout << *itr << ", \t ";
         ++i;
 
     }

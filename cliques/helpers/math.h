@@ -6,7 +6,7 @@
 #include <lemon/smart_graph.h>
 
 extern "C" void dgpadm_(int* ideg, int* m, double* t, double* A, int* ldh,
-        double* wsp, int* lwsp, int* iwsp, int* iexp, int* ns, int* iflag);
+                        double* wsp, int* lwsp, int* iwsp, int* iexp, int* ns, int* iflag);
 
 namespace clq {
 
@@ -37,7 +37,7 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
     dgpadm_(&ideg, &m, &t, A, &lda, wsp, &lwsp, iwsp, &iexp, &ns, &iflag);
 
     double *start = wsp + iexp -1;
-    
+
     // writout output in vectories format, too
     std::vector<double> output;
     for (unsigned int i = 0; i < matrix.size(); ++i) {
@@ -59,31 +59,28 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
  *   @param[in] start_time -- first time in vector
  *   @param[in] end_time -- last time in vector
  *   @param[in] num_steps -- length of the vector
- *   @params[out] vector<double> 
+ *   @params[out] vector<double>
  */
 std::vector<double> create_exponential_markov_times(double start_time,
         double end_time, int num_steps) {
+    // alloacte output vector 
     std::vector<double> markov_times;
+    
     double start_log = std::log(start_time);
     double end_log = std::log(end_time);
-
     double increment = (end_log - start_log) / float(num_steps - 1);
+    
     for (int i = 0; i < num_steps; ++i) {
         double current_log = start_log + i * increment;
         markov_times.push_back(std::exp(current_log));
     }
+    
     return markov_times;
 }
 
 
-// TODO: IS THIS FUNCTION NEEDED ANYWHERE??? Candidate for culling!
-double discrete_gauss_kernel(int N, double T) {
-    return 1.0 / (N + 1);
-}
-
-
 /**
- *  @brief Given an input graph, create a new "exponential" graph with the same set of nodes. 
+ *  @brief Given an input graph, create a new "exponential" graph with the same set of nodes.
  *  The edge weights reflect how much flow traverse from one node to another, after a time t according to a normalized Laplacian diffusion.
  *
  *   @param[in] graph -- input graph
@@ -100,9 +97,9 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
 
     typedef typename G::Node Node;
     typedef typename G::EdgeIt EdgeIt;
-    
+
     // FIRST: read out graph into matrix
-    
+
     // number of nodes N
     int N = lemon::countNodes(graph);
     // -D^-1*L*t == t(B-I)
@@ -113,7 +110,7 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     for (int i = 0; i < N; ++i) {
         typename G::Node temp_node = graph.nodeFromId(i);
         node_weighted_degree[i] = find_weighted_degree(graph, weights,
-                temp_node);
+                                  temp_node);
     }
 
     //initialise matrix and set diagonals to minus identity
@@ -144,7 +141,7 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     // call expokit
     int N2 = node_weighted_degree.size();
     std::vector<double> exp_graph_vec = clq::exp(minus_t_D_inv_L,
-            markov_time, N2);
+                                        markov_time, N2);
 
     // reserve memory space for number of nodes
     exp_graph.reserveNode(N2);
@@ -154,14 +151,14 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     for (int i = 0; i < N2; ++i) {
         exp_graph.addNode();
     }
-    
+
     // set edges
     for (int i = 0; i < N2; ++i) {
         for (int j = i; j < N2; ++j) {
             double weight = exp_graph_vec[N2 * i + j] * node_weighted_degree[j];
             if (weight > 0) {
                 lemon::SmartGraph::Edge edge = exp_graph.addEdge(
-                        exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
+                                                   exp_graph.nodeFromId(i), exp_graph.nodeFromId(j));
                 exp_graph_weights.set(edge, weight);
             }
         }
