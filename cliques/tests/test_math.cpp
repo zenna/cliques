@@ -15,6 +15,8 @@ TEST_CASE( "Math helpers behave correctly", "[Math]" ) {
     //compute matrix exponential
     std::vector<double> exp_matrix = clq::exp(matrix, my_time, msize);
     
+    REQUIRE(exp_matrx.size() == 9);
+
     // exact analytical results
     double e = std::exp(1);
     std::vector<double> result = {e, e, 1.5*e,
@@ -22,11 +24,7 @@ TEST_CASE( "Math helpers behave correctly", "[Math]" ) {
                                   0, 0, e};
     
     //print result and compare
-    clq::print_collection(exp_matrix,3);   
-    clq::print_collection(result,3);
-    int k=0;
     for(double i : exp_matrix){ 
-        clq::output(result[k] - i);
-        k++;
+        REQUIRE(result[k] - i< 1e-12);
     }
 }
