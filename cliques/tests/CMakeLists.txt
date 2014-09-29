@@ -8,11 +8,11 @@ else()
   set ( cliques_LIBRARIES expokit lapack blas ${Boost_LIBRARIES})
 endif()
 
-#ADD_EXECUTABLE(test_main test_main.cpp test_vector_partition.cpp test_math.cpp)
-#target_link_libraries(test_main ${cliques_LIBRARIES})
+ADD_EXECUTABLE(test_main test_main.cpp test_vector_partition.cpp test_math.cpp)
+target_link_libraries(test_main ${cliques_LIBRARIES} gfortran)
 
-ADD_EXECUTABLE(test_math test_math.cpp)
-target_link_libraries(test_math ${cliques_LIBRARIES} gfortran)
+# ADD_EXECUTABLE(test_math test_math.cpp)
+# target_link_libraries(test_math ${cliques_LIBRARIES} gfortran)
 
 # ADD_LIBRARY(test_vector_partition STATIC test_vector_partition.cpp)
 # target_link_libraries(test_main test_vector_partition)

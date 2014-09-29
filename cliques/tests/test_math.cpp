@@ -1,12 +1,10 @@
 #include <cliques/helpers/math.h>
-//#include <cliques/tests/catch.hpp>
+#include <cliques/tests/catch.hpp>
 #include <cliques/helpers/io.h>
 #include <vector>
 #include <math.h>
 
-int main() {
-//TEST_CASE( "Math helpers behave correctly", "[Math]" ) {
-    
+TEST_CASE( "Math helpers behave correctly", "[Math]" ) {    
     //input matrix
     std::vector<double> matrix = {1, 1, 1,
                                   0, 1, 1, 
@@ -31,7 +29,4 @@ int main() {
         clq::output(result[k] - i);
         k++;
     }
-    
-
-//}
 }
