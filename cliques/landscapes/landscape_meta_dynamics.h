@@ -177,4 +177,9 @@ std::set<std::vector<int> > find_optimal_communities_huxley(G &graph,
             time, communities);
 }
 
+// Kernals
+double discrete_gauss_kernel(int N, double T) {
+    return 1.0 / (N + 1);
+}
+
 }

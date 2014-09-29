@@ -52,6 +52,7 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
 }
 
 
+// REVIEW - REPLACE WITH LOG SPACE
 /**
  *  @brief Create an exponentially spaced time vector
  *

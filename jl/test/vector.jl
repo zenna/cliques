@@ -28,4 +28,10 @@ add_node_to_set!(A,2,10)
 
 A = VectorPartition(4,[2,1,2,6], false)
 normalise_ids!(A)
-@test A.partition_vector == [0,1,0,2]
+@test A.set_ids == [0,1,0,2]
+
+A = VectorPartition(3, [1,4,4], false)
+B = VectorPartition(3, [4,3,3], false)
+C = VectorPartition(3, [4,3,4], false)
+@test A == B
+@test A != C

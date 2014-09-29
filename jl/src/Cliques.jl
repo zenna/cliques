@@ -1,5 +1,7 @@
 module Cliques
 
+import Base: copy
+
 export
   VectorPartition
 
