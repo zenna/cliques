@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-
+#include <lemon/smart_graph.h>
 
 extern "C" void dgpadm_(int* ideg, int* m, double* t, double* A, int* ldh,
         double* wsp, int* lwsp, int* iwsp, int* iexp, int* ns, int* iflag);
@@ -99,7 +99,6 @@ void graph_to_exponential_graph(G &graph, M &weights, G &exp_graph, M &exp_graph
     std::vector<double> node_weighted_degree;
 
     typedef typename G::Node Node;
-    typedef typename G::NodeIt NodeIt;
     typedef typename G::EdgeIt EdgeIt;
     
     // FIRST: read out graph into matrix

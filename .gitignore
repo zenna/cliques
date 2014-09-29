@@ -12,6 +12,7 @@ pom.xml.asc
 .lein-repl-history
 *.pdf
 *.so
+*.o
 *.a
 *.aux
 *.log
