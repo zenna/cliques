@@ -52,30 +52,28 @@ std::vector<double> exp(std::vector<double> matrix, double t, int order) {
 }
 
 
-// REVIEW - REPLACE WITH LOG SPACE
+
 /**
- *  @brief Create an exponentially spaced time vector
+ *  @brief Create an logspaced (time) vector
  *
- *   @param[in] start_time -- first time in vector
- *   @param[in] end_time -- last time in vector
+ *   @param[in] start_time -- first element in vector will be 10^start_time
+ *   @param[in] end_time -- last element in vector will be 10^end_time
  *   @param[in] num_steps -- length of the vector
  *   @params[out] vector<double>
  */
-std::vector<double> create_exponential_markov_times(double start_time,
+std::vector<double> logspace(double start_time,
         double end_time, int num_steps) {
     // alloacte output vector 
-    std::vector<double> markov_times;
+    std::vector<double> output;
     
-    double start_log = std::log(start_time);
-    double end_log = std::log(end_time);
-    double increment = (end_log - start_log) / float(num_steps - 1);
+    double increment = (end_time - start_time) / float(num_steps - 1);
     
     for (int i = 0; i < num_steps; ++i) {
-        double current_log = start_log + i * increment;
-        markov_times.push_back(std::exp(current_log));
+        double current = start_time + i * increment;
+        output.push_back(std::pow(10,current));
     }
     
-    return markov_times;
+    return output;
 }
 
 
