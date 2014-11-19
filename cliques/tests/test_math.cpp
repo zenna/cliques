@@ -36,4 +36,6 @@ TEST_CASE( "Math helpers behave correctly", "[Math]" ) {
     REQUIRE(logspaced_vec[20]==1000.0);
     REQUIRE(logspaced_vec.size()==21);
     REQUIRE(logspaced_vec[10]==10);
+
+    //Add a test case for graph to exponential graph?
 }

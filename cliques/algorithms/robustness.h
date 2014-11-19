@@ -1,4 +1,3 @@
-/* Copyright (c) Zenna Tavares - zennatavares@gmail.com */
 #pragma once
 #include "cliques/algorithms/louvain.h"
 #include "cliques/algorithms/varofinf.h"
@@ -47,12 +46,6 @@ double variance_of_vi(G &graph, M &weights, double markov_time,
     }
 
     return total;
-}
-
-template<typename G, typename M>
-double basin_size(G &graph, M &weights, double markov_time) {
-
-    return 0.3;
 }
 
 }
