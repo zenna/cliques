@@ -3,17 +3,17 @@ import Cliques: unassignedpartition, globalpartition, set_count, find_set, node_
                 normalise_ids!, singletons, unassign_node!
 using Base.Test
 
-A = unassignedpartition(3)
+A = unassigned_partition(3)
 @test node_count(A) == 3
 @test set_count(A) == 0
 
-A = globalpartition(3)
+A = global_partition(3)
 @test set_count(A) == 1
 @test find_set(A,1) == 0
 @test find_set(A,2) == 0
 @test find_set(A,3) == 0
 
-A = singletons(3)
+A = singletons_partition(3)
 @test node_count(A) == 3
 @test set_count(A) == 3
 @test find_set(A,1) == 0
