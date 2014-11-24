@@ -131,12 +131,5 @@ void make_ring_graph(G &graph, int num_nodes, M &weights) {
 	make_weights_from_edges(graph, weights);
 }
 
-template<typename G>
-void make_hierarchical_benchmark_graph(G &graph, double balance,
-		double hierarchy, int num_nodes) {
-	for (int i = 0; i < num_nodes; ++i) {
-		graph.addNode(i);
-	}
-}
 
 }
